@@ -1,0 +1,46 @@
+{
+  "expo": {
+    "name": "Cifrei",
+    "slug": "cifrei",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/cifrei.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/name.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0e0e0f"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.christian.cifrei"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/cifrei.png",
+        "backgroundColor": "#0e0e0f"
+      },
+      "package": "com.christian.cifrei"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "scheme": "cifrei",
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "18348dee-6eb7-43d0-983a-86d35236aa31"
+      }
+    }
+  }
+}

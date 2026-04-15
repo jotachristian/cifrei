@@ -1,0 +1,3 @@
+1- Na visualização da cifra tem uma chavezinha que ao ativar ela deixa de mostrar as cifras. Isso para mim é útil para músicos não instrumentistas (cantores) eu canto porém eu toco mais do que canto e tendo tdah as vezes me perco muito em linhas de cifras. queria fazer uma função contrária. Você deve renomear a função de "cifras" pra "letras" e ao desmarcar as chaves aparece apenas as letras no painel. isso é possível??
+
+depois de concluir me passe instruções para instalar verdadeiramente esse app no meu celular.
