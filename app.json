@@ -4,13 +4,13 @@
     "slug": "cifrei",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/cifrei.png",
+    "icon": "./assets/logo-cifrei-adaptive.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/name.png",
+      "image": "./assets/logo-cinza.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0e0e0f"
+      "backgroundColor": "#ffffff"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,8 +18,8 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/cifrei.png",
-        "backgroundColor": "#0e0e0f"
+        "foregroundImage": "./assets/logo-cifrei-adaptive.png",
+        "backgroundColor": "#0139fe"
       },
       "package": "com.christian.cifrei"
     },
@@ -30,7 +30,8 @@
     },
     "plugins": [
       "expo-router",
-      "expo-sqlite"
+      "expo-sqlite",
+      "expo-audio"
     ],
     "experiments": {
       "typedRoutes": true

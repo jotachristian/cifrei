@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, FlatList,
-  TouchableOpacity, StyleSheet, Pressable, useWindowDimensions, Image,
+  TouchableOpacity, StyleSheet, Pressable, Image,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,33 +9,9 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getPlaylists, searchChords, getTotalCount, Playlist, ChordWithPlaylist } from '@/lib/database';
 
-function VinylIcon({ size = 64 }: { size?: number }) {
-  const s = size;
-  const ring = (d: number, opacity: number) => ({
-    width: d, height: d, borderRadius: d / 2,
-    borderWidth: s * 0.025, borderColor: `rgba(255,255,255,${opacity})`,
-    position: 'absolute' as const,
-  });
-  return (
-    <View style={{ width: s, height: s, alignItems: 'center', justifyContent: 'center' }}>
-      <View style={{ width: s, height: s, borderRadius: s / 2, backgroundColor: 'rgba(255,255,255,0.12)', position: 'absolute' }} />
-      <View style={ring(s * 0.82, 0.18)} />
-      <View style={ring(s * 0.64, 0.15)} />
-      <View style={ring(s * 0.46, 0.13)} />
-      <View style={{ width: s * 0.28, height: s * 0.28, borderRadius: s * 0.14, backgroundColor: 'rgba(255,255,255,0.22)', position: 'absolute' }} />
-      <View style={{ width: s * 0.08, height: s * 0.08, borderRadius: s * 0.04, backgroundColor: '#0b2e35' }} />
-    </View>
-  );
-}
-
 export default function HomeScreen() {
   const { colors } = useTheme();
   const router = useRouter();
-  const { width } = useWindowDimensions();
-  const numCols = width >= 600 ? 3 : 2;
-  const PADDING = 20;
-  const GAP = 16;
-  const itemWidth = (width - PADDING * 2 - GAP * (numCols - 1)) / numCols;
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [results, setResults] = useState<ChordWithPlaylist[]>([]);
@@ -59,9 +35,14 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={sty.container}>
       <View style={sty.header}>
-        <Image source={require('@/assets/name.png')} style={sty.logo} resizeMode="contain" />
+        <View style={sty.brandRow}>
+          {/* Ícone do app ocultado a pedido — manter só o nome como logo.
+          <Image source={require('@/assets/logo-cinza.png')} style={sty.logo} resizeMode="contain" />
+          */}
+          <Text style={sty.brandText}>Cifrei</Text>
+        </View>
         <Pressable onPress={() => router.push('/admin')} style={sty.iconBtn}>
-          <Ionicons name="settings-outline" size={22} color={colors.headerText} />
+          <Ionicons name="settings-outline" size={30} color="#ffffff" />
         </Pressable>
       </View>
 
@@ -97,7 +78,7 @@ export default function HomeScreen() {
           renderItem={({ item }) => (
             <TouchableOpacity
               style={sty.songCard}
-              onPress={() => router.push({ pathname: '/chord/[id]', params: { id: item.id, playlistId: item.playlist_id } })}
+              onPress={() => router.push({ pathname: '/chord/[id]', params: { id: item.id } })}
               activeOpacity={0.7}
             >
               <View style={{ flex: 1 }}>
@@ -115,22 +96,29 @@ export default function HomeScreen() {
           key="playlists"
           data={playlists}
           keyExtractor={item => item.id}
-          numColumns={2}
-          contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 32 }}
-          columnWrapperStyle={{ gap: 16, marginBottom: 20 }}
+          contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32 }}
+          ListEmptyComponent={
+            <View style={sty.emptyWrap}>
+              <Ionicons name="albums-outline" size={48} color={colors.border} />
+              <Text style={sty.emptyText}>Nenhuma playlist ainda.</Text>
+            </View>
+          }
           renderItem={({ item }) => (
             <TouchableOpacity
-              style={[sty.playlistItem, { width: itemWidth }]}
+              style={sty.playlistRow}
               onPress={() => router.push({ pathname: '/playlist/[id]', params: { id: item.id } })}
-              activeOpacity={0.75}
+              activeOpacity={0.7}
             >
-              <View style={sty.playlistCard}>
-                <VinylIcon size={itemWidth * 0.55} />
+              <View style={sty.playlistThumb}>
+                <Ionicons name="musical-notes" size={22} color="#ffffff" />
               </View>
-              <Text style={sty.playlistName} numberOfLines={1}>{item.name}</Text>
-              {item.description ? (
-                <Text style={sty.playlistDesc} numberOfLines={2}>{item.description}</Text>
-              ) : null}
+              <View style={{ flex: 1 }}>
+                <Text style={sty.playlistName} numberOfLines={1}>{item.name}</Text>
+                {item.description ? (
+                  <Text style={sty.playlistDesc} numberOfLines={2}>{item.description}</Text>
+                ) : null}
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.placeholder} />
             </TouchableOpacity>
           )}
         />
@@ -144,30 +132,36 @@ function makeStyles(c: any) {
     container: { flex: 1, backgroundColor: c.bg },
     header: {
       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-      backgroundColor: c.header, paddingHorizontal: 16, paddingVertical: 14,
+      backgroundColor: '#ff7700', paddingHorizontal: 16, paddingVertical: 14,
     },
+    brandRow: { flexDirection: 'row', alignItems: 'center' },
     logo: { width: 60, height: 60 },
-    iconBtn: { padding: 0 },
+    brandText: {
+      fontFamily: 'Comfortaa_700Bold',
+      fontSize: 30,
+      color: '#ffffff',
+      letterSpacing: 0.5,
+      marginLeft: 2,
+    },
+    iconBtn: { padding: 4 },
     searchRow: {
       flexDirection: 'row', alignItems: 'center', margin: 15,
-      paddingHorizontal: 12, paddingVertical: 8,
-      backgroundColor: c.input, borderRadius: 12, borderWidth: 1, borderColor: c.border,
+      paddingHorizontal: 18, paddingVertical: 11,
+      backgroundColor: c.input, borderRadius: 28, borderWidth: 1, borderColor: c.border,
     },
     searchInput: { flex: 1, fontSize: 15, color: c.text },
-    playlistItem: {
-      gap: 8,
+    playlistRow: {
+      flexDirection: 'row', alignItems: 'center', gap: 14,
+      backgroundColor: c.card, borderRadius: 14, padding: 12,
+      marginBottom: 10, borderWidth: 1, borderColor: c.border,
     },
-    playlistCard: {
-      backgroundColor: '#0b2e35', borderRadius: 12,
-      aspectRatio: 1,
+    playlistThumb: {
+      width: 48, height: 48, borderRadius: 12,
+      backgroundColor: '#ff7700',
       alignItems: 'center', justifyContent: 'center',
-      overflow: 'hidden',
-      shadowColor: '#000', shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.18, shadowRadius: 6, elevation: 4,
     },
-
-    playlistName: { fontSize: 13, fontWeight: '600', color: c.text, textAlign: 'center' },
-    playlistDesc: { fontSize: 11, color: c.textSub, textAlign: 'center' },
+    playlistName: { fontSize: 15, fontWeight: '600', color: c.text },
+    playlistDesc: { fontSize: 12, color: c.textSub, marginTop: 2 },
     songCard: {
       flexDirection: 'row', alignItems: 'center',
       backgroundColor: c.card, borderRadius: 10, padding: 14,

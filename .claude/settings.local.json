@@ -2,7 +2,20 @@
   "permissions": {
     "allow": [
       "Bash(python:*)",
-      "Bash(powershell:*)"
+      "Bash(powershell:*)",
+      "Bash(npm start *)",
+      "Bash(npm run *)",
+      "Bash(npx tsc *)",
+      "Bash(npm install *)",
+      "Bash(npm ls *)",
+      "Bash(curl -sSL -o assets/piano/C2.mp3 https://tonejs.github.io/audio/salamander/C2.mp3)",
+      "Bash(curl -sSL -o assets/piano/C3.mp3 https://tonejs.github.io/audio/salamander/C3.mp3)",
+      "Bash(curl -sSL -o assets/piano/C4.mp3 https://tonejs.github.io/audio/salamander/C4.mp3)",
+      "Bash(curl -sSL -o assets/piano/C5.mp3 https://tonejs.github.io/audio/salamander/C5.mp3)",
+      "Bash(npx expo *)",
+      "Bash(npm uninstall *)",
+      "Bash(Select-Object -First 30)",
+      "Bash(node -e \"const p=require\\('react/jsx-runtime'\\); console.log\\('jsx-runtime keys:', Object.keys\\(p\\)\\); const d=require\\('react/jsx-dev-runtime'\\); console.log\\('jsx-dev-runtime keys:', Object.keys\\(d\\)\\); console.log\\('jsx writable:', Object.getOwnPropertyDescriptor\\(p,'jsx'\\)\\);\")"
     ]
   }
 }

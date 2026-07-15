@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { transposeChord } from '@/lib/transpose';
 import { Colors } from '@/lib/theme';
 
@@ -9,21 +9,46 @@ interface Props {
   showLyrics: boolean;
   fontSize: number;
   colors: Colors;
+  onChordPress?: (chord: string) => void;
 }
 
 interface Seg { chord?: string; text: string; }
 
 // ── detection ──────────────────────────────────────────────────────────────
 
-const CHORD_TOKEN =
-  /^[A-G][b#]?(m(aj\d*)?|M(aj\d*)?|dim\d*|aug|sus[24]?|add\d+|\d{1,2})?(\/[A-G][b#]?)?$/;
+// Permite combinacoes BR comuns: Am7, C7M, D7(9), G7(b9), Bm7b5, Cmaj7/G, F#m11, etc.
+const SUFFIX = '(?:m|M|maj|Maj|dim|°|º|aug|\\+|sus[24]?|add\\d+|[b#]\\d+|\\d+|\\([b#\\d,\\s]+\\))';
+const CHORD_TOKEN = new RegExp(`^[A-G][b#]?${SUFFIX}*(?:\\/[A-G][b#]?${SUFFIX}*)?$`);
+
+function tokensAreAllChords(s: string): boolean {
+  const t = s.trim();
+  if (!t) return false;
+  return t.split(/\s+/).every(tok => CHORD_TOKEN.test(tok));
+}
+
+/**
+ * Escape hatch: linha envolvida em [..] forca interpretacao como cifra.
+ * Retorna a linha com [ e ] substituidos por espaco (preserva alinhamento
+ * de coluna com a letra abaixo). Retorna null se nao for cifra entre [].
+ */
+function unwrapChordBrackets(line: string): string | null {
+  const m = line.match(/^(\s*)\[(.*)\](\s*)$/);
+  if (!m) return null;
+  const [, lead, inner, trail] = m;
+  if (!tokensAreAllChords(inner)) return null;
+  return lead + ' ' + inner + ' ' + trail;
+}
 
 function isChordLine(line: string): boolean {
-  const t = line.trim();
-  return t.length > 0 && t.split(/\s+/).every(tok => CHORD_TOKEN.test(tok));
+  if (unwrapChordBrackets(line) !== null) return true;
+  return tokensAreAllChords(line);
 }
+
 function isSectionLine(line: string): boolean {
-  return /^\[.+\]$/.test(line.trim());
+  const t = line.trim();
+  if (!/^\[.+\]$/.test(t)) return false;
+  // [Am G D] e linha de cifra, nao secao
+  return unwrapChordBrackets(line) === null;
 }
 
 // ── chord-position split ────────────────────────────────────────────────────
@@ -118,10 +143,39 @@ function groupSegs(segs: Seg[]): Seg[][] {
 
 // ── component ──────────────────────────────────────────────────────────────
 
-export default function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors }: Props) {
+function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChordPress }: Props) {
   const lines = lyrics.split('\n');
   const lineHeight = Math.round(fontSize * 1.75);
   const chordRowH  = Math.round(fontSize * 1.4);
+
+  const renderChordText = (chord: string, extraStyle?: any) => {
+    const transposed = transposeChord(chord, semitones);
+    const node = (
+      <Text style={[{ fontSize, color: colors.chord, fontFamily: 'Inter_700Bold' }, extraStyle]}>
+        {transposed}
+      </Text>
+    );
+    if (!onChordPress) return node;
+    return (
+      <Pressable onPress={() => onChordPress(transposed)} hitSlop={6}>
+        {node}
+      </Pressable>
+    );
+  };
+
+  // Renderiza linha de acordes compacta (cada token tocavel separadamente).
+  const renderCompactLine = (chordLine: string, key: number) => {
+    const tokens = chordLine.trim().split(/\s+/);
+    return (
+      <View key={key} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginVertical: 2 }}>
+        {tokens.map((tok, i) => (
+          <View key={i} style={{ marginRight: fontSize * 0.9 }}>
+            {renderChordText(tok)}
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   /**
    * Renders a chord+lyric pair.
@@ -140,16 +194,14 @@ export default function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, 
           <View key={gi} style={{ flexDirection: 'row' }}>
             {group.map((seg, si) => (
               <View key={si} style={{ flexDirection: 'column' }}>
-                {/* chord row — same height for all columns keeps baselines aligned */}
+                {/* chord row — same height for all columns keeps baselines aligned.
+                    paddingRight no Text do acorde garante separação visual mínima
+                    entre acordes consecutivos quando a letra abaixo é curta/vazia. */}
                 <View style={{ height: chordRowH, justifyContent: 'flex-end' }}>
-                  {seg.chord ? (
-                    <Text style={{ fontSize, color: colors.chord, fontFamily: 'monospace' }}>
-                      {transposeChord(seg.chord, semitones)}
-                    </Text>
-                  ) : null}
+                  {seg.chord ? renderChordText(seg.chord, { paddingRight: fontSize * 0.5 }) : null}
                 </View>
                 {/* lyric text */}
-                <Text style={{ fontSize, color: colors.text, fontFamily: 'monospace', lineHeight }}>
+                <Text style={{ fontSize, color: colors.text, lineHeight, fontFamily: 'Inter_400Regular' }}>
                   {seg.text}
                 </Text>
               </View>
@@ -175,7 +227,7 @@ export default function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, 
       const label = line.trim().slice(1, -1).toUpperCase();
       nodes.push(
         <View key={i} style={{ marginTop: 14, marginBottom: 6 }}>
-          <Text style={{ fontSize: fontSize - 2, fontWeight: '700', color: '#FF9500', letterSpacing: 1.2, fontFamily: 'monospace' }}>
+          <Text style={{ fontSize: fontSize - 2, fontFamily: 'Inter_700Bold', color: '#475569', letterSpacing: 1.2 }}>
             {label}
           </Text>
           <View style={{ height: 1, backgroundColor: colors.border, marginTop: 3 }} />
@@ -185,31 +237,23 @@ export default function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, 
     }
 
     if (isChordLine(line)) {
+      // remove [ ] se houver, preservando colunas
+      const chordLine = unwrapChordBrackets(line) ?? line;
       const next = lines[i + 1];
       const hasLyric = next !== undefined && next.trim() !== '' && !isChordLine(next) && !isSectionLine(next);
 
       if (hasLyric) {
         if (showLyrics) {
           // letras visíveis → mostra acordes + letra (view normal)
-          nodes.push(renderPair(line, next, i));
+          nodes.push(renderPair(chordLine, next, i));
         } else {
-          // letras ocultas → acordes compactos (espaço simples, sem posicionamento)
-          const transposed = compactChords(line, semitones);
-          nodes.push(
-            <Text key={i} style={{ fontSize, color: colors.chord, fontFamily: 'monospace', lineHeight }}>
-              {transposed}
-            </Text>
-          );
+          // letras ocultas → acordes compactos, cada um tocavel
+          nodes.push(renderCompactLine(chordLine, i));
         }
         i += 2;
       } else {
         // linha de acorde sem letra abaixo: sempre mostra compacto
-        const transposed = compactChords(line, semitones);
-        nodes.push(
-          <Text key={i} style={{ fontSize, color: colors.chord, fontFamily: 'monospace', lineHeight }}>
-            {transposed}
-          </Text>
-        );
+        nodes.push(renderCompactLine(chordLine, i));
         i++;
       }
       continue;
@@ -218,7 +262,7 @@ export default function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, 
     // linha de letra pura — só aparece quando letras estão visíveis
     if (showLyrics) {
       nodes.push(
-        <Text key={i} style={{ fontSize, color: colors.text, fontFamily: 'monospace', lineHeight }}>
+        <Text key={i} style={{ fontSize, color: colors.text, lineHeight, fontFamily: 'Inter_400Regular' }}>
           {line}
         </Text>
       );
@@ -228,3 +272,5 @@ export default function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, 
 
   return <View>{nodes}</View>;
 }
+
+export default React.memo(ChordDisplay);

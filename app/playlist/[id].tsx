@@ -4,20 +4,21 @@ import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getPlaylist, getChordsForPlaylist, Chord } from '@/lib/database';
+import { getPlaylist, getPlaylistChords, ChordInPlaylist } from '@/lib/database';
+import { transposeTone } from '@/lib/transpose';
 
 export default function PlaylistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors } = useTheme();
   const router = useRouter();
   const [name, setName] = useState('Playlist');
-  const [chords, setChords] = useState<Chord[]>([]);
+  const [chords, setChords] = useState<ChordInPlaylist[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       const p = getPlaylist(id);
       setName(p?.name ?? 'Playlist');
-      setChords(getChordsForPlaylist(id));
+      setChords(getPlaylistChords(id));
     }, [id])
   );
 
@@ -56,10 +57,17 @@ export default function PlaylistScreen() {
               <Text style={sty.numText}>{index + 1}</Text>
             </View>
             <View style={{ flex: 1 }}>
+              {item.moment ? (
+                <Text style={sty.itemMoment} numberOfLines={1}>{item.moment}</Text>
+              ) : null}
               <Text style={sty.itemName} numberOfLines={1}>{item.name}</Text>
-              <Text style={sty.itemSub} numberOfLines={1}>{item.artist}</Text>
+              {item.artist ? (
+                <Text style={sty.itemSub} numberOfLines={1}>{item.artist}</Text>
+              ) : null}
             </View>
-            <Text style={[sty.itemTone, { color: colors.accent }]}>{item.tone}</Text>
+            <Text style={[sty.itemTone, { color: colors.accent }]}>
+              {transposeTone(item.tone, item.tone_offset ?? 0)}
+            </Text>
             <Ionicons name="chevron-forward" size={18} color={colors.border} />
           </TouchableOpacity>
         )}
@@ -89,7 +97,8 @@ function makeStyles(c: any) {
       width: 32, height: 32, borderRadius: 16, backgroundColor: c.accent,
       alignItems: 'center', justifyContent: 'center',
     },
-    numText: { color: '#0e0e0f', fontSize: 13, fontWeight: '700' },
+    numText: { color: '#ffffff', fontSize: 13, fontWeight: '700' },
+    itemMoment: { fontSize: 10, fontWeight: '700', color: c.accent, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 2 },
     itemName: { fontSize: 15, fontWeight: '600', color: c.text },
     itemSub: { fontSize: 12, color: c.textSub, marginTop: 2 },
     itemTone: { fontSize: 13, fontWeight: '600', marginRight: 4 },

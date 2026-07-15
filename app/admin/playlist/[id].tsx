@@ -112,7 +112,7 @@ export default function PlaylistAdminScreen() {
                 <Text style={{ color: colors.textSub }}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[sty.saveBtn, { opacity: editName.trim() ? 1 : 0.5 }]} onPress={handleSave}>
-                <Text style={{ color: '#0e0e0f', fontWeight: '700' }}>Salvar</Text>
+                <Text style={{ color: '#ffffff', fontWeight: '700' }}>Salvar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -127,11 +127,11 @@ function makeStyles(c: any) {
     container: { flex: 1, backgroundColor: c.bg },
     header: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.header, paddingHorizontal: 12, paddingVertical: 12 },
     iconBtn: { width: 40, padding: 4, alignItems: 'center' },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: c.headerText, textAlign: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: c.text, textAlign: 'center' },
     desc: { fontSize: 13, color: c.textSub, paddingHorizontal: 16, paddingVertical: 6, borderBottomWidth: 1, borderColor: c.border },
     item: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.card, borderRadius: 10, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: c.border, gap: 10 },
     numBadge: { width: 30, height: 30, borderRadius: 15, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
-    numTxt: { color: '#0e0e0f', fontSize: 12, fontWeight: '700' },
+    numTxt: { color: '#ffffff', fontSize: 12, fontWeight: '700' },
     itemName: { fontSize: 15, fontWeight: '600', color: c.text },
     itemSub: { fontSize: 12, color: c.textSub, marginTop: 2 },
     delBtn: { padding: 6 },

@@ -14,6 +14,8 @@ import * as DocumentPicker from 'expo-document-picker';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getPlaylists, createPlaylist, deletePlaylist, Playlist } from '@/lib/database';
 import { exportAllData, importData, BackupData } from '@/lib/backup';
+import { importPlaylistFromMd } from '@/lib/importMd';
+import { createPlaylistFromWhatsApp, parseWhatsAppSetlist } from '@/lib/parseSetlist';
 
 export default function AdminScreen() {
   const { colors } = useTheme();
@@ -21,20 +23,48 @@ export default function AdminScreen() {
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [name, setName] = useState('');
-  const [desc, setDesc] = useState('');
+  const [paste, setPaste] = useState('');
   const [loading, setLoading] = useState(false);
 
   useFocusEffect(useCallback(() => { reload(); }, []));
   const reload = () => setPlaylists(getPlaylists());
 
+  const pastePreview = paste.trim() ? parseWhatsAppSetlist(paste) : null;
+
+  function resetAddForm() {
+    setName(''); setPaste(''); setShowAdd(false);
+  }
+
   function handleAdd() {
-    if (!name.trim()) return;
-    createPlaylist(name.trim(), desc.trim());
-    setName(''); setDesc(''); setShowAdd(false); reload();
+    const hasPaste = paste.trim().length > 0;
+    const hasName = name.trim().length > 0;
+    if (!hasPaste && !hasName) return;
+
+    try {
+      if (hasPaste) {
+        const { playlistName, total, reused, created } = createPlaylistFromWhatsApp(paste, {
+          nameOverride: name,
+        });
+        resetAddForm();
+        reload();
+        Alert.alert(
+          'Playlist criada',
+          'Playlist "' + playlistName + '" com ' + total + ' musica' + (total === 1 ? '' : 's') +
+          '.\n\n' + reused + ' reaproveitada' + (reused === 1 ? '' : 's') + ' do banco, ' +
+          created + ' nova' + (created === 1 ? '' : 's') + '.'
+        );
+      } else {
+        createPlaylist(name.trim(), '');
+        resetAddForm();
+        reload();
+      }
+    } catch (e: any) {
+      Alert.alert('Erro', e?.message ?? String(e));
+    }
   }
 
   function handleDelete(p: Playlist) {
-    Alert.alert('Excluir playlist', 'Isso tambem exclui todas as cifras dela. Continuar?', [
+    Alert.alert('Excluir playlist', 'As cifras vinculadas continuam no banco. Continuar?', [
       { text: 'Cancelar', style: 'cancel' },
       { text: 'Excluir', style: 'destructive', onPress: () => { deletePlaylist(p.id); reload(); } },
     ]);
@@ -57,6 +87,36 @@ export default function AdminScreen() {
       }
     } catch (e) {
       Alert.alert('Erro ao exportar', String(e));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleImportMd() {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: '*/*',
+        copyToCacheDirectory: true,
+      });
+      if (result.canceled) return;
+
+      const asset = result.assets[0];
+      const lower = (asset.name ?? '').toLowerCase();
+      if (!lower.endsWith('.md') && !lower.endsWith('.txt') && !lower.endsWith('.markdown')) {
+        Alert.alert('Arquivo invalido', 'Selecione um arquivo .md, .markdown ou .txt.');
+        return;
+      }
+
+      setLoading(true);
+      const raw = await readAsStringAsync(asset.uri, { encoding: EncodingType.UTF8 });
+      const { playlistName, songCount } = importPlaylistFromMd(raw);
+      Alert.alert(
+        'Importado!',
+        'Playlist "' + playlistName + '" criada com ' + songCount + ' cifra' + (songCount === 1 ? '' : 's') + '.'
+      );
+      reload();
+    } catch (e: any) {
+      Alert.alert('Erro ao importar', e?.message ?? String(e));
     } finally {
       setLoading(false);
     }
@@ -133,7 +193,7 @@ export default function AdminScreen() {
         <Text style={sty.backupLabel}>Backup das cifras</Text>
         <View style={sty.backupBtns}>
           <TouchableOpacity style={sty.backupBtn} onPress={handleExport} disabled={loading}>
-            <Ionicons name="cloud-upload-outline" size={18} color={colors.headerText} />
+            <Ionicons name="cloud-upload-outline" size={18} color="#ffffff" />
             <Text style={sty.backupBtnTxt}>Exportar JSON</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[sty.backupBtn, sty.backupBtnOutline]} onPress={handleImport} disabled={loading}>
@@ -141,9 +201,13 @@ export default function AdminScreen() {
             <Text style={[sty.backupBtnTxt, { color: colors.accent }]}>Importar JSON</Text>
           </TouchableOpacity>
         </View>
+        <TouchableOpacity style={[sty.backupBtn, sty.backupBtnOutline, sty.backupBtnWide]} onPress={handleImportMd} disabled={loading}>
+          <Ionicons name="document-text-outline" size={18} color={colors.accent} />
+          <Text style={[sty.backupBtnTxt, { color: colors.accent }]}>Importar de .md / .txt</Text>
+        </TouchableOpacity>
         {loading && <ActivityIndicator size="small" color={colors.accent} style={{ marginTop: 4 }} />}
         <Text style={sty.backupHint}>
-          Exporte para salvar no Google Drive, email ou WhatsApp. Importe para restaurar.
+          Exporte/Importe JSON para backup. Importe .md/.txt para criar uma playlist nova a partir de um arquivo escrito no PC.
         </Text>
       </View>
 
@@ -181,16 +245,42 @@ export default function AdminScreen() {
         <View style={sty.modalOverlay}>
           <View style={sty.modalBox}>
             <Text style={sty.modalTitle}>Nova Playlist</Text>
-            <TextInput style={sty.input} placeholder="Nome da playlist *"
-              placeholderTextColor={colors.placeholder} value={name} onChangeText={setName} autoFocus />
-            <TextInput style={sty.input} placeholder="Descricao (opcional)"
-              placeholderTextColor={colors.placeholder} value={desc} onChangeText={setDesc} />
+
+            <TextInput
+              style={sty.input}
+              placeholder={pastePreview?.suggestedName ? pastePreview.suggestedName : 'Nome da playlist (opcional)'}
+              placeholderTextColor={colors.placeholder}
+              value={name}
+              onChangeText={setName}
+            />
+
+            <Text style={sty.pasteLabel}>Cole a mensagem do WhatsApp (opcional)</Text>
+            <TextInput
+              style={sty.pasteInput}
+              placeholder={'ENTRADA: https://youtu.be/...\nSALMO: ...\nCOMUNHAO: ...'}
+              placeholderTextColor={colors.placeholder}
+              value={paste}
+              onChangeText={setPaste}
+              multiline
+              textAlignVertical="top"
+            />
+
+            {pastePreview && (
+              <Text style={sty.previewHint}>
+                {pastePreview.entries.length} momento{pastePreview.entries.length === 1 ? '' : 's'} detectado{pastePreview.entries.length === 1 ? '' : 's'}
+                {pastePreview.suggestedName ? ` · titulo: "${pastePreview.suggestedName}"` : ''}
+              </Text>
+            )}
+
             <View style={sty.modalBtns}>
-              <TouchableOpacity style={sty.cancelBtn} onPress={() => { setShowAdd(false); setName(''); setDesc(''); }}>
+              <TouchableOpacity style={sty.cancelBtn} onPress={resetAddForm}>
                 <Text style={{ color: colors.textSub }}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[sty.saveBtn, { opacity: name.trim() ? 1 : 0.5 }]} onPress={handleAdd}>
-                <Text style={{ color: '#0e0e0f', fontWeight: '700' }}>Salvar</Text>
+              <TouchableOpacity
+                style={[sty.saveBtn, { opacity: (name.trim() || paste.trim()) ? 1 : 0.5 }]}
+                onPress={handleAdd}
+              >
+                <Text style={{ color: '#ffffff', fontWeight: '700' }}>Criar</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -205,13 +295,14 @@ function makeStyles(c: any) {
     container: { flex: 1, backgroundColor: c.bg },
     header: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.header, paddingHorizontal: 12, paddingVertical: 12 },
     iconBtn: { width: 40, padding: 4, alignItems: 'center' },
-    headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: c.headerText, textAlign: 'center' },
+    headerTitle: { flex: 1, fontSize: 18, fontWeight: '700', color: c.text, textAlign: 'center' },
     backupRow: { backgroundColor: c.card, margin: 12, borderRadius: 14, padding: 14, borderWidth: 1, borderColor: c.border, gap: 10 },
     backupLabel: { fontSize: 13, fontWeight: '700', color: c.text },
     backupBtns: { flexDirection: 'row', gap: 10 },
     backupBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, backgroundColor: c.accent, borderRadius: 10, paddingVertical: 10 },
     backupBtnOutline: { backgroundColor: c.input, borderWidth: 1, borderColor: c.accent },
-    backupBtnTxt: { fontSize: 13, fontWeight: '700', color: '#0e0e0f' },
+    backupBtnWide: { flex: 0, alignSelf: 'stretch', paddingVertical: 12 },
+    backupBtnTxt: { fontSize: 13, fontWeight: '700', color: '#ffffff' },
     backupHint: { fontSize: 11, color: c.textSub, lineHeight: 16 },
     sectionTitle: { fontSize: 12, fontWeight: '700', color: c.text, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 8 },
     item: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.card, borderRadius: 10, padding: 14, marginBottom: 8, borderWidth: 1, borderColor: c.border, gap: 10 },
@@ -224,6 +315,9 @@ function makeStyles(c: any) {
     modalBox: { backgroundColor: c.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 24, gap: 12 },
     modalTitle: { fontSize: 18, fontWeight: '700', color: c.text, marginBottom: 4 },
     input: { backgroundColor: c.input, borderRadius: 10, padding: 12, fontSize: 15, color: c.text, borderWidth: 1, borderColor: c.border },
+    pasteLabel: { fontSize: 12, fontWeight: '600', color: c.textSub, marginTop: 4, textTransform: 'uppercase', letterSpacing: 0.5 },
+    pasteInput: { backgroundColor: c.input, borderRadius: 10, padding: 12, fontSize: 13, color: c.text, borderWidth: 1, borderColor: c.border, minHeight: 140, fontFamily: 'Poppins_400Regular' },
+    previewHint: { fontSize: 12, color: c.accent, marginTop: -4 },
     modalBtns: { flexDirection: 'row', gap: 12, marginTop: 4 },
     cancelBtn: { flex: 1, padding: 14, borderRadius: 10, borderWidth: 1, borderColor: c.border, alignItems: 'center' },
     saveBtn: { flex: 1, padding: 14, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center' },
