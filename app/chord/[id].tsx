@@ -30,6 +30,7 @@ export default function ChordScreen() {
   const [showLyrics, setShowLyrics] = useState<boolean>(() => prefsCache?.showLyrics ?? true);
   const [moment, setMoment] = useState<string>(() => playlistId ? (getLink(id, playlistId)?.moment ?? '') : '');
   const [toneModal, setToneModal] = useState(false);
+  const [fontModal, setFontModal] = useState(false);
   const [showNote, setShowNote] = useState(false);
 
   useEffect(() => {
@@ -66,6 +67,13 @@ export default function ChordScreen() {
     AsyncStorage.setItem('cifrei_font_size', String(n));
     return n;
   });
+
+  const setSpecificFont = (size: number) => {
+    setFontSize(size);
+    if (prefsCache) prefsCache.fontSize = size;
+    AsyncStorage.setItem('cifrei_font_size', String(size));
+  };
+
   const toggleLyrics = () => setShowLyrics(prev => {
     const n = !prev;
     if (prefsCache) prefsCache.showLyrics = n;
@@ -93,6 +101,14 @@ export default function ChordScreen() {
     }
   };
 
+  function handleGoBack() {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace('/');
+    }
+  }
+
   const idx = siblings.findIndex(c => c.id === id);
   const navTo = (dir: 'prev' | 'next') => {
     const t = siblings[dir === 'prev' ? idx - 1 : idx + 1];
@@ -100,13 +116,22 @@ export default function ChordScreen() {
   };
   const sty = makeStyles(colors);
 
-  if (!chord) return (
-    <SafeAreaView style={sty.container}>
-      <Pressable onPress={() => router.dismiss()} style={sty.backBtn}>
-        <Ionicons name="arrow-back" size={22} color={colors.text} />
-      </Pressable>
-    </SafeAreaView>
-  );
+  if (!chord) {
+    return (
+      <SafeAreaView style={sty.container}>
+        <View style={{ padding: 20, alignItems: 'center', justifyContent: 'center', flex: 1, gap: 16 }}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.textSub} />
+          <Text style={{ color: colors.text, fontSize: 16, fontWeight: '700' }}>Cifra não encontrada</Text>
+          <TouchableOpacity
+            style={{ backgroundColor: colors.accent, paddingHorizontal: 16, paddingVertical: 10, borderRadius: 10 }}
+            onPress={handleGoBack}
+          >
+            <Text style={{ color: '#ffffff', fontWeight: '700' }}>Voltar</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   const displayTone = transposeTone(chord.tone, semitones);
   const isMinor = chord.tone.endsWith('m');
@@ -114,21 +139,19 @@ export default function ChordScreen() {
 
   const openYoutube = () => {
     if (chord.external_link) {
-      Linking.openURL(chord.external_link).catch(() => {
-        // failed to open
-      });
+      Linking.openURL(chord.external_link).catch(() => {});
     }
   };
 
   return (
     <SafeAreaView style={sty.container}>
-      <Pressable onPress={() => router.dismiss()} style={sty.backBtn}>
+      <Pressable onPress={handleGoBack} style={sty.backBtn}>
         <Ionicons name="arrow-back" size={22} color={colors.text} />
       </Pressable>
 
       <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={sty.scrollContent}>
 
-        {/* momento (se vier de uma playlist) + título + artista + tom */}
+        {/* Momento + Título + Artista + Tom */}
         {moment ? <Text style={sty.moment}>{moment}</Text> : null}
         <Text style={sty.songTitle}>{chord.name}</Text>
         <View style={sty.metaRow}>
@@ -154,73 +177,55 @@ export default function ChordScreen() {
               <View style={sty.infoChip}>
                 <Ionicons name="bookmark-outline" size={14} color={colors.textSub} />
                 <Text style={sty.infoChipTxt}>
-                  Capo/Transp: {chord.capo > 0 ? `+${chord.capo}` : chord.capo}
+                  TRANSPOS: {chord.capo > 0 ? `+${chord.capo}` : chord.capo}
                 </Text>
               </View>
             ) : null}
           </View>
         ) : null}
 
-        {/* controles */}
-        <View style={sty.controlsWrap}>
-          <View style={sty.controls}>
-            <View style={sty.ctrlGroup}>
-              <Text style={sty.ctrlLabel}>FONTE</Text>
-              <View style={sty.btnRow}>
-                <TouchableOpacity style={sty.roundBtn} onPress={() => changeFont(-1)} disabled={fontSize <= MIN_FONT}>
-                  <Text style={sty.roundBtnTxt}>−</Text>
-                </TouchableOpacity>
-                <Text style={sty.ctrlVal}>{fontSize}</Text>
-                <TouchableOpacity style={sty.roundBtn} onPress={() => changeFont(1)} disabled={fontSize >= MAX_FONT}>
-                  <Text style={sty.roundBtnTxt}>+</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
+        {/* Barra de Opções Compacta (Estilo Pílulas da Imagem) */}
+        <View style={sty.compactActionsWrap}>
+          {/* Opção Fonte */}
+          <TouchableOpacity
+            style={sty.pillBtn}
+            onPress={() => setFontModal(true)}
+            activeOpacity={0.7}
+          >
+            <Text style={sty.pillBtnTxt}>Fonte</Text>
+            <Ionicons name="chevron-down" size={13} color={colors.textSub} />
+          </TouchableOpacity>
 
-            <View style={sty.divider} />
+          {/* Opção Letra */}
+          <TouchableOpacity
+            style={[sty.pillBtn, !showLyrics && sty.pillBtnInactive]}
+            onPress={toggleLyrics}
+            activeOpacity={0.7}
+          >
+            <Text style={[sty.pillBtnTxt, !showLyrics && { color: colors.textSub }]}>Letra</Text>
+          </TouchableOpacity>
 
-            <View style={sty.ctrlGroup}>
-              <Text style={sty.ctrlLabel}>LETRA</Text>
-              <TouchableOpacity
-                style={[sty.toggleBtn, showLyrics && sty.toggleBtnOn]}
-                onPress={toggleLyrics}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={showLyrics ? 'eye' : 'eye-off'}
-                  size={18}
-                  color={showLyrics ? '#ffffff' : colors.textSub}
-                />
-              </TouchableOpacity>
-            </View>
+          {/* Opção Vídeo */}
+          <TouchableOpacity
+            style={[sty.pillBtn, !chord.external_link && { opacity: 0.35 }]}
+            onPress={openYoutube}
+            disabled={!chord.external_link}
+            activeOpacity={0.7}
+          >
+            <Text style={sty.pillBtnTxt}>Vídeo</Text>
+          </TouchableOpacity>
 
-            <View style={sty.divider} />
-
-            <View style={sty.ctrlGroup}>
-              <Text style={sty.ctrlLabel}>VÍDEO</Text>
-              <TouchableOpacity
-                style={[sty.toggleBtn, !chord.external_link && { opacity: 0.3 }]}
-                onPress={openYoutube}
-                disabled={!chord.external_link}
-                activeOpacity={0.7}
-              >
-                <Ionicons name="logo-youtube" size={18} color={chord.external_link ? '#ffffff' : colors.textSub} />
-              </TouchableOpacity>
-            </View>
-            
-            <View style={sty.divider} />
-
-            <View style={sty.ctrlGroup}>
-              <Text style={sty.ctrlLabel}>EDITAR</Text>
-              <TouchableOpacity style={sty.toggleBtn} onPress={openEdit} activeOpacity={0.7}>
-                <Ionicons name="pencil" size={18} color={colors.textSub} />
-              </TouchableOpacity>
-            </View>
-
-          </View>
+          {/* Opção Editar */}
+          <TouchableOpacity
+            style={sty.pillBtn}
+            onPress={openEdit}
+            activeOpacity={0.7}
+          >
+            <Text style={sty.pillBtnTxt}>Editar</Text>
+          </TouchableOpacity>
         </View>
 
-        {/* cifra */}
+        {/* Cifra */}
         <ChordDisplay
           lyrics={chord.lyrics} semitones={semitones}
           showLyrics={showLyrics} fontSize={fontSize} colors={colors}
@@ -276,7 +281,58 @@ export default function ChordScreen() {
         </Pressable>
       </Modal>
 
+      {/* Modal de Tamanho de Fonte */}
+      <Modal visible={fontModal} transparent animationType="fade" onRequestClose={() => setFontModal(false)}>
+        <Pressable style={sty.modalBackdrop} onPress={() => setFontModal(false)}>
+          <Pressable style={sty.modalCard} onPress={e => e.stopPropagation()}>
+            <Text style={sty.modalTitle}>Tamanho da Fonte</Text>
+            
+            <View style={sty.fontPreviewWrap}>
+              <Text style={[sty.fontPreviewText, { fontSize, color: colors.accent }]}>Exemplo de Cifra [G7M]</Text>
+              <Text style={sty.fontSizeDisplay}>{fontSize} pt</Text>
+            </View>
 
+            <View style={sty.fontSizeStepper}>
+              <TouchableOpacity 
+                style={sty.fontStepBtn} 
+                onPress={() => changeFont(-1)}
+                disabled={fontSize <= MIN_FONT}
+                activeOpacity={0.7}
+              >
+                <Text style={sty.fontStepTxt}>−</Text>
+              </TouchableOpacity>
+
+              <View style={sty.fontPresetsRow}>
+                {[12, 14, 16, 18, 20, 22].map(size => (
+                  <TouchableOpacity
+                    key={size}
+                    style={[sty.fontPresetCell, fontSize === size && sty.fontPresetActive]}
+                    onPress={() => setSpecificFont(size)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[sty.fontPresetTxt, fontSize === size && sty.fontPresetTxtActive]}>
+                      {size}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <TouchableOpacity 
+                style={sty.fontStepBtn} 
+                onPress={() => changeFont(1)}
+                disabled={fontSize >= MAX_FONT}
+                activeOpacity={0.7}
+              >
+                <Text style={sty.fontStepTxt}>+</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity style={sty.fontCloseBtn} onPress={() => setFontModal(false)} activeOpacity={0.8}>
+              <Text style={sty.fontCloseBtnTxt}>Concluir</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
     </SafeAreaView>
   );
@@ -292,7 +348,7 @@ function makeStyles(c: any) {
     songTitle: { fontSize: 22, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 6 },
     metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
     artist: { fontSize: 14, color: c.textSub, fontFamily: 'Inter_400Regular' },
-    infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+    infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
     infoChip: {
       flexDirection: 'row', alignItems: 'center', gap: 6,
       backgroundColor: c.input, borderRadius: 16,
@@ -306,44 +362,118 @@ function makeStyles(c: any) {
       borderRadius: 20, borderWidth: 1, borderColor: c.accent,
     },
     toneText: { fontSize: 13, fontFamily: 'Inter_700Bold' },
-    audioBtn: {
-      flexDirection: 'row', alignItems: 'center', gap: 4,
-      paddingHorizontal: 10, paddingVertical: 3,
-      borderRadius: 20, borderWidth: 1, borderColor: c.accent,
-    },
-    audioBtnTxt: { fontSize: 12, fontFamily: 'Inter_600SemiBold' },
 
-    controlsWrap: {
-      marginBottom: 24, gap: 8,
+    // Barra de Opções Compacta (Estilo Imagem)
+    compactActionsWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      flexWrap: 'wrap',
+      gap: 10,
+      marginBottom: 20,
     },
-    controls: {
-      flexDirection: 'row', alignItems: 'center',
-      gap: 16,
-      paddingVertical: 14, paddingHorizontal: 16,
-      borderRadius: 14, borderWidth: 1, borderColor: c.border,
+    pillBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: c.card,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: c.border,
     },
-    ctrlGroup: { alignItems: 'center', gap: 5 },
-    ctrlLabel: { fontSize: 9, color: c.textSub, letterSpacing: 0.8, fontFamily: 'Inter_500Medium' },
-    btnRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-    roundBtn: {
-      width: 28, height: 28, borderRadius: 14,
-      backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center',
+    pillBtnInactive: {
+      opacity: 0.5,
     },
-    roundBtnTxt: { color: '#ffffff', fontSize: 17, fontFamily: 'Inter_700Bold', lineHeight: 22 },
-    ctrlVal: { fontSize: 14, fontFamily: 'Inter_600SemiBold', color: c.text, minWidth: 24, textAlign: 'center' },
-    divider: { width: 1, height: 32, backgroundColor: c.border },
-    toggleBtn: {
-      alignItems: 'center', justifyContent: 'center',
-      width: 44, height: 44, borderRadius: 22,
+    pillBtnTxt: {
+      fontSize: 14,
+      fontFamily: 'Inter_600SemiBold',
+      color: c.text,
+    },
+
+    // Modal de Tamanho de Fonte
+    fontPreviewWrap: {
+      alignItems: 'center',
+      paddingVertical: 14,
+      marginBottom: 16,
       backgroundColor: c.input,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.border,
     },
-    toggleBtnOn: { backgroundColor: c.accent },
-    resetBtn: {
-      alignSelf: 'flex-start',
-      paddingHorizontal: 12, paddingVertical: 6,
-      borderRadius: 8, borderWidth: 1, borderColor: c.accent,
+    fontPreviewText: {
+      fontFamily: 'Inter_600SemiBold',
+      marginBottom: 6,
     },
-    resetTxt: { fontSize: 12 },
+    fontSizeDisplay: {
+      fontSize: 13,
+      color: c.textSub,
+      fontWeight: '500',
+    },
+    fontSizeStepper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      marginBottom: 20,
+    },
+    fontStepBtn: {
+      width: 38,
+      height: 38,
+      borderRadius: 10,
+      backgroundColor: c.input,
+      borderWidth: 1,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    fontStepTxt: {
+      color: c.text,
+      fontSize: 20,
+      fontWeight: '700',
+      lineHeight: 22,
+    },
+    fontPresetsRow: {
+      flexDirection: 'row',
+      gap: 6,
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      flex: 1,
+    },
+    fontPresetCell: {
+      width: 34,
+      height: 34,
+      borderRadius: 8,
+      backgroundColor: c.input,
+      borderWidth: 1,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    fontPresetActive: {
+      backgroundColor: c.accent,
+      borderColor: c.accent,
+    },
+    fontPresetTxt: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: c.text,
+    },
+    fontPresetTxtActive: {
+      color: '#ffffff',
+      fontWeight: '700',
+    },
+    fontCloseBtn: {
+      backgroundColor: c.accent,
+      paddingVertical: 12,
+      borderRadius: 12,
+      alignItems: 'center',
+    },
+    fontCloseBtnTxt: {
+      color: '#ffffff',
+      fontWeight: '700',
+      fontSize: 15,
+    },
 
     navRow: {
       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -355,16 +485,17 @@ function makeStyles(c: any) {
     navCounter: { fontSize: 13, color: c.textSub, fontFamily: 'Inter_400Regular' },
 
     modalBackdrop: {
-      flex: 1, backgroundColor: 'rgba(0,0,0,0.4)',
+      flex: 1, backgroundColor: 'rgba(0,0,0,0.65)',
       justifyContent: 'center', alignItems: 'center', padding: 24,
     },
     modalCard: {
-      backgroundColor: c.card, borderRadius: 16, padding: 20,
+      backgroundColor: c.card, borderRadius: 20, padding: 22,
       width: '100%', maxWidth: 360,
       borderWidth: 1, borderColor: c.border,
+      elevation: 12,
     },
     modalTitle: {
-      fontSize: 16, fontFamily: 'Inter_700Bold', color: c.text,
+      fontSize: 18, fontFamily: 'Inter_700Bold', color: c.text,
       marginBottom: 16, textAlign: 'center',
     },
     toneGrid: {
@@ -387,10 +518,5 @@ function makeStyles(c: any) {
       borderRadius: 8, borderWidth: 1, borderColor: c.accent,
     },
     modalResetTxt: { fontSize: 13, color: c.accent, fontFamily: 'Inter_500Medium' },
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-    modalBox: { backgroundColor: c.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 24, flex: 1, marginTop: 40 },
-    inputLabel: { fontSize: 13, color: c.textSub, marginTop: 12, marginBottom: 4, fontWeight: '600' },
-    input: { backgroundColor: c.input, borderRadius: 10, padding: 12, fontSize: 15, color: c.text, borderWidth: 1, borderColor: c.border },
-    saveBtn: { padding: 16, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center', marginTop: 20 },
   });
 }

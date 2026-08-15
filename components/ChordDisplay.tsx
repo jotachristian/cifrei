@@ -212,65 +212,143 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
     );
   };
 
-  const nodes: React.ReactNode[] = [];
-  let i = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    if (!line.trim()) {
-      nodes.push(<View key={i} style={{ height: Math.round(fontSize * 0.8) }} />);
-      i++; continue;
-    }
-
-    if (isSectionLine(line)) {
-      const label = line.trim().slice(1, -1).toUpperCase();
-      nodes.push(
-        <View key={i} style={{ marginTop: 14, marginBottom: 6 }}>
-          <Text style={{ fontSize: fontSize - 2, fontFamily: 'Inter_700Bold', color: '#475569', letterSpacing: 1.2 }}>
-            {label}
-          </Text>
-          <View style={{ height: 1, backgroundColor: colors.border, marginTop: 3 }} />
-        </View>
-      );
-      i++; continue;
-    }
-
-    if (isChordLine(line)) {
-      // remove [ ] se houver, preservando colunas
-      const chordLine = unwrapChordBrackets(line) ?? line;
-      const next = lines[i + 1];
-      const hasLyric = next !== undefined && next.trim() !== '' && !isChordLine(next) && !isSectionLine(next);
-
-      if (hasLyric) {
-        if (showLyrics) {
-          // letras visíveis → mostra acordes + letra (view normal)
-          nodes.push(renderPair(chordLine, next, i));
-        } else {
-          // letras ocultas → acordes compactos, cada um tocavel
-          nodes.push(renderCompactLine(chordLine, i));
-        }
-        i += 2;
-      } else {
-        // linha de acorde sem letra abaixo: sempre mostra compacto
-        nodes.push(renderCompactLine(chordLine, i));
-        i++;
-      }
-      continue;
-    }
-
-    // linha de letra pura — só aparece quando letras estão visíveis
-    if (showLyrics) {
-      nodes.push(
-        <Text key={i} style={{ fontSize, color: colors.text, lineHeight, fontFamily: 'Inter_400Regular' }}>
-          {line}
-        </Text>
-      );
-    }
-    i++;
+  // ── Seções estruturadas com cores de fundo harmoniosas ───────────────────
+  interface SectionBlock {
+    title: string | null;
+    isChorus: boolean;
+    lines: string[];
   }
 
-  return <View>{nodes}</View>;
+  const rawLines = lyrics.split('\n');
+  const sections: SectionBlock[] = [];
+  let currentSection: SectionBlock = {
+    title: null,
+    isChorus: false,
+    lines: [],
+  };
+
+  for (let idx = 0; idx < rawLines.length; idx++) {
+    const l = rawLines[idx];
+    if (isSectionLine(l)) {
+      if (currentSection.lines.length > 0 || currentSection.title !== null) {
+        sections.push(currentSection);
+      }
+      const rawTitle = l.trim();
+      const lower = rawTitle.toLowerCase();
+      const isChorus = lower.includes('refr') || lower.includes('chorus') || lower.includes('ponte') || lower.includes('bridge');
+      currentSection = {
+        title: rawTitle, // Mantém exatamente como vem do banco, ex: "[Intro]"
+        isChorus,
+        lines: [],
+      };
+    } else {
+      currentSection.lines.push(l);
+    }
+  }
+  if (currentSection.lines.length > 0 || currentSection.title !== null) {
+    sections.push(currentSection);
+  }
+
+  const renderSectionContent = (secLines: string[], secKey: number) => {
+    const secNodes: React.ReactNode[] = [];
+    let j = 0;
+
+    while (j < secLines.length) {
+      const line = secLines[j];
+
+      if (!line.trim()) {
+        secNodes.push(<View key={`empty-${j}`} style={{ height: Math.round(fontSize * 0.6) }} />);
+        j++;
+        continue;
+      }
+
+      if (isChordLine(line)) {
+        const chordLine = unwrapChordBrackets(line) ?? line;
+        const next = secLines[j + 1];
+        const hasLyric = next !== undefined && next.trim() !== '' && !isChordLine(next) && !isSectionLine(next);
+
+        if (hasLyric) {
+          if (showLyrics) {
+            secNodes.push(renderPair(chordLine, next, j));
+          } else {
+            secNodes.push(renderCompactLine(chordLine, j));
+          }
+          j += 2;
+        } else {
+          secNodes.push(renderCompactLine(chordLine, j));
+          j++;
+        }
+        continue;
+      }
+
+      // Linha de letra pura
+      if (showLyrics) {
+        secNodes.push(
+          <Text key={`lyric-${j}`} style={{ fontSize, color: colors.text, lineHeight, fontFamily: 'Inter_400Regular' }}>
+            {line}
+          </Text>
+        );
+      }
+      j++;
+    }
+
+    return secNodes;
+  };
+
+  return (
+    <View style={{ gap: 14 }}>
+      {sections.map((sec, secIdx) => {
+        // Cores em tons sutis de cinza harmoniosos com o tema
+        const isDark = colors.bg !== '#ffffff' && colors.bg !== '#f5f5f7';
+        
+        const bgColor = sec.isChorus
+          ? (isDark ? '#1a1b20' : '#ececef') // Refrão: tom de cinza ligeiramente destacado
+          : (isDark ? '#151619' : '#f4f4f7'); // Estrofe / Intro: tom de cinza suave
+
+        const borderColor = sec.isChorus
+          ? (isDark ? '#2a2c34' : '#dedee5')
+          : (isDark ? '#212328' : '#e7e7ed');
+
+        const titleColor = sec.isChorus
+          ? colors.accent
+          : colors.textSub;
+
+        return (
+          <View
+            key={`sec-${secIdx}`}
+            style={{
+              backgroundColor: bgColor,
+              borderRadius: 14,
+              paddingVertical: 12,
+              paddingHorizontal: 14,
+              borderWidth: 1,
+              borderColor: borderColor,
+            }}
+          >
+            {/* Nome da Sessão (Ex: [Intro], [Refrão]) em cinza clarinho sem bold */}
+            {sec.title ? (
+              <View style={{ marginBottom: 10, paddingBottom: 6, borderBottomColor: borderColor }}>
+                <Text
+                  style={{
+                    fontSize,
+                    fontFamily: 'Inter_400Regular',
+                    color: isDark ? '#fefeffff' : '#fe7b04',
+                  }}
+                >
+                  {sec.title}
+                </Text>
+              </View>
+            ) : null}
+
+            {/* Conteúdo da Sessão (Acordes e Letras) */}
+            <View>
+              {renderSectionContent(sec.lines, secIdx)}
+            </View>
+          </View>
+        );
+      })}
+    </View>
+  );
 }
 
 export default React.memo(ChordDisplay);

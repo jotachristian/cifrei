@@ -1,286 +1,1753 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import {
+  View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity,
+  TextInput, KeyboardAvoidingView, Platform, Alert, Modal, Keyboard
+} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getChord, updateChord, Chord } from '@/lib/database';
+import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord } from '@/lib/database';
+import { MAJOR_TONES, MINOR_TONES } from '@/lib/transpose';
+
+// Tabela de Campo Harmônico para o Teclado de Acordes
+const HARMONIC_FIELDS: Record<string, string[]> = {
+  'C': ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'B°'],
+  'C#': ['C#', 'D#m', 'E#m', 'F#', 'G#', 'A#m', 'B#°'],
+  'D': ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#°'],
+  'D#': ['D#', 'Fm', 'Gm', 'G#', 'A#', 'Cm', 'D°'],
+  'E': ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#°'],
+  'F': ['F', 'Gm', 'Am', 'Bb', 'C', 'Dm', 'E°'],
+  'F#': ['F#', 'G#m', 'A#m', 'B', 'C#', 'D#m', 'E#°'],
+  'G': ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#°'],
+  'G#': ['G#', 'A#m', 'Cm', 'C#', 'D#', 'Fm', 'G°'],
+  'A': ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#°'],
+  'A#': ['A#', 'Cm', 'Dm', 'D#', 'F', 'Gm', 'A°'],
+  'B': ['B', 'C#m', 'D#m', 'E', 'F#', 'G#m', 'A#°'],
+  // Menores
+  'Am': ['Am', 'B°', 'C', 'Dm', 'Em', 'F', 'G', 'E7'],
+  'Em': ['Em', 'F#°', 'G', 'Am', 'Bm', 'C', 'D', 'B7'],
+  'Bm': ['Bm', 'C#°', 'D', 'Em', 'F#m', 'G', 'A', 'F#7'],
+  'F#m': ['F#m', 'G#°', 'A', 'Bm', 'C#m', 'D', 'E', 'C#7'],
+  'C#m': ['C#m', 'D#°', 'E', 'F#m', 'G#m', 'A', 'B', 'G#7'],
+  'Dm': ['Dm', 'E°', 'F', 'Gm', 'Am', 'Bb', 'C', 'A7'],
+  'Gm': ['Gm', 'A°', 'Bb', 'Cm', 'Dm', 'Eb', 'F', 'D7'],
+  'Cm': ['Cm', 'D°', 'Eb', 'Fm', 'Gm', 'Ab', 'Bb', 'G7'],
+  'Fm': ['Fm', 'G°', 'Ab', 'Bbm', 'Cm', 'Db', 'Eb', 'C7'],
+};
+
+function getChordVariations(baseChord: string): string[] {
+  const root = baseChord.replace(/[°m794susdim]/g, '').trim() || 'C';
+  const isMinor = baseChord.includes('m') && !baseChord.includes('maj');
+  
+  if (isMinor) {
+    return [
+      baseChord,
+      `${root}m7`,
+      `${root}m9`,
+      `${root}m7(9)`,
+      `${root}m6`,
+      `${root}m(7M)`,
+      `${root}m7(11)`,
+      `${root}°`,
+      `${root}m7(b5)`,
+      root,
+      `${root}7`,
+      `${root}4`,
+    ];
+  }
+
+  return [
+    baseChord,
+    `${root}7M`,
+    `${root}7`,
+    `${root}9`,
+    `${root}7(9)`,
+    `${root}6`,
+    `${root}4`,
+    `${root}7(4/9)`,
+    `${root}add9`,
+    `${root}sus4`,
+    `${root}dim`,
+    `${root}m`,
+    `${root}m7`,
+  ];
+}
+
+interface SectionItem {
+  id: string;
+  title: string;
+  content: string;
+}
+
+function parseLyricsToSections(rawLyrics: string): SectionItem[] {
+  if (!rawLyrics.trim()) {
+    return [{ id: 'sec-0', title: '[Parte 1]', content: '' }];
+  }
+
+  const lines = rawLyrics.split('\n');
+  const result: SectionItem[] = [];
+  let curTitle = '[Parte 1]';
+  let curLines: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const l = lines[i];
+    const trimmed = l.trim();
+    if (/^\[.+\]$/.test(trimmed)) {
+      if (curLines.length > 0 || result.length > 0) {
+        result.push({
+          id: `sec-${result.length}`,
+          title: curTitle,
+          content: curLines.join('\n'),
+        });
+      }
+      curTitle = trimmed;
+      curLines = [];
+    } else {
+      curLines.push(l);
+    }
+  }
+
+  result.push({
+    id: `sec-${result.length}`,
+    title: curTitle,
+    content: curLines.join('\n'),
+  });
+
+  return result.length > 0 ? result : [{ id: 'sec-0', title: '[Parte 1]', content: '' }];
+}
+
+function compileSectionsToLyrics(secs: SectionItem[]): string {
+  return secs
+    .map(s => {
+      const trimmedContent = s.content.trim();
+      return `${s.title}${trimmedContent ? '\n' + trimmedContent : ''}`;
+    })
+    .join('\n\n');
+}
 
 export default function ChordEditScreen() {
-  const { id, playlistId } = useLocalSearchParams<{ id: string; playlistId?: string }>();
+  const { id, playlistId } = useLocalSearchParams<{ id?: string; playlistId?: string }>();
   const { colors } = useTheme();
   const router = useRouter();
 
+  const isEditing = Boolean(id);
+
+  // Navegação:
+  // Step 1: Substep 1 (Música/Artista) | Substep 2 (Tom, Capo -12 a +12, Timbres, Anotações)
+  // Step 2: Substep 1 (Letras & Sessões Geral) | Substep 2 (Cifras Fatiada por Sessão)
   const [step, setStep] = useState<1 | 2>(1);
-  const [chord, setChord] = useState<Chord | null>(null);
+  const [subStep, setSubStep] = useState<1 | 2>(1);
 
   // Form states
   const [name, setName] = useState('');
   const [artist, setArtist] = useState('');
-  const [tone, setTone] = useState('');
-  const [externalLink, setExternalLink] = useState('');
+  const [tone, setTone] = useState('G');
+  const [toneModal, setToneModal] = useState(false);
+  const [toneTab, setToneTab] = useState<'major' | 'minor'>('major');
+
+  // Capotraste / Transposição (-12 a +12)
+  const [hasCapo, setHasCapo] = useState(false);
+  const [capoFret, setCapoFret] = useState(0);
+
+  // Timbres e Estilos
+  const [hasTimbres, setHasTimbres] = useState(false);
+  const [timbreText, setTimbreText] = useState('');
+  const [styleText, setStyleText] = useState('');
+
+  // Anotações e Letra
   const [note, setNote] = useState('');
   const [lyrics, setLyrics] = useState('');
-  const [keyboardBank, setKeyboardBank] = useState('');
-  const [keyboardSlot, setKeyboardSlot] = useState('');
-  const [capo, setCapo] = useState('');
+  const [externalLink, setExternalLink] = useState('');
+
+  // Artista Autocomplete
+  const [showArtistSuggestions, setShowArtistSuggestions] = useState(false);
+
+  // Step 2 - Substep 2: Sessões Fatiadas
+  const [sections, setSections] = useState<SectionItem[]>([]);
+  const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+  const [keyboardMode, setKeyboardMode] = useState<'chords' | 'native'>('chords');
+  const [activeChordForVariations, setActiveChordForVariations] = useState<string | null>(null);
+
+  // Ref e estado do cursor dentro da sessão ativa
+  const [cursorPos, setCursorPos] = useState({ start: 0, end: 0 });
+  const sectionInputRef = useRef<TextInput>(null);
+
+  const existingArtists = useMemo(() => {
+    const all = getAllChords();
+    const unique = Array.from(new Set(all.map(c => c.artist?.trim()).filter(Boolean))) as string[];
+    return unique.sort((a, b) => a.localeCompare(b));
+  }, []);
+
+  const filteredArtists = useMemo(() => {
+    if (!artist.trim()) return existingArtists.slice(0, 5);
+    return existingArtists.filter(a => a.toLowerCase().includes(artist.toLowerCase())).slice(0, 5);
+  }, [artist, existingArtists]);
 
   useEffect(() => {
-    const c = getChord(id);
-    if (c) {
-      setChord(c);
-      setName(c.name);
-      setArtist(c.artist);
-      setTone(c.tone);
-      setExternalLink(c.external_link);
-      setNote(c.note);
-      setLyrics(c.lyrics);
-      setKeyboardBank(c.keyboard_bank ? String(c.keyboard_bank) : '');
-      setKeyboardSlot(c.keyboard_slot ? String(c.keyboard_slot) : '');
-      setCapo(c.capo !== undefined ? (c.capo > 0 ? `+${c.capo}` : String(c.capo)) : '');
+    if (id) {
+      const c = getChord(id);
+      if (c) {
+        setName(c.name);
+        setArtist(c.artist || '');
+        setTone(c.tone || 'G');
+        setToneTab(c.tone?.endsWith('m') ? 'minor' : 'major');
+        setExternalLink(c.external_link || '');
+        setNote(c.note || '');
+        setLyrics(c.lyrics || '');
+        
+        if (c.capo !== undefined && c.capo !== 0) {
+          setHasCapo(true);
+          setCapoFret(c.capo);
+        }
+
+        if (c.keyboard_bank || c.keyboard_slot || c.note?.includes('Style:')) {
+          setHasTimbres(true);
+          setTimbreText(c.keyboard_bank ? `Banco ${c.keyboard_bank}, Slot ${c.keyboard_slot || 1}` : '');
+        }
+      }
     }
   }, [id]);
 
-  const handleSave = () => {
+  const harmonicChords = useMemo(() => {
+    return HARMONIC_FIELDS[tone] || ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'B°'];
+  }, [tone]);
+
+  // Avançar da Subetapa 1 para Subetapa 2 da Etapa 2 (fatia as sessões)
+  function handleGoToSlicedSections() {
+    const parsed = parseLyricsToSections(lyrics);
+    setSections(parsed);
+    setCurrentSectionIndex(0);
+    setSubStep(2);
+  }
+
+  // Atualiza o conteúdo da sessão atual
+  function handleUpdateCurrentSectionContent(text: string) {
+    setSections(prev => {
+      const updated = [...prev];
+      if (updated[currentSectionIndex]) {
+        updated[currentSectionIndex] = {
+          ...updated[currentSectionIndex],
+          content: text,
+        };
+      }
+      return updated;
+    });
+  }
+
+  // Inserir acorde na posição atual do cursor na sessão ativa
+  function handleInsertChordInCurrentSection(chordToInsert: string) {
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection) return;
+
+    const currentText = currentSection.content;
+    const formatted = `${chordToInsert}   `; // Garante espaçamento confortável entre acordes
+    const start = cursorPos.start ?? currentText.length;
+    const end = cursorPos.end ?? currentText.length;
+
+    const newContent = currentText.slice(0, start) + formatted + currentText.slice(end);
+    handleUpdateCurrentSectionContent(newContent);
+    
+    const newPos = start + formatted.length;
+    setCursorPos({ start: newPos, end: newPos });
+  }
+
+  // Inserir espaço(s) na posição do cursor
+  function handleInsertSpace(count = 1) {
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection) return;
+
+    const currentText = currentSection.content;
+    const spaces = ' '.repeat(count);
+    const start = cursorPos.start ?? currentText.length;
+    const end = cursorPos.end ?? currentText.length;
+
+    const newContent = currentText.slice(0, start) + spaces + currentText.slice(end);
+    handleUpdateCurrentSectionContent(newContent);
+
+    const newPos = start + spaces.length;
+    setCursorPos({ start: newPos, end: newPos });
+  }
+
+  // Inserir quebra de linha (Enter)
+  function handleInsertNewline() {
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection) return;
+
+    const currentText = currentSection.content;
+    const start = cursorPos.start ?? currentText.length;
+    const end = cursorPos.end ?? currentText.length;
+
+    const newContent = currentText.slice(0, start) + '\n' + currentText.slice(end);
+    handleUpdateCurrentSectionContent(newContent);
+
+    const newPos = start + 1;
+    setCursorPos({ start: newPos, end: newPos });
+  }
+
+  // Apagar caractere anterior (Backspace)
+  function handleBackspace() {
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection) return;
+
+    const currentText = currentSection.content;
+    const start = cursorPos.start ?? currentText.length;
+    const end = cursorPos.end ?? currentText.length;
+
+    if (start === end && start > 0) {
+      const newContent = currentText.slice(0, start - 1) + currentText.slice(end);
+      handleUpdateCurrentSectionContent(newContent);
+      const newPos = start - 1;
+      setCursorPos({ start: newPos, end: newPos });
+    } else if (start !== end) {
+      const newContent = currentText.slice(0, start) + currentText.slice(end);
+      handleUpdateCurrentSectionContent(newContent);
+      setCursorPos({ start, end: start });
+    }
+  }
+
+  function handleSelectTone(t: string) {
+    setTone(t);
+    setToneModal(false);
+  }
+
+  function handleNextSubStep() {
     if (!name.trim()) {
-      Alert.alert('Erro', 'O título da música é obrigatório.');
+      if (Platform.OS === 'web') {
+        window.alert('O nome da música é obrigatório.');
+      } else {
+        Alert.alert('Atenção', 'O nome da música é obrigatório.');
+      }
       return;
     }
+    setSubStep(2);
+  }
 
-    const parsedBank = parseInt(keyboardBank, 10);
-    const parsedSlot = parseInt(keyboardSlot, 10);
-    const parsedCapo = parseInt(capo, 10);
-
-    const updateData = {
-      name: name.trim(),
-      artist: artist.trim(),
-      tone: tone.trim(),
-      lyrics: lyrics,
-      externalLink: externalLink.trim(),
-      note: note.trim(),
-      keyboard_bank: isNaN(parsedBank) ? undefined : parsedBank,
-      keyboard_slot: isNaN(parsedSlot) ? undefined : parsedSlot,
-      capo: isNaN(parsedCapo) ? undefined : parsedCapo
-    };
-
-    updateChord(id, updateData);
-    router.back();
-  };
-
-  const handleBack = () => {
+  function handleBack() {
     if (step === 2) {
-      setStep(1);
+      if (subStep === 2) {
+        // Sincroniza a letra compilada de volta
+        setLyrics(compileSectionsToLyrics(sections));
+        setSubStep(1);
+      } else {
+        setStep(1);
+        setSubStep(2);
+      }
+    } else if (subStep === 2) {
+      setSubStep(1);
     } else {
       router.back();
     }
-  };
+  }
 
-  if (!chord) {
-    const sty = makeStyles(colors);
-    return (
-      <SafeAreaView style={[sty.container, { backgroundColor: colors.bg }]}>
-        <View style={sty.header}>
-          <Pressable onPress={() => router.back()} style={sty.backBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </Pressable>
-          <Text style={[sty.headerTitle, { color: colors.text }]}>Editar Cifra</Text>
-        </View>
-        <View style={sty.loadingWrap}>
-          <Text style={{ color: colors.textSub }}>Carregando cifra...</Text>
-        </View>
-      </SafeAreaView>
-    );
+  function handleSave() {
+    if (!name.trim()) {
+      Alert.alert('Atenção', 'O nome da música é obrigatório.');
+      return;
+    }
+
+    // Se estiver no modo de sessões fatiadas, compila antes de salvar
+    const finalLyrics = (step === 2 && subStep === 2 && sections.length > 0)
+      ? compileSectionsToLyrics(sections)
+      : lyrics;
+
+    const chordData = {
+      name: name.trim(),
+      artist: artist.trim(),
+      tone: tone,
+      lyrics: finalLyrics,
+      externalLink: externalLink.trim(),
+      note: note.trim(),
+      capo: hasCapo && capoFret !== 0 ? capoFret : undefined,
+    };
+
+    if (isEditing && id) {
+      updateChord(id, chordData);
+      router.back();
+    } else {
+      const newId = createChord(chordData);
+      router.replace({ pathname: '/chord/[id]', params: { id: newId, playlistId } });
+    }
+  }
+
+  function handleDeleteChord() {
+    if (!id) return;
+    const confirmDelete = () => {
+      deleteChord(id);
+      if (playlistId) {
+        router.replace({ pathname: '/playlist/[id]', params: { id: playlistId } });
+      } else {
+        router.replace('/');
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja excluir esta música? Esta ação não pode ser desfeita.')) {
+        confirmDelete();
+      }
+    } else {
+      Alert.alert(
+        'Excluir Música',
+        'Tem certeza que deseja excluir esta música permanentemente? Esta ação não pode ser desfeita.',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { text: 'Excluir', style: 'destructive', onPress: confirmDelete }
+        ]
+      );
+    }
   }
 
   const sty = makeStyles(colors);
+  const currentSection = sections[currentSectionIndex];
 
   return (
     <SafeAreaView style={sty.container}>
-      {/* Header */}
+      {/* Header Superior */}
       <View style={sty.header}>
         <Pressable onPress={handleBack} style={sty.backBtn}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </Pressable>
-        <Text style={sty.headerTitle}>
-          {step === 1 ? 'Passo 1: Detalhes' : 'Passo 2: Letra & Cifras'}
-        </Text>
-        {step === 1 ? (
-          <TouchableOpacity onPress={() => setStep(2)} style={sty.nextHeaderBtn}>
-            <Text style={{ color: colors.accent, fontWeight: '700' }}>Avançar</Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.accent} />
+
+        <View style={sty.stepTitleWrap}>
+          <View style={sty.stepNumberBadge}>
+            <Text style={sty.stepNumberBadgeTxt}>{step}.{subStep}</Text>
+          </View>
+          <Text style={sty.stepTitleText} numberOfLines={1}>
+            {step === 1 
+              ? (isEditing ? 'Editar Cifra' : 'Criar Cifra') 
+              : (subStep === 1 ? 'Letras & Sessões' : 'Cifras nas Sessões')}
+          </Text>
+        </View>
+
+        {isEditing && id ? (
+          <TouchableOpacity onPress={handleDeleteChord} style={sty.deleteHeaderBtn} activeOpacity={0.7}>
+            <Ionicons name="trash-outline" size={20} color="#ef4444" />
           </TouchableOpacity>
         ) : (
-          <TouchableOpacity onPress={handleSave} style={sty.nextHeaderBtn}>
-            <Text style={{ color: colors.accent, fontWeight: '700' }}>Salvar</Text>
-            <Ionicons name="checkmark" size={18} color={colors.accent} />
-          </TouchableOpacity>
+          <View style={{ width: 36 }} />
         )}
       </View>
 
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-        {step === 1 ? (
-          /* STEP 1: Basic Info Form */
-          <ScrollView contentContainerStyle={sty.scrollContent} keyboardShouldPersistTaps="handled">
-            <View style={sty.section}>
-              <Text style={sty.sectionTitle}>Identificação Geral</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          style={{ flex: 1 }}
+          contentContainerStyle={sty.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          automaticallyAdjustKeyboardInsets={true}
+        >
+          
+          {/* =========================================================================
+              ETAPA 1: METADADOS DA CIFRA
+             ========================================================================= */}
+          {step === 1 && (
+            <View style={sty.stepContainer}>
               
-              <Text style={sty.inputLabel}>Título da Música *</Text>
-              <TextInput
-                style={sty.input}
-                placeholder="Ex: Oceans"
-                placeholderTextColor={colors.placeholder}
-                value={name}
-                onChangeText={setName}
-              />
+              {/* --- SUBETAPA 1: Música e Artista --- */}
+              {subStep === 1 && (
+                <View style={sty.card}>
+                  <View style={sty.sectionHeaderRow}>
+                    <Ionicons name="musical-note" size={20} color={colors.accent} />
+                    <Text style={sty.sectionTitle}>Identificação da Música</Text>
+                  </View>
 
-              <Text style={sty.inputLabel}>Artista / Banda</Text>
-              <TextInput
-                style={sty.input}
-                placeholder="Ex: Hillsong United"
-                placeholderTextColor={colors.placeholder}
-                value={artist}
-                onChangeText={setArtist}
-              />
+                  <View style={sty.fieldGroup}>
+                    <Text style={sty.label}>MÚSICA</Text>
+                    <TextInput
+                      style={sty.input}
+                      placeholder="Ex: Te Louvarei, A Casa é Sua..."
+                      placeholderTextColor={colors.placeholder}
+                      value={name}
+                      onChangeText={setName}
+                      autoFocus={!isEditing}
+                    />
+                  </View>
 
-              <Text style={sty.inputLabel}>Link do Vídeo (YouTube)</Text>
-              <TextInput
-                style={sty.input}
-                placeholder="Ex: https://youtube.com/..."
-                placeholderTextColor={colors.placeholder}
-                value={externalLink}
-                onChangeText={setExternalLink}
-                autoCapitalize="none"
-                keyboardType="url"
-              />
+                  <View style={sty.fieldGroup}>
+                    <Text style={sty.label}>ARTISTA</Text>
+                    <TextInput
+                      style={sty.input}
+                      placeholder="Ex: Casa Worship, Gabriela Rocha..."
+                      placeholderTextColor={colors.placeholder}
+                      value={artist}
+                      onChangeText={(t) => {
+                        setArtist(t);
+                        setShowArtistSuggestions(true);
+                      }}
+                      onFocus={() => setShowArtistSuggestions(true)}
+                    />
+
+                    {showArtistSuggestions && filteredArtists.length > 0 && (
+                      <View style={sty.suggestionsBox}>
+                        <Text style={sty.suggestionsHeader}>Artistas no sistema:</Text>
+                        <View style={sty.suggestionsList}>
+                          {filteredArtists.map((art) => (
+                            <TouchableOpacity
+                              key={art}
+                              style={sty.suggestionChip}
+                              onPress={() => { setArtist(art); setShowArtistSuggestions(false); }}
+                              activeOpacity={0.7}
+                            >
+                              <Ionicons name="person-outline" size={13} color={colors.accent} />
+                              <Text style={sty.suggestionChipTxt}>{art}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                  </View>
+
+                  <View style={sty.fieldGroup}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Ionicons name="logo-youtube" size={15} color="#ef4444" />
+                      <Text style={sty.label}>VÍDEO NO YOUTUBE (OPCIONAL)</Text>
+                    </View>
+                    <TextInput
+                      style={sty.input}
+                      placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
+                      placeholderTextColor={colors.placeholder}
+                      value={externalLink}
+                      onChangeText={setExternalLink}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[sty.primaryActionBtn, { opacity: name.trim() ? 1 : 0.5 }]}
+                    onPress={handleNextSubStep}
+                    disabled={!name.trim()}
+                    activeOpacity={0.8}
+                  >
+                    <Text style={sty.primaryActionTxt}>Continuar para o Tom</Text>
+                    <Ionicons name="arrow-forward" size={18} color="#ffffff" />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              {/* --- SUBETAPA 2: Tom, Capo (-12 a +12), Timbres e Anotações --- */}
+              {subStep === 2 && (
+                <View style={sty.card}>
+                  <View style={sty.sectionHeaderRow}>
+                    <Ionicons name="options-outline" size={20} color={colors.accent} />
+                    <Text style={sty.sectionTitle}>Tom e Configurações</Text>
+                  </View>
+
+                  {/* Seletor de Tom Responsivo */}
+                  <View style={sty.fieldGroup}>
+                    <Text style={sty.label}>TOM DA MÚSICA</Text>
+                    <TouchableOpacity
+                      style={sty.toneSelectorRow}
+                      onPress={() => setToneModal(true)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={sty.toneSelectorInfo}>
+                        <Ionicons name="musical-notes" size={18} color={colors.accent} />
+                        <Text style={sty.toneSelectorLabel}>Tom Selecionado</Text>
+                      </View>
+                      
+                      <View style={sty.toneBadgeOfficial}>
+                        <Text style={sty.toneBadgeText}>{tone}</Text>
+                        <Ionicons name="chevron-down" size={14} color={colors.accent} />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Capotraste / Transposição (-12 a +12) */}
+                  <View style={sty.fieldGroup}>
+                    <View style={sty.switchRow}>
+                      <View style={{ flex: 1, paddingRight: 8 }}>
+                        <Text style={sty.switchLabel}>Adicionar Capotraste / Transposição?</Text>
+                        <Text style={sty.switchSub}>Ajuste de afinação de -12 a +12 semitons</Text>
+                      </View>
+                      
+                      <View style={sty.yesNoToggle}>
+                        <TouchableOpacity
+                          style={[sty.yesNoBtn, !hasCapo && sty.yesNoBtnActive]}
+                          onPress={() => { setHasCapo(false); setCapoFret(0); }}
+                        >
+                          <Text style={[sty.yesNoTxt, !hasCapo && sty.yesNoTxtActive]}>Não</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[sty.yesNoBtn, hasCapo && sty.yesNoBtnActive]}
+                          onPress={() => { setHasCapo(true); }}
+                        >
+                          <Text style={[sty.yesNoTxt, hasCapo && sty.yesNoTxtActive]}>Sim</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    {hasCapo && (
+                      <View style={sty.capoStepperWrap}>
+                        <Text style={sty.capoFretDisplay}>
+                          {capoFret === 0 
+                            ? '0 (Original / Sem Capo)' 
+                            : (capoFret > 0 ? `+${capoFret} (${capoFret}ª Casa / Semitons Acima)` : `${capoFret} (${Math.abs(capoFret)} Semitons Abaixo)`)}
+                        </Text>
+                        <View style={sty.stepperRow}>
+                          <TouchableOpacity
+                            style={sty.stepperBtn}
+                            onPress={() => setCapoFret(prev => Math.max(-12, prev - 1))}
+                            disabled={capoFret <= -12}
+                          >
+                            <Text style={sty.stepperTxt}>−</Text>
+                          </TouchableOpacity>
+                          
+                          <Text style={sty.stepperValue}>
+                            {capoFret > 0 ? `+${capoFret}` : capoFret}
+                          </Text>
+
+                          <TouchableOpacity
+                            style={sty.stepperBtn}
+                            onPress={() => setCapoFret(prev => Math.min(12, prev + 1))}
+                            disabled={capoFret >= 12}
+                          >
+                            <Text style={sty.stepperTxt}>+</Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Timbres e Estilos */}
+                  <View style={sty.fieldGroup}>
+                    <View style={sty.switchRow}>
+                      <View style={{ flex: 1, paddingRight: 8 }}>
+                        <Text style={sty.switchLabel}>Timbres e Estilos?</Text>
+                        <Text style={sty.switchSub}>Registros de teclado e ritmos</Text>
+                      </View>
+
+                      <View style={sty.yesNoToggle}>
+                        <TouchableOpacity
+                          style={[sty.yesNoBtn, !hasTimbres && sty.yesNoBtnActive]}
+                          onPress={() => setHasTimbres(false)}
+                        >
+                          <Text style={[sty.yesNoTxt, !hasTimbres && sty.yesNoTxtActive]}>Não</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[sty.yesNoBtn, hasTimbres && sty.yesNoBtnActive]}
+                          onPress={() => setHasTimbres(true)}
+                        >
+                          <Text style={[sty.yesNoTxt, hasTimbres && sty.yesNoTxtActive]}>Sim</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    {hasTimbres && (
+                      <View style={sty.timbresInputsWrap}>
+                        <View style={{ marginBottom: 10 }}>
+                          <Text style={sty.subLabel}>TIMBRES</Text>
+                          <TextInput
+                            style={sty.input}
+                            placeholder="Ex: Piano + Strings, Synth..."
+                            placeholderTextColor={colors.placeholder}
+                            value={timbreText}
+                            onChangeText={setTimbreText}
+                          />
+                        </View>
+
+                        <View>
+                          <Text style={sty.subLabel}>STYLE / RITMO</Text>
+                          <TextInput
+                            style={sty.input}
+                            placeholder="Ex: Pop 8 Beat, 68 BPM..."
+                            placeholderTextColor={colors.placeholder}
+                            value={styleText}
+                            onChangeText={setStyleText}
+                          />
+                        </View>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Anotações Extras */}
+                  <View style={sty.fieldGroup}>
+                    <Text style={sty.label}>ANOTAÇÕES</Text>
+                    <TextInput
+                      style={[sty.input, sty.textArea]}
+                      placeholder="Informações extras, dinâmicas, observações..."
+                      placeholderTextColor={colors.placeholder}
+                      value={note}
+                      onChangeText={setNote}
+                      multiline
+                      numberOfLines={3}
+                    />
+                  </View>
+
+                  {/* Botões de Ação */}
+                  <View style={sty.actionButtonsRow}>
+                    <TouchableOpacity
+                      style={sty.secondaryActionBtn}
+                      onPress={() => setSubStep(1)}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="arrow-back" size={16} color={colors.text} />
+                      <Text style={sty.secondaryActionTxt}>Voltar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={sty.primaryActionBtn}
+                      onPress={() => { setStep(2); setSubStep(1); }}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={sty.primaryActionTxt} numberOfLines={1}>Ir para Letras</Text>
+                      <Ionicons name="arrow-forward" size={16} color="#ffffff" />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Opção de Excluir Música */}
+                  {isEditing && id ? (
+                    <TouchableOpacity
+                      style={sty.deleteDangerBtn}
+                      onPress={handleDeleteChord}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                      <Text style={sty.deleteDangerTxt}>Excluir Esta Música</Text>
+                    </TouchableOpacity>
+                  ) : null}
+                </View>
+              )}
+
             </View>
+          )}
 
-            <View style={sty.section}>
-              <Text style={sty.sectionTitle}>Configurações de Tom & Execução</Text>
+          {/* =========================================================================
+              ETAPA 2: LETRAS E SESSÕES & CIFRAGEM FATIADA
+             ========================================================================= */}
+          {step === 2 && (
+            <View style={sty.stepContainer}>
               
-              <Text style={sty.inputLabel}>Tom Original</Text>
-              <TextInput
-                style={sty.input}
-                placeholder="Ex: G, C#m, F"
-                placeholderTextColor={colors.placeholder}
-                value={tone}
-                onChangeText={setTone}
-              />
+              {/* --- SUBETAPA 1: Letras e Sessões (Inserção Geral com Teclado Nativo) --- */}
+              {subStep === 1 && (
+                <View style={sty.card}>
+                  <View style={sty.sectionHeaderRow}>
+                    <Ionicons name="document-text-outline" size={20} color={colors.accent} />
+                    <Text style={sty.sectionTitle}>Letras e Sessões</Text>
+                  </View>
 
-              <Text style={sty.inputLabel}>Capotraste / Transpose do Teclado (ex: -2, +4)</Text>
-              <TextInput
-                style={sty.input}
-                placeholder="Ex: +2 ou -1"
-                placeholderTextColor={colors.placeholder}
-                value={capo}
-                onChangeText={setCapo}
-                keyboardType="numbers-and-punctuation"
-              />
-            </View>
+                  {/* Tags Rápidas */}
+                  <View style={sty.quickTagsRow}>
+                    {['[Intro]', '[Parte 1]', '[Parte 2]', '[Pré-Refrão]', '[Refrão]', '[Ponte]', '[Solo]', '[Final]'].map((tag) => (
+                      <TouchableOpacity
+                        key={tag}
+                        style={sty.quickTagBtn}
+                        onPress={() => {
+                          setLyrics(prev => prev ? `${prev}\n\n${tag}\n` : `${tag}\n`);
+                        }}
+                      >
+                        <Text style={sty.quickTagTxt}>{tag}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
 
-            <View style={sty.section}>
-              <Text style={sty.sectionTitle}>Timbre do Teclado</Text>
-              <View style={{ flexDirection: 'row', gap: 12 }}>
-                <View style={{ flex: 1 }}>
-                  <Text style={sty.inputLabel}>Banco (1-8)</Text>
                   <TextInput
-                    style={sty.input}
-                    placeholder="Ex: 3"
+                    style={[sty.input, sty.lyricsEditor]}
+                    placeholder={`[Intro]\n(Sua introdução aqui...)\n\n[Parte 1]\nTu, te abeiraste da praia\nNão buscaste nem sábios, nem ricos\n\n[Refrão]\nSenhor, Tu me olhaste nos olhos`}
                     placeholderTextColor={colors.placeholder}
-                    value={keyboardBank}
-                    onChangeText={setKeyboardBank}
-                    keyboardType="number-pad"
+                    value={lyrics}
+                    onChangeText={setLyrics}
+                    multiline
+                    textAlignVertical="top"
                   />
-                </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={sty.inputLabel}>Casa / Slot (1-4)</Text>
-                  <TextInput
-                    style={sty.input}
-                    placeholder="Ex: 2"
-                    placeholderTextColor={colors.placeholder}
-                    value={keyboardSlot}
-                    onChangeText={setKeyboardSlot}
-                    keyboardType="number-pad"
-                  />
-                </View>
-              </View>
-            </View>
 
-            <View style={sty.section}>
-              <Text style={sty.sectionTitle}>Anotações Adicionais</Text>
-              <Text style={sty.inputLabel}>Anotação Oculta (apenas para você)</Text>
-              <TextInput
-                style={sty.input}
-                placeholder="Ex: Introdução dedilhada, fade out no final..."
-                placeholderTextColor={colors.placeholder}
-                value={note}
-                onChangeText={setNote}
-              />
-            </View>
+                  <View style={sty.actionButtonsRow}>
+                    <TouchableOpacity
+                      style={sty.secondaryActionBtn}
+                      onPress={() => { setStep(1); setSubStep(2); }}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="arrow-back" size={16} color={colors.text} />
+                      <Text style={sty.secondaryActionTxt}>Voltar</Text>
+                    </TouchableOpacity>
 
-            <TouchableOpacity style={sty.actionBtn} onPress={() => setStep(2)}>
-              <Text style={sty.actionBtnTxt}>Avançar para Letra e Cifras</Text>
-              <Ionicons name="arrow-forward" size={18} color="#ffffff" style={{ marginLeft: 8 }} />
-            </TouchableOpacity>
-          </ScrollView>
-        ) : (
-          /* STEP 2: Lyrics Editor */
-          <View style={sty.lyricsContent}>
-            <Text style={[sty.inputLabel, { marginHorizontal: 16, marginTop: 12 }]}>Letra com acordes no formato [C], [Am], etc.</Text>
-            <TextInput
-              style={sty.lyricsInput}
-              multiline
-              textAlignVertical="top"
-              placeholder="Digite a letra e cifras aqui..."
-              placeholderTextColor={colors.placeholder}
-              value={lyrics}
-              onChangeText={setLyrics}
-              autoCapitalize="none"
-              autoCorrect={false}
-            />
-            
-            <View style={sty.bottomBtns}>
-              <TouchableOpacity style={sty.backStepBtn} onPress={() => setStep(1)}>
-                <Ionicons name="arrow-back" size={18} color={colors.text} />
-                <Text style={[sty.backStepTxt, { color: colors.text }]}>Voltar ao Passo 1</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={sty.saveBtn} onPress={handleSave}>
-                <Text style={sty.saveBtnTxt}>Salvar Alterações</Text>
-              </TouchableOpacity>
+                    <TouchableOpacity
+                      style={sty.primaryActionBtn}
+                      onPress={handleGoToSlicedSections}
+                      activeOpacity={0.8}
+                    >
+                      <Text style={sty.primaryActionTxt} numberOfLines={1}>Cifrar por Sessão</Text>
+                      <Ionicons name="arrow-forward" size={16} color="#ffffff" />
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
+              {/* --- SUBETAPA 2: Cifras nas Sessões (Apenas a Sessão Selecionada / Fatiada!) --- */}
+              {subStep === 2 && currentSection && (
+                <View style={sty.card}>
+                  <View style={sty.sectionHeaderRow}>
+                    <Ionicons name="musical-notes" size={20} color={colors.accent} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={sty.sectionTitle}>Sessão {currentSectionIndex + 1} de {sections.length}</Text>
+                      <Text style={sty.subStepHelper}>Tom: <Text style={{ color: colors.accent, fontWeight: '700' }}>{tone}</Text></Text>
+                    </View>
+
+                    <TouchableOpacity
+                      style={sty.keyboardToggleBtn}
+                      onPress={() => {
+                        const nextMode = keyboardMode === 'chords' ? 'native' : 'chords';
+                        setKeyboardMode(nextMode);
+                        if (nextMode === 'chords') {
+                          Keyboard.dismiss();
+                        } else {
+                          setTimeout(() => {
+                            sectionInputRef.current?.focus();
+                          }, 50);
+                        }
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons name={keyboardMode === 'chords' ? 'keypad' : 'create-outline'} size={15} color={colors.accent} />
+                      <Text style={sty.keyboardToggleTxt}>
+                        {keyboardMode === 'chords' ? 'Teclado Acordes' : 'Digitar Cifra'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Abas Horizontais das Sessões Fatiadas */}
+                  <View style={sty.sectionNavigationHeader}>
+                    <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={sty.sectionsTabsScroll}>
+                      {sections.map((sec, sIdx) => {
+                        const isCur = sIdx === currentSectionIndex;
+                        return (
+                          <TouchableOpacity
+                            key={sec.id}
+                            style={[sty.sectionTab, isCur && sty.sectionTabActive]}
+                            onPress={() => {
+                              setCurrentSectionIndex(sIdx);
+                              if (keyboardMode === 'chords') {
+                                Keyboard.dismiss();
+                              }
+                            }}
+                          >
+                            <Text style={[sty.sectionTabTxt, isCur && sty.sectionTabTxtActive]}>
+                              {sec.title}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </ScrollView>
+                  </View>
+
+                  {/* Bloco da Sessão Selecionada Exclusivamente */}
+                  <View style={sty.singleSectionCard}>
+                    <View style={sty.singleSectionHeader}>
+                      <Text style={sty.singleSectionTitleText}>{currentSection.title}</Text>
+                      <Text style={sty.singleSectionIndicator}>
+                        {keyboardMode === 'chords' ? 'Modo Acordes (Teclado bloqueado)' : 'Modo Digitação'}
+                      </Text>
+                    </View>
+
+                    <TextInput
+                      ref={sectionInputRef}
+                      style={[sty.input, sty.lyricsEditorInteractive]}
+                      value={currentSection.content}
+                      onChangeText={handleUpdateCurrentSectionContent}
+                      onSelectionChange={(e) => setCursorPos(e.nativeEvent.selection)}
+                      multiline
+                      textAlignVertical="top"
+                      placeholder="Posicione o cursor aqui e toque nos acordes abaixo..."
+                      placeholderTextColor={colors.placeholder}
+                      showSoftInputOnFocus={keyboardMode === 'native'}
+                    />
+                  </View>
+
+                  {/* Navegação Entre Sessões */}
+                  <View style={sty.sectionNavButtonsRow}>
+                    <TouchableOpacity
+                      style={[sty.navSectionBtn, { opacity: currentSectionIndex > 0 ? 1 : 0.4 }]}
+                      onPress={() => setCurrentSectionIndex(prev => Math.max(0, prev - 1))}
+                      disabled={currentSectionIndex <= 0}
+                    >
+                      <Ionicons name="chevron-back" size={16} color={colors.text} />
+                      <Text style={sty.navSectionBtnTxt}>Sessão Anterior</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={[sty.navSectionBtn, { opacity: currentSectionIndex < sections.length - 1 ? 1 : 0.4 }]}
+                      onPress={() => setCurrentSectionIndex(prev => Math.min(sections.length - 1, prev + 1))}
+                      disabled={currentSectionIndex >= sections.length - 1}
+                    >
+                      <Text style={sty.navSectionBtnTxt}>Próxima Sessão</Text>
+                      <Ionicons name="chevron-forward" size={16} color={colors.text} />
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Teclado de Acordes do Campo Harmônico */}
+                  {keyboardMode === 'chords' && (
+                    <View style={sty.chordKeyboardContainer}>
+                      <View style={sty.chordKeyboardHeader}>
+                        <Text style={sty.chordKeyboardTitle}>Acordes no Tom de {tone}:</Text>
+                        <Text style={sty.chordKeyboardSub}>Toque para inserir no cursor ou segure para variações</Text>
+                      </View>
+
+                      <View style={sty.chordsGrid}>
+                        {harmonicChords.map((ch) => (
+                          <TouchableOpacity
+                            key={ch}
+                            style={sty.chordKeyBtn}
+                            onPress={() => handleInsertChordInCurrentSection(ch)}
+                            onLongPress={() => setActiveChordForVariations(ch)}
+                            delayLongPress={250}
+                            activeOpacity={0.7}
+                          >
+                            <Text style={sty.chordKeyTxt}>{ch}</Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+
+                      {/* Barra de Ações Rápidas: Espaço, Tab, Enter e Apagar */}
+                      <View style={sty.keyboardActionsRow}>
+                        <TouchableOpacity
+                          style={sty.spaceBarBtn}
+                          onPress={() => handleInsertSpace(1)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={sty.spaceBarTxt}>␣  Espaço</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={sty.keyActionBtn}
+                          onPress={() => handleInsertSpace(3)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={sty.keyActionTxt}>+3 Espaços</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={sty.keyActionBtn}
+                          onPress={handleInsertNewline}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons name="return-down-back" size={15} color={colors.text} />
+                          <Text style={sty.keyActionTxt}>Enter</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                          style={sty.keyActionBtn}
+                          onPress={handleBackspace}
+                          activeOpacity={0.7}
+                        >
+                          <Ionicons name="backspace-outline" size={15} color={colors.text} />
+                          <Text style={sty.keyActionTxt}>Apagar</Text>
+                        </TouchableOpacity>
+                      </View>
+
+                      {activeChordForVariations && (
+                        <View style={sty.variationsWrap}>
+                          <View style={sty.variationsHeader}>
+                            <Text style={sty.variationsTitle}>Variações de {activeChordForVariations}:</Text>
+                            <TouchableOpacity onPress={() => setActiveChordForVariations(null)}>
+                              <Ionicons name="close-circle" size={18} color={colors.textSub} />
+                            </TouchableOpacity>
+                          </View>
+                          
+                          <View style={sty.variationsGrid}>
+                            {getChordVariations(activeChordForVariations).map((vCh) => (
+                              <TouchableOpacity
+                                key={vCh}
+                                style={sty.variationBtn}
+                                onPress={() => {
+                                  handleInsertChordInCurrentSection(vCh);
+                                  setActiveChordForVariations(null);
+                                }}
+                              >
+                                <Text style={sty.variationTxt}>{vCh}</Text>
+                              </TouchableOpacity>
+                            ))}
+                          </View>
+                        </View>
+                      )}
+                    </View>
+                  )}
+
+                  {/* Botões Finais de Ação */}
+                  <View style={sty.actionButtonsRow}>
+                    <TouchableOpacity
+                      style={sty.secondaryActionBtn}
+                      onPress={handleBack}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="arrow-back" size={16} color={colors.text} />
+                      <Text style={sty.secondaryActionTxt}>Voltar</Text>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                      style={sty.primaryActionBtn}
+                      onPress={handleSave}
+                      activeOpacity={0.8}
+                    >
+                      <Ionicons name="checkmark-circle" size={18} color="#ffffff" />
+                      <Text style={sty.primaryActionTxt} numberOfLines={1}>Salvar Cifra</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              )}
+
             </View>
-          </View>
-        )}
+          )}
+
+        </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Modal de Escolha de Tom */}
+      <Modal visible={toneModal} transparent animationType="fade" onRequestClose={() => setToneModal(false)}>
+        <Pressable style={sty.modalBackdrop} onPress={() => setToneModal(false)}>
+          <Pressable style={sty.modalCard} onPress={e => e.stopPropagation()}>
+            <Text style={sty.modalTitle}>Escolher Tom da Música</Text>
+
+            <View style={sty.modalTabsRow}>
+              <TouchableOpacity
+                style={[sty.modalTab, toneTab === 'major' && sty.modalTabActive]}
+                onPress={() => setToneTab('major')}
+              >
+                <Text style={[sty.modalTabTxt, toneTab === 'major' && sty.modalTabTxtActive]}>
+                  Maiores
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[sty.modalTab, toneTab === 'minor' && sty.modalTabActive]}
+                onPress={() => setToneTab('minor')}
+              >
+                <Text style={[sty.modalTabTxt, toneTab === 'minor' && sty.modalTabTxtActive]}>
+                  Menores
+                </Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={sty.toneGridModal}>
+              {(toneTab === 'major' ? MAJOR_TONES : MINOR_TONES).map((t) => {
+                const isCur = t === tone;
+                return (
+                  <TouchableOpacity
+                    key={t}
+                    style={[sty.toneCellModal, isCur && sty.toneCellModalActive]}
+                    onPress={() => handleSelectTone(t)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={[sty.toneCellModalTxt, isCur && sty.toneCellModalTxtActive]}>
+                      {t}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <TouchableOpacity style={sty.modalCloseBtn} onPress={() => setToneModal(false)}>
+              <Text style={sty.modalCloseBtnTxt}>Fechar</Text>
+            </TouchableOpacity>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
     </SafeAreaView>
   );
 }
 
 function makeStyles(c: any) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: c.bg },
+    container: {
+      flex: 1,
+      backgroundColor: c.bg,
+    },
     header: {
-      flexDirection: 'row', alignItems: 'center', backgroundColor: c.header,
-      paddingHorizontal: 12, paddingVertical: 12, borderBottomWidth: 1, borderColor: c.border
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      borderBottomWidth: 1,
+      borderColor: c.border,
+      backgroundColor: c.bg,
     },
-    backBtn: { width: 40, padding: 4 },
-    headerTitle: {
-      flex: 1, fontSize: 16, fontWeight: '700', color: c.text,
-      textAlign: 'center', marginHorizontal: 8,
+    backBtn: {
+      padding: 6,
     },
-    nextHeaderBtn: { flexDirection: 'row', alignItems: 'center', gap: 2, padding: 4 },
-    loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-    scrollContent: { padding: 16, paddingBottom: 40 },
-    section: { marginBottom: 20 },
-    sectionTitle: { fontSize: 14, fontWeight: '700', color: c.accent, letterSpacing: 0.5, marginBottom: 8, textTransform: 'uppercase' },
-    inputLabel: { fontSize: 13, color: c.textSub, marginBottom: 6, fontWeight: '600' },
-    input: { backgroundColor: c.input, borderRadius: 10, padding: 12, fontSize: 15, color: c.text, borderWidth: 1, borderColor: c.border, marginBottom: 12 },
-    actionBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', backgroundColor: c.accent, padding: 16, borderRadius: 10, marginTop: 12 },
-    actionBtnTxt: { color: '#ffffff', fontWeight: '700', fontSize: 15 },
-    lyricsContent: { flex: 1 },
-    lyricsInput: { flex: 1, backgroundColor: c.input, marginHorizontal: 16, marginTop: 8, marginBottom: 16, borderRadius: 12, padding: 14, fontSize: 15, color: c.text, fontFamily: 'monospace', borderWidth: 1, borderColor: c.border },
-    bottomBtns: { flexDirection: 'row', paddingHorizontal: 16, paddingBottom: 16, gap: 12 },
-    backStepBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: c.border, borderRadius: 10, padding: 14 },
-    backStepTxt: { fontWeight: '700' },
-    saveBtn: { flex: 1.5, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center', borderRadius: 10, padding: 14 },
-    saveBtnTxt: { color: '#ffffff', fontWeight: '700' }
+    stepTitleWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexShrink: 1,
+    },
+    stepNumberBadge: {
+      backgroundColor: c.accent,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      borderRadius: 10,
+    },
+    stepNumberBadgeTxt: {
+      color: '#ffffff',
+      fontSize: 12,
+      fontWeight: '800',
+    },
+    stepTitleText: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: c.text,
+      fontFamily: 'Inter_700Bold',
+      flexShrink: 1,
+    },
+    deleteHeaderBtn: {
+      padding: 6,
+      borderRadius: 8,
+      backgroundColor: 'rgba(239, 68, 68, 0.12)',
+    },
+    deleteDangerBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      paddingVertical: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: 'rgba(239, 68, 68, 0.25)',
+      marginTop: 8,
+      width: '100%',
+    },
+    deleteDangerTxt: {
+      color: '#ef4444',
+      fontWeight: '700',
+      fontSize: 14,
+    },
+    scrollContent: {
+      padding: 16,
+      paddingBottom: 280,
+    },
+    stepContainer: {
+      gap: 14,
+    },
+    card: {
+      borderRadius: 16,
+      padding: 14,
+      gap: 16,
+      width: '100%',
+    },
+    sectionHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingBottom: 10,
+    },
+    sectionTitle: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: c.text,
+      fontFamily: 'Inter_700Bold',
+    },
+    subStepHelper: {
+      fontSize: 12,
+      color: c.textSub,
+      marginTop: 2,
+    },
+    fieldGroup: {
+      gap: 6,
+      width: '100%',
+    },
+    label: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: c.textSub,
+      letterSpacing: 0.8,
+      fontFamily: 'Inter_600SemiBold',
+    },
+    subLabel: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: c.textSub,
+      marginBottom: 4,
+    },
+    input: {
+      backgroundColor: c.input,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 14,
+      color: c.text,
+      borderWidth: 1,
+      borderColor: c.border,
+      width: '100%',
+    },
+    textArea: {
+      minHeight: 65,
+      textAlignVertical: 'top',
+    },
+    lyricsEditor: {
+      minHeight: 260,
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+      fontSize: 14,
+      lineHeight: 22,
+    },
+    lyricsEditorInteractive: {
+      minHeight: 160,
+      fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+      fontSize: 15,
+      lineHeight: 24,
+      borderWidth: 0,
+      backgroundColor: 'transparent',
+      paddingHorizontal: 0,
+    },
+
+    // Seletor de Tom Responsivo
+    toneSelectorRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: c.input,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+      width: '100%',
+    },
+    toneSelectorInfo: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flex: 1,
+    },
+    toneSelectorLabel: {
+      fontSize: 14,
+      fontWeight: '600',
+      color: c.text,
+    },
+    toneBadgeOfficial: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: c.card,
+      paddingHorizontal: 14,
+      paddingVertical: 6,
+      borderRadius: 16,
+      borderWidth: 1.5,
+      borderColor: c.accent,
+    },
+    toneBadgeText: {
+      color: c.accent,
+      fontWeight: '700',
+      fontSize: 15,
+    },
+
+    // Switches Sim / Não com Flex Seguro
+    switchRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      width: '100%',
+    },
+    switchLabel: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: c.text,
+    },
+    switchSub: {
+      fontSize: 11,
+      color: c.textSub,
+      marginTop: 2,
+    },
+    yesNoToggle: {
+      flexDirection: 'row',
+      backgroundColor: c.input,
+      borderRadius: 8,
+      padding: 2,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    yesNoBtn: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 6,
+    },
+    yesNoBtnActive: {
+      backgroundColor: c.accent,
+    },
+    yesNoTxt: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: c.textSub,
+    },
+    yesNoTxtActive: {
+      color: '#ffffff',
+      fontWeight: '700',
+    },
+
+    // Capotraste Stepper (-12 a +12)
+    capoStepperWrap: {
+      marginTop: 6,
+      backgroundColor: c.input,
+      borderRadius: 10,
+      padding: 10,
+      alignItems: 'center',
+      gap: 6,
+      borderWidth: 1,
+      borderColor: c.border,
+      width: '100%',
+    },
+    capoFretDisplay: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: c.accent,
+    },
+    stepperRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 14,
+    },
+    stepperBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 8,
+      backgroundColor: c.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    stepperTxt: {
+      color: c.text,
+      fontSize: 20,
+      fontWeight: '700',
+      lineHeight: 22,
+    },
+    stepperValue: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: c.text,
+      minWidth: 32,
+      textAlign: 'center',
+    },
+
+    // Timbres Inputs
+    timbresInputsWrap: {
+      marginTop: 6,
+      backgroundColor: c.input,
+      borderRadius: 10,
+      padding: 10,
+      borderWidth: 1,
+      borderColor: c.border,
+      width: '100%',
+    },
+
+    // Tags Rápidas de Sessões
+    quickTagsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      width: '100%',
+    },
+    quickTagBtn: {
+      backgroundColor: c.input,
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    quickTagTxt: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: c.accent,
+    },
+
+    // Teclado Toggle
+    keyboardToggleBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: c.input,
+      paddingHorizontal: 8,
+      paddingVertical: 5,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    keyboardToggleTxt: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: c.accent,
+    },
+
+    // Abas de Sessões no Step 2 Substep 2
+    sectionNavigationHeader: {
+      width: '100%',
+    },
+    sectionsTabsScroll: {
+      gap: 6,
+      paddingVertical: 2,
+    },
+    sectionTab: {
+      backgroundColor: c.input,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    sectionTabActive: {
+      backgroundColor: c.accent,
+      borderColor: c.accent,
+    },
+    sectionTabTxt: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: c.textSub,
+    },
+    sectionTabTxtActive: {
+      color: '#ffffff',
+      fontWeight: '700',
+    },
+
+    // Card de Sessão Fatiada Exclusiva
+    singleSectionCard: {
+      backgroundColor: c.input,
+      borderRadius: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+      gap: 8,
+      width: '100%',
+    },
+    singleSectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingBottom: 6,
+      borderBottomWidth: 1,
+      borderColor: c.border,
+    },
+    singleSectionTitleText: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: c.accent,
+    },
+    singleSectionIndicator: {
+      fontSize: 11,
+      color: c.textSub,
+    },
+
+    // Botões de Próxima/Anterior Sessão
+    sectionNavButtonsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      gap: 8,
+    },
+    navSectionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: c.input,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    navSectionBtnTxt: {
+      fontSize: 12,
+      color: c.text,
+      fontWeight: '600',
+    },
+
+    // Teclado de Acordes
+    chordKeyboardContainer: {
+      backgroundColor: c.input,
+      borderRadius: 12,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+      gap: 10,
+      width: '100%',
+    },
+    chordKeyboardHeader: {
+      gap: 2,
+    },
+    chordKeyboardTitle: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: c.text,
+    },
+    chordKeyboardSub: {
+      fontSize: 11,
+      color: c.textSub,
+    },
+    chordsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      justifyContent: 'center',
+      width: '100%',
+    },
+    chordKeyBtn: {
+      width: '22%',
+      paddingVertical: 10,
+      borderRadius: 8,
+      backgroundColor: c.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: c.border,
+      elevation: 2,
+    },
+    chordKeyTxt: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: c.accent,
+    },
+
+    // Ações Rápidas do Teclado (Espaço, Tab, Enter, Apagar)
+    keyboardActionsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 4,
+      width: '100%',
+    },
+    spaceBarBtn: {
+      flex: 2,
+      backgroundColor: c.card,
+      paddingVertical: 10,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: c.accent,
+    },
+    spaceBarTxt: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: c.accent,
+    },
+    keyActionBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      backgroundColor: c.card,
+      paddingVertical: 10,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    keyActionTxt: {
+      fontSize: 11,
+      fontWeight: '600',
+      color: c.text,
+    },
+
+    // Variações
+    variationsWrap: {
+      marginTop: 6,
+      paddingTop: 8,
+      borderTopWidth: 1,
+      borderColor: c.border,
+      gap: 8,
+      width: '100%',
+    },
+    variationsHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    variationsTitle: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: c.text,
+    },
+    variationsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      width: '100%',
+    },
+    variationBtn: {
+      backgroundColor: c.card,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 6,
+      borderWidth: 1,
+      borderColor: c.accent,
+    },
+    variationTxt: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: c.text,
+    },
+
+    // Sugestões de Artistas
+    suggestionsBox: {
+      marginTop: 4,
+      backgroundColor: c.input,
+      borderRadius: 8,
+      padding: 8,
+      borderWidth: 1,
+      borderColor: c.border,
+      gap: 6,
+      width: '100%',
+    },
+    suggestionsHeader: {
+      fontSize: 11,
+      color: c.textSub,
+      fontWeight: '600',
+    },
+    suggestionsList: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      width: '100%',
+    },
+    suggestionChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: c.card,
+      paddingHorizontal: 8,
+      paddingVertical: 4,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    suggestionChipTxt: {
+      fontSize: 12,
+      color: c.text,
+    },
+
+    // Botões de Ação
+    actionButtonsRow: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 6,
+      width: '100%',
+    },
+    primaryActionBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: c.accent,
+      paddingVertical: 12,
+      borderRadius: 10,
+    },
+    primaryActionTxt: {
+      color: '#ffffff',
+      fontWeight: '700',
+      fontSize: 14,
+    },
+    secondaryActionBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 4,
+      backgroundColor: c.input,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    secondaryActionTxt: {
+      color: c.text,
+      fontWeight: '600',
+      fontSize: 13,
+    },
+
+    // Modal de Escolha de Tom
+    modalBackdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.65)',
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 20,
+    },
+    modalCard: {
+      backgroundColor: c.card,
+      borderRadius: 18,
+      padding: 18,
+      width: '100%',
+      maxWidth: 340,
+      borderWidth: 1,
+      borderColor: c.border,
+      elevation: 12,
+      gap: 12,
+    },
+    modalTitle: {
+      fontSize: 16,
+      fontFamily: 'Inter_700Bold',
+      color: c.text,
+      textAlign: 'center',
+    },
+    modalTabsRow: {
+      flexDirection: 'row',
+      backgroundColor: c.input,
+      borderRadius: 8,
+      padding: 3,
+      gap: 4,
+    },
+    modalTab: {
+      flex: 1,
+      paddingVertical: 6,
+      alignItems: 'center',
+      borderRadius: 6,
+    },
+    modalTabActive: {
+      backgroundColor: c.card,
+    },
+    modalTabTxt: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: c.textSub,
+    },
+    modalTabTxtActive: {
+      color: c.accent,
+      fontWeight: '700',
+    },
+    toneGridModal: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      justifyContent: 'center',
+    },
+    toneCellModal: {
+      width: '22%',
+      paddingVertical: 10,
+      borderRadius: 8,
+      backgroundColor: c.input,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    toneCellModalActive: {
+      backgroundColor: c.accent,
+      borderColor: c.accent,
+    },
+    toneCellModalTxt: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: c.text,
+    },
+    toneCellModalTxtActive: {
+      color: '#ffffff',
+    },
+    modalCloseBtn: {
+      backgroundColor: c.input,
+      paddingVertical: 10,
+      borderRadius: 10,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+      marginTop: 4,
+    },
+    modalCloseBtnTxt: {
+      color: c.text,
+      fontWeight: '600',
+      fontSize: 13,
+    },
   });
 }

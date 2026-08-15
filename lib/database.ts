@@ -109,6 +109,8 @@ export function getPlaylists(): Playlist[] {
   });
 }
 
+export const getAllPlaylists = getPlaylists;
+
 export function getPlaylist(id: string): Playlist | null {
   return playlists.find(p => p.id === id) || null;
 }
@@ -136,14 +138,19 @@ export function updatePlaylist(id: string, name: string, description: string): v
 }
 
 export function deletePlaylist(id: string): void {
+  const linksToDelete = playlist_chords.filter(l => l.playlist_id === id);
   playlists = playlists.filter(p => p.id !== id);
   playlist_chords = playlist_chords.filter(l => l.playlist_id !== id);
   saveToCache();
   notify();
 
-  deleteDoc(doc(db, 'playlists', id));
-  playlist_chords.filter(l => l.playlist_id === id).forEach(l => {
-    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`));
+  deleteDoc(doc(db, 'playlists', id)).catch(err => {
+    console.warn('Firestore deletePlaylist warn:', err);
+  });
+  linksToDelete.forEach(l => {
+    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`)).catch(err => {
+      console.warn('Firestore delete link warn:', err);
+    });
   });
 }
 
@@ -173,20 +180,43 @@ export function searchChords(query: string): ChordWithPlaylist[] {
   }).sort((a, b) => a.name.localeCompare(b.name));
 }
 
+function cleanFirestoreDoc(obj: Record<string, any>): Record<string, any> {
+  const clean: Record<string, any> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== undefined) {
+      clean[k] = v;
+    }
+  }
+  return clean;
+}
+
 export function getTotalCount(): number {
   return chords.length;
 }
 
 export function createChord(data: { name: string; artist: string; tone: string; lyrics: string; externalLink?: string; note?: string; keyboard_bank?: number; keyboard_slot?: number; capo?: number; }): string {
   const id = genId();
-  const c: Chord & { _secret: string } = {
-    id, name: data.name, artist: data.artist, tone: data.tone, lyrics: data.lyrics,
-    external_link: data.externalLink || '', tone_offset: 0, note: data.note || '', created_at: Date.now(),
-    keyboard_bank: data.keyboard_bank, keyboard_slot: data.keyboard_slot, capo: data.capo,
-    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  const c: Chord = {
+    id,
+    name: data.name || '',
+    artist: data.artist || '',
+    tone: data.tone || 'C',
+    lyrics: data.lyrics || '',
+    external_link: data.externalLink || '',
+    tone_offset: 0,
+    note: data.note || '',
+    created_at: Date.now(),
+    keyboard_bank: data.keyboard_bank,
+    keyboard_slot: data.keyboard_slot,
+    capo: data.capo,
   };
   chords.push(c);
-  setDoc(doc(db, 'chords', id), c);
+
+  const payload = cleanFirestoreDoc({
+    ...c,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  });
+  setDoc(doc(db, 'chords', id), payload);
   saveToCache();
   notify();
   return id;
@@ -207,12 +237,19 @@ export function updateChord(id: string, data: { name: string; artist: string; to
     saveToCache();
     notify();
   }
-  updateDoc(doc(db, 'chords', id), {
-    name: data.name, artist: data.artist, tone: data.tone, lyrics: data.lyrics,
-    external_link: data.externalLink || '', note: data.note || '',
-    keyboard_bank: data.keyboard_bank ?? null, keyboard_slot: data.keyboard_slot ?? null, capo: data.capo ?? null,
+  const payload = cleanFirestoreDoc({
+    name: data.name,
+    artist: data.artist,
+    tone: data.tone,
+    lyrics: data.lyrics,
+    external_link: data.externalLink || '',
+    note: data.note || '',
+    keyboard_bank: data.keyboard_bank ?? null,
+    keyboard_slot: data.keyboard_slot ?? null,
+    capo: data.capo ?? null,
     _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
   });
+  updateDoc(doc(db, 'chords', id), payload);
 }
 
 export function updateChordNote(id: string, note: string): void {
@@ -237,14 +274,19 @@ export function updateChordLyricsAndNote(id: string, lyrics: string, note: strin
 }
 
 export function deleteChord(id: string): void {
+  const linksToDelete = playlist_chords.filter(l => l.chord_id === id);
   chords = chords.filter(c => c.id !== id);
   playlist_chords = playlist_chords.filter(l => l.chord_id !== id);
   saveToCache();
   notify();
 
-  deleteDoc(doc(db, 'chords', id));
-  playlist_chords.filter(l => l.chord_id === id).forEach(l => {
-    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`));
+  deleteDoc(doc(db, 'chords', id)).catch(err => {
+    console.warn('Firestore deleteChord warn:', err);
+  });
+  linksToDelete.forEach(l => {
+    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`)).catch(err => {
+      console.warn('Firestore delete link warn:', err);
+    });
   });
 }
 

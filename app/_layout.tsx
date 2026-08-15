@@ -5,7 +5,7 @@ import '@/lib/globalFont';
 import { Stack } from 'expo-router';
 import React, { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { initDatabase } from '@/lib/database';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
@@ -71,18 +71,26 @@ export default function RootLayout() {
   if (!fontsLoaded) return null;
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
-      <ThemeProvider>
-        <StatusBar style="dark" backgroundColor="transparent" translucent />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: '#0e0e0f' },
-            animation: 'none',
-            gestureEnabled: false,
-          }}
-        />
-      </ThemeProvider>
+    <ThemeProvider>
+      <RootContent />
+    </ThemeProvider>
+  );
+}
+
+function RootContent() {
+  const { colors, isDark } = useTheme();
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+      <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor="transparent" translucent />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: colors.bg },
+          animation: 'none',
+          gestureEnabled: false,
+        }}
+      />
     </View>
   );
 }
