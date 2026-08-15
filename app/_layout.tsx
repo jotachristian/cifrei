@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 // Aplica Poppins globalmente em todo <Text> (patch do JSX runtime). Precisa vir
 // antes de qualquer outra coisa renderizar — por isso é o primeiro import.
 import '@/lib/globalFont';
@@ -6,7 +7,6 @@ import React, { useEffect } from 'react';
 import * as SplashScreen from 'expo-splash-screen';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { initDatabase } from '@/lib/database';
-import { runLyricsMigrationIfNeeded } from '@/lib/migrateLyrics';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
 import {
@@ -53,8 +53,7 @@ export default function RootLayout() {
     const fallback = setTimeout(hide, 3000);
     (async () => {
       try {
-        initDatabase();
-        await runLyricsMigrationIfNeeded();
+        await initDatabase();
       }
       catch (e) { console.error(e); }
       finally {
@@ -74,7 +73,7 @@ export default function RootLayout() {
   return (
     <View style={{ flex: 1, backgroundColor: '#ffffff' }}>
       <ThemeProvider>
-        <StatusBar style="light" translucent />
+        <StatusBar style="dark" backgroundColor="transparent" translucent />
         <Stack
           screenOptions={{
             headerShown: false,

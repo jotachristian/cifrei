@@ -1,0 +1,2134 @@
+{
+  "version": 2,
+  "exportedAt": "2026-07-20T18:58:21.937Z",
+  "playlists": [
+    {
+      "id": "mnzjc9df3575e",
+      "name": "Primeira Eucaristia",
+      "description": "Catedral - 12/04",
+      "sort_order": 0
+    },
+    {
+      "id": "mo3at2jowi8k7",
+      "name": "3° Dom de Páscoa",
+      "description": "",
+      "sort_order": 1
+    },
+    {
+      "id": "mpd50c5oovhuh",
+      "name": "Missa de Crisma",
+      "description": "Igreja do Rosário 2026",
+      "sort_order": 3
+    },
+    {
+      "id": "mppxpv1ty7sra",
+      "name": "Noite Mariana",
+      "description": "2026",
+      "sort_order": 4
+    },
+    {
+      "id": "mpwzwls93sr71",
+      "name": "Corpus Christ",
+      "description": "2026",
+      "sort_order": 5
+    },
+    {
+      "id": "mq3y9my1crra8",
+      "name": "10° Domingo",
+      "description": "Tempo Comum",
+      "sort_order": 6
+    },
+    {
+      "id": "mqwpsze0hb76x",
+      "name": "Tríduo de São Pedro",
+      "description": "2026",
+      "sort_order": 7
+    },
+    {
+      "id": "mr45xew7z3ba6",
+      "name": "Missa do 14° Domingo",
+      "description": "",
+      "sort_order": 8
+    },
+    {
+      "id": "mr7qimypunxgt",
+      "name": "Missa da Face hoje",
+      "description": "",
+      "sort_order": 9
+    },
+    {
+      "id": "mrs44una9jrst",
+      "name": "Missa de Domingo",
+      "description": "",
+      "sort_order": 10
+    }
+  ],
+  "chords": [
+    {
+      "id": "mnzjezxlvmsg3",
+      "name": "Hoje é dia de Celebração",
+      "artist": "Eliana Ribeiro",
+      "tone": "D",
+      "lyrics": "[Intro]\n\n[Refrão]\n\nD G D G\nD G C A\nD G D G\n\n[Primeira Parte]\n\nF#m G\nEm D \nG G#° A4 A\nF#m G\nEm D \nG G#° A4 A A#°\n\n[Interlúdio]\n\nBm Bm7M Bm7 E7\nG D\nEm A4 A\nG D",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\n\nD G Em A D (Bm A)\n\n[Primeira Parte]\n\n[Interlúdio]\n\nEm A D (Bm A)"
+    },
+    {
+      "id": "mnzjgaj0kxsf2",
+      "name": "Vida Nova",
+      "artist": "Paulus",
+      "tone": "A",
+      "lyrics": "[Refrão]\n\n    A        G#      A\n        F#m    F#      Bm \n          D     E        A   F#m\n         Bm    E        A A7\n          D     E        A F#m\n        Bm     E       A E7\n\n[Primeira parte] \n\n E                  A\n   E                    A\n D        E          A  F#m\n D         E         A\n\n[Segunda parte]\nE                  A\n E                 A\nD       E          A  F#m\nD             E      A E7",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro] E D A E7\n\n[Refrão]\n\nReunidos em nome do pai,\nna alegria de sermos irmãos,\npra celebrar a vida que nasce,\né vida nova é ressurreição! \npra celebrar a vida que nasce,\né vida nova é ressurreição! \n\n[Primeira parte] \n\nJá não existe mais trevas, \no Sol já nasceu no horizonte.\nPra iluminar toda a vida \nde quem beber dessa fonte. \n\n[Segunda parte]\nNovo caminho se abriu \ncom essa ressurreição. \nA vida vencendo a morte \nnos trouxe a libertação."
+    },
+    {
+      "id": "mnzjhiyqz7il1",
+      "name": "Senhor que Vistes Salvar",
+      "artist": "Músicas Católicas",
+      "tone": "E",
+      "lyrics": "[Estrofe]\n\nE A C#m\nA B E E7\n\n[Refrão]\n\nA Am \nE B C#m C#m/B\nA B E",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Estrofe]\n\n[Refrão]"
+    },
+    {
+      "id": "mnzjiybphun7g",
+      "name": "Glória Anjos do Céu",
+      "artist": "Músicas Católicas",
+      "tone": "E",
+      "lyrics": "[Refrão]\n\nE C#m G#m \nA E B\nE C#m G#m\nA B E\n\n[Estrofe]\n\nG# C#m\nF# B\nA B E C#m \nF# B",
+      "external_link": "",
+      "tone_offset": 10,
+      "note": "[Refrão]\n\n[Estrofe]"
+    },
+    {
+      "id": "mnzjkiweg5dm1",
+      "name": "Salmo",
+      "artist": "Músicas Católicas",
+      "tone": "D",
+      "lyrics": "[Refrão]\n      D           A                 G  G D/F# \n Em         G         A4 A        \n\n[Estrofe]\n    G         A            Bm\n   G         A         Bm\n   G         A           Bm\n  G         Em         A\n        G         A            Bm\n  G         Em         A4 A",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "Tom: D\n\n[Refrão]\nDAI GRAÇAS AO SENHOR, PORQUE ELE É BOM;\nETERNA É A SUA MISERICÓRDIA! (BIS)\n\n[Estrofe]\nA CASA DE ISRAEL AGORA O DIGA:\n\"ETERNA É A SUA MISERICÓRDIA!\"\nA CASA DE AARÃO AGORA O DIGA:\n\"ETERNA É A SUA MISERICÓRDIA!\"\nOS QUE TEMEM O SENHOR AGORA O DIGAM:\n\"ETERNA É A SUA MISERICÓRDIA!\""
+    },
+    {
+      "id": "mnzjmazcdd4c6",
+      "name": "Aleluia Aleluia",
+      "artist": "CNBB",
+      "tone": "C",
+      "lyrics": "C                A        Dm\nC          F       C\n   Am       F      G  C",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "Aleluia aleluia, Aleluia Aleluia\nAleluia, aleluia aleuia\nAleluia, aleluia aleuia"
+    },
+    {
+      "id": "mnzjnaxar8nif",
+      "name": "Minha Luz é Jesus",
+      "artist": "Pe. Zezinho",
+      "tone": "E",
+      "lyrics": "[Intro] \nE E7 \nF#m\nA B7 E\n\n[Primeira parte]\n\nE E E B7\nF#m B7\nF#m B7 E E7",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro] \n\n[Primeira parte]"
+    },
+    {
+      "id": "mnzjog27y4o0v",
+      "name": "Preparemos a mesa",
+      "artist": "Paulus",
+      "tone": "E",
+      "lyrics": "E B C#m G#\nA E F# B\n\nE A B7 E\nC#m F#m \nB7 E",
+      "external_link": "https://youtu.be/OQMzzDoSs0g",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mnzjqnisup637",
+      "name": "Cordeiro de Deus",
+      "artist": "Amor e Adoração",
+      "tone": "G",
+      "lyrics": "[Intro]\n\n   G                   Bm7    \n           C9\n         Am7       D       G  \nC/G  D/G\n\n             G         Bm7    \n           C9\n         Am7       D       G  \nC/G  D/G\n\n             G         Bm7    \n           C9\n          Am7     C D G",
+      "external_link": "https://youtu.be/janev45m3K4",
+      "tone_offset": 0,
+      "note": "[Intro]\n\nCordeiro de Deus que tirais o \npecado do mundo\nTende piedade, piedade de nós\n\nCordeiro de Deus que tirais o \npecado do mundo\nTende piedade, piedade de nós\n\nCordeiro de Deus que tirais o \npecado do mundo\nDai-nos a paz, a vossa paz"
+    },
+    {
+      "id": "mnzjsholz8863",
+      "name": "Preparei-te uma mesa",
+      "artist": "Encontro Feliz",
+      "tone": "F",
+      "lyrics": "[Primeira parte]\n\n     F           C\n        Bb         F\n      Dm          Gm\n       Bb        F\n       F7            Bb\n      Bbm         F\n     Dm           Gm\n        Bb       F\n\n[Refrão]\nF                       Dm\n                     Gm\n                          Bb\n      C         F\n\n[Segunda parte]\n     F           C\n       Bb         F\n      Dm          Gm\n       Bb        F\n         F7         Bb\n       Bbm       F\n          Dm              Gm\n        Bb            F ",
+      "external_link": "https://youtu.be/I1ksBZh118I",
+      "tone_offset": 0,
+      "note": "[Primeira parte]\n\nPreparei-te uma mesa\ne fiz dela o teu altar.\nConvidei os pequeninos\npra comigo vir cear.\nSou feliz, fui convidado\ne chamei meus amiguinhos.\nObrigado, Cristo amigo,\n pelo gesto de carinho.\n\n[Refrão]\n  Venham todos, como é bom,\nJesus Cristo nos chamou. \nCom seu corpo e com seu sangue\n ele nos alimentou. (bis)\n\n[Segunda parte]\nEsta mesa é de todos,\npodem nela se sentar.\nQue prazer vê-los unidos\naprendendo a partilhar.\n Não me deixes no egoísmo, \nquero dar e repartir \no que eu tenho e o que eu sou,\npara o irmão fazer sorrir.\n\n3- Eu te dou a minha paz \ne também meu coração. \nUm abraço carinhoso \nna primeira comunhão. \nÓ Senhor, o teu recado ninguém deve esquecer. \nÉs amigo, és companheiro,\nnos ajudas a crescer.\n\n4- Alegria, luz e força,\nneste dia de louvor. \nLevem paz pra toda gente \ne espalhem meu amor.\nGraças damos, Jesus Cristo, \npela nossa comunhão. \nNesta festa e cada dia, \nserás sempre nosso irmão."
+    },
+    {
+      "id": "mnzjutrnxm6aw",
+      "name": "Cristo Ressuscitou",
+      "artist": "CNBB",
+      "tone": "Dm",
+      "lyrics": "[Refrão]\n\nDm C Bb A\nDm C Bb A Dm\n\n[Estrofe]\nC Dm Bb A\nC Dm Gm A Dm",
+      "external_link": "https://youtu.be/nUoUVCenRu0",
+      "tone_offset": 0,
+      "note": "[Refrão]\n\n[Estrofe]"
+    },
+    {
+      "id": "mnzjvsa41i0l7",
+      "name": "Eu creio num mundo novo",
+      "artist": "Músicas Católicas",
+      "tone": "E",
+      "lyrics": "[REFRÃO]\n\nE A B E\nE A B E\n\n[Estrofe] \nA E \nA E\nA E\nF# B",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[REFRÃO]\n\n[Estrofe] "
+    },
+    {
+      "id": "mo3avptdwvkvz",
+      "name": "Cristo Venceu",
+      "artist": "Músicas Católicas",
+      "tone": "A#",
+      "lyrics": "[Refrão]\n          A#      A#° A#\nGm      Dm           F A#\nA#             A#°      A#\nGm        Dm        F A#\n[Estrofe]                                                                                                                             \n         A#             Cm     A#\n           G       A7        Dm \n            C     C7     F  F7 ",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro] A# F7\n\n[Refrão]\nCristo venceu, aleluia,\nressuscitou. Aleluia! \nO Pai lhe deu glória e poder.\nEis nosso canto. Aleluia !                       \n[Estrofe]                                                                                                                             \nEste é o dia em que o amor venceu,\nbrilhante luz iluminou as trevas,\nnós fomos salvos para sempre.                                                                    "
+    },
+    {
+      "id": "mo3bfarz8uu71",
+      "name": "Ato Penitencial",
+      "artist": "Frei Turra",
+      "tone": "Em",
+      "lyrics": "        C D Em\n\n[Estrofe]\nEm C D Em\nG Em D\n\n[Resposta]\nAm G Em\nC D Em",
+      "external_link": "https://youtu.be/3MLv25oBrX4",
+      "tone_offset": 0,
+      "note": "[INTRO] Em D G Bm\n\n[Estrofe]\n\n[Resposta]"
+    },
+    {
+      "id": "mo3brz8gjbr6v",
+      "name": "Glória",
+      "artist": "Canção nova",
+      "tone": "D",
+      "lyrics": "[Intro]\nD A Bm A \n\n[Estrofe]\n\nD F#m Bm A\nD F#m                      Bm  E  A\nD   A        D\n        A                    Bm G A  D\n\n[Estrofe]\nD Bm A F#m\nBm/D C#m Bm E A\n\nD       G        D\nD             Bm      A\nD        A     Bm\nD  A Bm\n\nD G D\nA Bm A \nD",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Estrofe]\n\nGlória a Deus nas Alturas\nGlória a Deus nas Altu  u ras\nE paz na terra\nAos homens por ele amado\n\n[Estrofe]\n\nNós vos louvamos\nNós vos bendizemos\nNós vos adoramos\nNós vos glorificamos"
+    },
+    {
+      "id": "mo3ctotmy09ex",
+      "name": "Glória - Banquete Eterno",
+      "artist": "Shalom",
+      "tone": "C#m",
+      "lyrics": "[Intro] \n\n[Refrão]\n\nC#m A E B\nC#m A E B\nD E A\n\n[Estrofe 1]\n\nC#m A E B\nC#m A E B\nF#m G#m A\nC#m B\n\nA E/G# F#m B\nA E/G# F#m B\nA B E G#\n\nA B C#m\nE A B\nC#m F#m A B",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro] \n\n[Refrão]\n\n[Estrofe 1]\n\nVós que tirais...\n\nSó vois sois o santo..."
+    },
+    {
+      "id": "mo3d5ayqybxta",
+      "name": "Glória",
+      "artist": "Amor e adoração",
+      "tone": "E",
+      "lyrics": "[Refrão]\n\n  E                B9\n  A9               B9\nC#m B9 \nA9 B9\nE B9\nA9 B9\nC#m B9 \nA9 B9\nF#m G#m \nA9\n\n[Estrofe]\nC#m B9\nF#m G#m A9\nB9\nE B9\nA9 B9\nC#m B9 \nA9 B9\nF#m G#m A9\nC#m B9 \nA9 B9\nC#m B9 \nA9 B9 G#\nF#m G#m \nA9 B9\nC#m B9 \nA9 B9 G#\nF#m G#m\nC#m B9 A9\nF#m\nA9 B9 E B9",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Refrão]\n\nGlória a Deus nas alturas\nGlória a Deus nas alturas\nE paz na terra aos homens por \nEle amados\nGlória a Deus nas alturas\nGlória a Deus nas alturas\nE paz na terra aos homens por \nEle amados\nSenhor Deus, Rei dos céus, \nDeus Pai todo poderoso\n\n[Estrofe]\nNós vos adoramos, vos \nglorificamos\nNós vos damos graças por \nvossa imensa glória\nRemover anúncios\nGlória a Deus nas alturas\nGlória a Deus nas alturas\nE paz na terra aos homens por \nEle amados\nSenhor Jesus Cristo, Filho \nUnigênito\nSenhor Deus, Cordeiro de Deus,\n Filho de Deus Pai\nVós que tirais o pecado do \nmundo, tende piedade de nós\nVós que tirais o pecado do \nmundo, acolhei a nossa súplica\nVós que estais à direita do \nPai, tende piedade de nós\nSó vós sois Santo\nSó vós o Altíssimo, Jesus Cristo\nCom o Espírito Santo\nNa glória de Deus Pai amém!"
+    },
+    {
+      "id": "mo3djekkx4mof",
+      "name": "Aclamação",
+      "artist": "Músicas Católicas",
+      "tone": "G",
+      "lyrics": "G G7 C Cm \nG A D D7\n\nG G7 C Cm \nG D D7 G\n\n[Estrofe]\nG D G\nE Am\n\nD     Am\nD7 G",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Estrofe]\n\n    Amor "
+    },
+    {
+      "id": "mo3dv8p55q1n1",
+      "name": "Ofertório",
+      "artist": "CNBB",
+      "tone": "C",
+      "lyrics": "[Primeira Parte] \n Em  B7 \nEm C B7 \nG Am \n D G \nEm Am A#º B7 Em \n\n [Refrão] \nE A \nE F# B7\nE A \n B7 E ",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Primeira Parte] \nBendito sejas \nÓ Rei da glória \nRessuscitado\nSenhor da Igreja\nAqui trazemos as nossas ofer_tas\n\n [Refrão] \nVê com bons olhos \n Nossas humildes ofertas \nTudo o que temos\nSeja pra Ti, ó Senhor"
+    },
+    {
+      "id": "mo3ea1micwais",
+      "name": "Comunhão",
+      "artist": "Padre João Carlos",
+      "tone": "F",
+      "lyrics": "F                    Am      \n    F    Dm      Gm\n                        C    \n                 A#        F  C7\n    F                    Am   \n    F7                 A#\n    Gm                 C      \n        A#         C7         \nF  C7\n\n[Refrão]\nF               Am\n  F7                  A#\nGm             C7\n       Gm       C7        F",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "Andavam pensando tão tristes, \nde Jerusalém a Emaús\nOs dois seguidores de Cristo, \nlogo após o episódio da cruz\nEnquanto assim vão \nconversando, Jesus se chegou \ndevagar\nDe que vocês vão palestrando? \nE ao Senhor não puderam \nenxergar\n\n[Refrão]\nFica conosco, Senhor!\nÉ tarde e a noite já vem!\nFica conosco Senhor\nSomos teus seguidores também"
+    },
+    {
+      "id": "mo3eryuhzej6e",
+      "name": "Final",
+      "artist": "Palestina",
+      "tone": "F",
+      "lyrics": "F Bb F \nF Bb F F7 \n\nBb Bbm\nF Dm\nGm C F F7",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mpd50c5vaqdu1",
+      "name": "Vinde, Ó Espirito Santo",
+      "artist": "Vida Reluz",
+      "tone": "C",
+      "lyrics": "[Intro]\n\nC C7M\n\n[Verso 1]\nC    C7M      Am         Em\n   F           C        Dm      G\nC    C7M      Am         Em\n   F           C        Dm      G\n\n[Verso 2]\nAm               G              C G/B\nF                  Em         Am        Em\n    Dm         Fm      C\n\n[Verso 3]\nAm               G             C C G/B\nF                  Em         Am        Em  \n    Dm         Fm      C\n\n[Verso 4]\nC     C7M            Am                  Em\n   F           C     Dm            G\nC     C7M       Am                   Em\n   F             C     Dm       G\n\n[Verso 5]\nAm                G              C C G/B\nF                  Em           \n   Am                  Em\n         Dm           Fm      C\n\n[Verso 6]\n\nAm                G              C C G/B\nF                  Em           \n   Am                  Em\n         Dm           Fm      C\n         Dm           Fm      C\n         Dm           Fm      C",
+      "external_link": "https://youtu.be/GBq3R-4utbE?si=Gh0Rbiut3yGScCUq",
+      "tone_offset": 9,
+      "note": "[Intro]\n\n[Verso 1]\nVinde,   ó Espírito Santo\nEnchei os corações dos vossos fiéis\nVinde,   ó Espírito Santo\nEnchei os corações dos vossos fiéis\n\n[Verso 2]\nAcendei neles o fogo do vosso amor\n  Enviai o vosso Espírito, e tudo será criado\nE renovareis a face da terra\n\n[Verso 3]\nAcendei neles o fogo do vosso amor\n  Enviai o vosso Espírito, e tudo será criado\nE renovareis a face da terra\n\n[Verso 4]\nDoce (doce), doce Espírito Santo (doce Espírito Santo)\nExemplo quero ser da mãe do meu senhor\nDoce,    doce Espírito Santo (doce Espírito Santo)\nFazei também de mim, morada do senhor\n\n[Verso 5]\nComo um sacrário vivo levando o amor\nRevelando coisas que eu não sei\nMistérios do grande autor\nSe eu o conhecer, por nada eu trocarei\n\n[Verso 6]\n\nComo um sacrário vivo levando o amor\nRevelando coisas que eu não sei\nMistérios do grande autor\nSe eu o conhecer, por nada eu trocarei\nSe eu o conhecer, por nada eu trocarei\nSe eu o conhecer, por nada eu trocarei"
+    },
+    {
+      "id": "mpd50c68j6j4i",
+      "name": "Move-te Em mim",
+      "artist": "Eterna Aliança",
+      "tone": "F",
+      "lyrics": "[Intro]\n\nA# C F C7\n\n[Verso 1]\n     F               A#          F4 F\n     F                 A#         C4 C\n       F            A#\n       F            A#\n       F         A#\n    F          C        F Cm7  F7\n\n[Refrão]\n            A#   C          F  F7\n              A#                C \n              Am7             Dm7\n           Gm \n        C                  F",
+      "external_link": "https://youtu.be/PNYqMQ4_01g?si=uSubzCWV4GJWQhqd",
+      "tone_offset": 9,
+      "note": "[Intro]\n\n[Verso 1]\nO Espírito de Deus está neste lugar\nO Espírito de Deus se move neste lugar\nEstá aqui para consolar\nEstá aqui para libertar\nEstá aqui para guiar\nO Espírito de Deus está aqui\n\n[Refrão]\nMove-te em mim! Move-te em mim!\nToca a minha mente e o meu coração\nEnche a minha vida com o teu amor!\nMove-te em mim!\nDeus Espírito, move-te em mim!"
+    },
+    {
+      "id": "mpd50c6mce8ap",
+      "name": "Vem, Vem, Vem",
+      "artist": "Frei Luiz Turra",
+      "tone": "F",
+      "lyrics": "[Intro]\nGm C F C7\n\n[Refrão]\n F    A#   F\n F                      C7 \n      Gm \n         A#       C     F\n\n[1] \n    F                   F\n   A#           C\n     C             Gm \n       A#       C          F \n\n[2] \n    F                    F\n     A#              C\n   C                Gm \n    A#       C          F \n\n[3] \n    F                  F\n   A#             C\n     C                 Gm \n       A#   C        F \n\n[4] \n    F                   F\n   A#           C\n     C             Gm \n       A#       C       F ",
+      "external_link": "https://youtu.be/-JrW-vAi0jo?si=NZpZruGTGYrB5u7T",
+      "tone_offset": 9,
+      "note": "[Intro]\n\n[Refrão]\nVEM, VEM, VEM,\nVEM ESPÍRITO SANTO DE AMOR.\nVEM A NÓS, \nTRAZ A IGREJA UM NOVO VIGOR.\n\n[1] \nPresente no início do mundo \npresente na criação.\nDo nada geraste a vida\nque a vida não sofra no irmão.\n\n[2] \nPresença de força aos profetas \nque falam sem nada temer, \ncontigo sustentam o povo \nna luta que vão empreender.\n\n[3] \nPresença que gera esperança \nMaria por ti concebeu,\nno povo renasce a confiança \nó Espírito Santo de Deus.\n\n[4] \nPresença com força de vida\npresença de transformação, \ntiraste a vida da morte \nem Cristo, na ressurreição."
+    },
+    {
+      "id": "mpd50c6se5qmz",
+      "name": "Senhor, que Fazeis Passar",
+      "artist": "Arquidiocese de Goiânia",
+      "tone": "D",
+      "lyrics": "[1]\n    D \n                                  A7\n Bbº      Gº      Bm   A4   A7\n\n[2]  \n    D \n                      A7\n Bbº      Gº      Bm   A4   A7\n\n[3] \n    D                                                            A7\n Bbº      Gº      Bm   A4   A7\n\n[Refrão]\n\n    G            A/G       F#m7            Bm    \n    G      A7           G/A  A7     D        Am7     D7",
+      "external_link": "https://youtu.be/q4lN29UQ4lg?si=v43RLeYXy6yzlbeE",
+      "tone_offset": 10,
+      "note": "[1]\nSenhor,  que  fazeis  passar  da  morte \npara  a  vida quem ouve a vossa palavra,\ntende piedade de nós.\n\n[2]  \nCristo,   que   quisestes   ser   levantado   da   terra   \npara   atrair-nos  a vós,  \ntende piedade de nós.\n\n[3] \nSenhor,   que   nos   submeteis   ao   julgamento   da   vossa cruz,\ntende piedade de nós.\n\n[Refrão]\n\nSENHOR, TENDE PIEDADE!/   CRISTO, TENDE PIEDADE DE NÓS! \nSENHOR, PIEDADE,  P I E D A D E DE NÓS! (bis)"
+    },
+    {
+      "id": "mpd50c70e3n5y",
+      "name": "Glória",
+      "artist": "Eliana Ribeiro",
+      "tone": "D",
+      "lyrics": "[Intro]\nD9 C9 G D\n\n[Primeira Parte] \n\n  D9                 C9\n   G\n                     D9  \n    D9        C9\n G                D9\n\n[Ponte 1]\n            Am  D9\n              Am  D9\n            Am  D9\n                Am  D9\n                C9\n     G             D9\n\n[Segunda Parte] \n               C9\n G        D9  D4  D\n    D9           C9\n G             D9\n\n[Ponte 2]\n Am                  G\n C9               D9\n Am                  G\nC9               D9\n Am                  G\n C9               D9\n\n[Refrão]\n               Am  D9\n              Am  D9\n             C9              D9\n E              A\n\n[Final]\n                  G       D9\n                  G       D9\n                  G       D9\n                  G      A D9",
+      "external_link": "https://youtu.be/iDGywihPsKw?si=9loId7W-hnAAofFw",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Primeira Parte] \n\nGlória a Deus nas alturas\nE paz na Terra\nAos homens por Ele amados\nSenhor Deus, rei dos céus\nDeus Pai Todo Poderoso\n\n[Ponte 1]\nNós vos louva__mos\nNós vos bendize__mos\nNós vos adora__mos\nNós vos glorifica__mos\nNós vos damos graças\nPor vossa imensa glória\n\n[Segunda Parte] \nSenhor Jesus Cristo\nFilho Unigênito\nSenhor Deus, Cordeiro de Deus\nFilho de Deus Pai\n\n[Ponte 2]\nVós, que tirais o pecado do mundo\nTende piedade de nós\nVós, que tirais o pecado do mundo\nAcolhei a nossa súplica\nVós, que estais à direita do Pai\nTende piedade de nós\n\n[Refrão]\nSó vós sois o Sa_nto\nSó vós, o Senhor\nSó vós, o Altíssimo, Jesus Cristo\nCom o Espírito Santo\n\n[Final]\nNa glória de Deus   Pai amém!\nNa glória de Deus   Pai amém!\nNa glória de Deus   Pai amém!\nNa glória de Deus   Pai amém!"
+    },
+    {
+      "id": "mpd50c760ljib",
+      "name": "Salmo",
+      "artist": "Salmo do Dia",
+      "tone": "Am",
+      "lyrics": "[Intro]\nAm Dm E Am\n\n[Ref] \nAm Dm E Am\n\n[Estrofe]\nAm E Dm Am\nAm A Dm E\n\n[Sequência de pentecostes]\n\nE E\nE F° F#m\nA B E\n\nE C#\nA \nE A B E",
+      "external_link": "https://youtu.be/s89Hp1Q1OLU?si=5sdn1U7I87kfbavH",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Ref] \n\n[Estrofe]\n\n---------\n\n[Sequência de pentecostes]"
+    },
+    {
+      "id": "mpd50c7fms2lb",
+      "name": "Aclamação",
+      "artist": "Arquidiocese de Goiânia",
+      "tone": "E",
+      "lyrics": "[Intro]\nE B7\n\n[Refrão]\nE  A     B7   E             \nC#m F#m            A    B   E\n\n[Estrofe]\n\nC#m A B E                                                        D     ",
+      "external_link": "https://youtu.be/GjhuGssWcvs?si=aFS9J-OwKOXfMA87",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\nALELUIA, ALELUIA, \nALELUIA,    A L E L U  (U) I A! (BIS)\n\n[Estrofe]"
+    },
+    {
+      "id": "mpd50c7u8pfd5",
+      "name": "Ofertório",
+      "artist": "José Acácio Santana",
+      "tone": "F",
+      "lyrics": "[Intro]\nA# C F C7\n[1]\n   F                       G  \n   A#                 F \n     Dm                    C  \n A#        C         F  F7\n\n[Refrão]\n     A#       C         Am       Dm\n   A#          C      Am        F\n\n[2]\n   F                   G  \n     A#                F \n       Dm               C  \n    A#          C         F    F7\n\n[3] \n   F                  G  \n   A#                F \n    Dm                 C  \n    A#      C        F    F7",
+      "external_link": "https://youtu.be/Drx1IbKxXMo?si=gDwD4AKmDDXYbVKm",
+      "tone_offset": 9,
+      "note": "[Intro]\n[1]\nSenhor, vós que sempre quisestes\nficar muito perto de nós,\npor Cristo que um dia nos destes, \nagora escutai nossa voz. \n\n[Refrão]\nPor vossa bondade, Pai cheio de amor, \nmandai vosso Espírito Santo, Senhor! (bis). \n\n[2]\nPor vossa infinita virtude,  \npor vosso poder fazei isto:\nque a nossa oferenda se mude \nno Corpo e no Sangue de Cristo. \n\n[3] \nO Espírito Santo nos una \ne faça de nós um só corpo.\nna forca do amor nos reúna\nnos dê sua graça de novo. "
+    },
+    {
+      "id": "mpd50c83ew4zx",
+      "name": "O Senhor é Santo",
+      "artist": "Regis Mota",
+      "tone": "D",
+      "lyrics": "[Intro]\n\nD A7\n\n[Parte 1]\n D  A/C#   Bm    A G/B  A/C#  A\n        D       A/C# Bm \n  Em  Em/D  A        F#m\n         Bm\nBm/A G     E/G#   D4 D\n D   A/C#    Bm     A G/B A/C# A\n\n[Parte 2]\n D             G\n    Bm        A\n    G          A\n    Bm        D\n   G   D/F# G   D/F# A D",
+      "external_link": "https://youtu.be/113WKRTefvE?si=KJChbjU9mliOvX0p",
+      "tone_offset": 10,
+      "note": "[Intro]\n\n[Parte 1]\nSan   to,    Santo, Santo!\nSenhor Deus do uni  verso\nO céu e a  terra proclamam\nA vossa glória!\nHo   sana nas alturas, \nSan   to,    Santo, Santo!\n\n[Parte 2]\nBendito o que vem\nEm nome do Senhor\nBendito o que vem\nEm nome do Senhor\nHosa   na   nas al  turas"
+    },
+    {
+      "id": "mpd50c8upfo6u",
+      "name": "Anunciamos Senhor",
+      "artist": "Pe. José Weber",
+      "tone": "A",
+      "lyrics": "[Intro]\nA9 E7\n\n[Estrofe]\n     A9        D           A9\n         G       A             D\n E        D     A4 A",
+      "external_link": "https://youtu.be/FepDTx4kg-4?si=2guRglTNFe_iJ4a1",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Estrofe]\nAnunciamos senhor a vossa morte\nE proclamamos a vossa ressureição\nVinde Senhor Jesus"
+    },
+    {
+      "id": "mpd50c92c3bn5",
+      "name": "Amém",
+      "artist": "Musicas Pra Missa",
+      "tone": "Dm",
+      "lyrics": "[Intro]\n\nDm A\n\n[Refrão]\nDm    Am  Dm\nDm    Am  Dm    C\n\nEm    Bm  Em\nEm    Bm  Em",
+      "external_link": "https://youtu.be/HtgtmR3ncsE?si=8reCU5JwyXHRb2DF",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\nA- A- A-A-MÉM!\nA- A- A-A-MÉM!\n\nA- A- A-A-MÉM!\nA- A- A-A-MÉM!"
+    },
+    {
+      "id": "mpd50c9a7ft74",
+      "name": "Cordeiro de Deus",
+      "artist": "Amor e Adoração",
+      "tone": "F",
+      "lyrics": "[Intro]\nF F7M\n\nF9 Am7 \nBb9\nGm C9 C4 F Bb/F C/F\n\nF9 Am7 \nBb9\nGm C9 C4 F Bb/F C/F\n\nF9 Am7 \nBb9\nGm Bb C F7M9",
+      "external_link": "https://youtu.be/janev45m3K4?si=39UAeyp13KUt8qXN",
+      "tone_offset": 0,
+      "note": "[Intro]"
+    },
+    {
+      "id": "mpd50c9hbhov1",
+      "name": "Senhor Vem nos Dar Sabedoria",
+      "artist": "Irmã Míria T. Kolling",
+      "tone": "G",
+      "lyrics": "G D7\n[1]\n            G     G#°     Am \n             C    D         G \n          G    G7           C C#° \n          G  D         G \n\n[Refrão]\n C          G          D          G G7\nC        G         D       G\n\n[2] \n            G     G#°     Am \n             C    D         G \n          G    G7           C C#° \n          G  D         G \n\n[3]\n            G     G#°     Am \n             C    D         G \n          G    G7           C C#° \n          G  D         G \n\n[4]\n\n[5]\n\n[6]\n\n[7] ",
+      "external_link": "https://youtu.be/FeVWviUYv6Q?si=ny64mwuRehz7fp6f",
+      "tone_offset": 0,
+      "note": "[1]\nSenhor vem dar-nos  sabedoria\nQue faz ter tudo como Deus quis\nE assim faremos   da Eucaristia\nO grande meio de ser feliz. \n\n[Refrão]\nDá-nos, Senhor, esses dons, essa luz\nE nós veremos que pão é Jesus! \n\n[2] \nDá-nos, Senhor, o entendimento\nQue tudo ajuda a compreender\nPara nós vermos como é alimento\nO pão e o vinho que Deus quer ser. \n\n[3]\nSenhor, vem dar-nos divina ciência\nQue, como o eterno, faz ver sem véus\nTu vês por fora, Deus vê a essência \nPensas que é pão, mas é nosso Deus. \n\n[4]\nDá-nos, Senhor, o Teu conselho \nQue nos faz sábios para guiar\nHomem, mulher, jovem e velho\nNós guiaremos ao Santo Altar.\n\n[5]\nSenhor, vem dar-nos a fortaleza\nA santa força do coração\nSó quem vencer vai sentar-se à mesa\nPara quem luta Deus quer o pão. \n\n[6]\nDá-nos, Senhor, filial piedade/ A doce forma de amar enfim/ \nPara que amemos quem, na verdade/ Aqui amou-nos até o fim. \n\n[7] \nDá-nos, enfim, temor sublime/ De não ama-los como convém/ \nO Cristo-Hóstia, que nos redime/ O Pai celeste, que nos quer bem."
+    },
+    {
+      "id": "mpd50c9pwxxsq",
+      "name": "Um Hino ao Divino",
+      "artist": "Zé Vicente",
+      "tone": "A",
+      "lyrics": " A                         E   D   A\n      D                      E  D  A\n\n A                          E   D  A\n      D                     E  D    A\n\n     D                   A\n      B                    E E7\n\n A                        E D  A         D\n                    E   D  A\n A                        E  D A         D\n                    E  D   A\n\n     D                   A\n    B                      E E7\n\n A                          E D  A       D\n                     E  D   A\n A                          E D A        D\n                      E D  A\n\n   D                     A\n  B                       E   E7",
+      "external_link": "https://youtu.be/B8xhmQ2yg0Q?si=H8GEKs0fAoiVoG0i",
+      "tone_offset": 0,
+      "note": "Presente tu estas desde o principio\nnos dias da criação, Divino Espirito!\n\nPresente tu estas desde o principio\nnos dias da criação, Divino Espirito!\n\nÉs sopro criador que a terra fecundo\ne a vida no universo dispertou!\n\nPresente tu estas desde o Egito, vencendo\na opressão, Divino Espirito!\nPresente tu estas desde o Egito, vencendo\na opressão, Divino Espirito!\n\n És fogo e claridão, luz da libertação de \num povo em movimento de união!\n\nPresente tu estas em Jesus Cristo na cruz,\nPágina 1 / 2\nressureição, Divino Espirito!\nPresente tu estas em Jesus Cristo na cruz,\nressureição, Divino Espirito!\n\n Boa nova do perdão, carinho entre irmãos\nardor na militancia e na missão!"
+    },
+    {
+      "id": "mppxpv23j5n32",
+      "name": "Fiat",
+      "artist": "Banda Dom",
+      "tone": "D",
+      "lyrics": "[Parte 1]\n            D             Bm\n               G           A7\n        D             Bm\n        G           A7       Bm\n                 F#\n    Bm\n                F#                      Bm Bm/A\n     G           D/F#\n    Em          A7             D A/C#\n                Bm      Bm/A\n         G                A7\n       D        A\n            Bm  G\n        D    \n A \n            Bm      A7",
+      "external_link": "https://youtu.be/zEvkBNOUtYE?si=Qz-BkgsfyKYC4JsG",
+      "tone_offset": 0,
+      "note": "[Parte 1]\nChamas por mim, ouço tua voz\nQue queres de mim, ó meu Senhor?\nEstou aqui, ao teu dispor\nServo fiel à tua vontade eu serei\nTeus planos vão além do que eu possa\nentender\nQuem sou eu pra merecer tantas graças assim?\nMeu sim eu quero te dizer\nQuerer o teu querer e assim viver\nEu sei, já não posso mais\nCalar a voz que grita em mim\nFiat, faça-se, faz em mim\nQuero que faças sim\nTua vontade, sim\nFaz em mim\nQuero que faças sim"
+    },
+    {
+      "id": "mppxpv2dc82qy",
+      "name": "Cântico de Maria",
+      "artist": "Adoração e Vida",
+      "tone": "D",
+      "lyrics": "[Intro]\nD9 D4 D D9 D4 D Bm A G\n\nD                       Bm7         D/A\nG                 Em7           A/C#\n     G             A9/C# A       G      Em        A/C#\nD                         Bm                  A\n G                  Em7     A/C#\n     G9       A9/C# A     G9 Em7      A/C#\nD           Bm       D/A\n G            Em7                A\n   G9      A9/C# A    G9 Em7    A\n G9\n A/C#                                 A\n    G9                          Em7\n G/A                   A\n G9\n A9/C#               A\n      G9                  Em7\nG/A\n     G7M(9)        A9/C# A        G7M(9)   Em7 \n A\n     G9           A9/C# A              G9   Em7 \n A\n     Em7    G      A",
+      "external_link": "https://www.youtube.com/watch?v=d6YA9xWcU1M&list=PLi7K6r57QZWiqQvyRvoK1zDsVZhKKo8PD&index=2",
+      "tone_offset": 0,
+      "note": "[Intro]\n\nA minha alma engrandece e glorifica ao Senhor\nMeu espírito se alegra em Deus, meu Salvador\nMeu Salvador, Meu Salvador, Meu Salvador, Meu Salvador\nEle olhou minha pequenez,fez-me bendita entre as nações\nRealizou em mim maravilhas, o Poderoso\nPoderoso, Poderoso,   Podero__so, Poderoso\nA sua misericórdia é de geração em geração\nSobre os que temem Aquele, cujo nome é Santo\nÉ Santo, É Santo,   É Santo, É Santo\nAgiu com poder, com o seu braço forte\nOrgulhosos dispersou, poderosos destronou\nExaltou os humildes, saciou os famintos\nDespediu os ricos sem nada\nLembrou-se do amor a Israel, o seu servo\nConforme prometeu outrora a nossos pais\nEm favor de Abraão e sua posteridade\nPara todo o sempre\nPara sempre, Para sem   pre, Para sem______pre, Para\nsempre\nMeu Salvador, Poderoso,   cujo nome é San___to para\nsempre!\nPara sempre, Para sempre, sempre"
+    },
+    {
+      "id": "mppxpv2jjurzk",
+      "name": "Glória - Banquete Eterno",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "C#m",
+      "lyrics": "[Intro]\n\n[Refrão]\nC#m A9 E B\nC#m A9 E B\n\n[Primeira Parte]\n C#m          A                  E           B\n C#m               A               E      B\nF#m            G#m               A\n     C#m    B\n\n[Refrão]\nC#m A9 E B\nC#m A9 E B\n\n[Segunda Parte]\n C#m    A             E        B\n C#m             A              E             B\n\n[Dif]\n\n A                 E/G#\n F#m              B\n A                 E/G#\n F#m             B\n A                  B\n E                G#\n\n[Dif 2]\n\n A             B                 C#m\n    E           A          B\n                C#m\n    F#m            A\n  B\n\n[Refrão]\nC#m A9 E B\nC#m A9 E B",
+      "external_link": "https://youtu.be/ihkiH_SKQAw?si=JythkqB-5VEf-nam",
+      "tone_offset": 0,
+      "note": "[Intro]\nE E/G# A E/G# A C#m B (2x)\n\n[Refrão]\nD9 A9 E (2x)\n\n[Primeira Parte]\nSenhor Deus, Rei dos céus, Deus Pai todo poderoso\nNós Vos louvamos, Vos bendizemos, Vos adoramos\nNós Vos glorificamos, Vos damos graças\nPor Vossa imensa\n\n[Refrão]\nD9 A9 E (2x)\n\n[Segunda Parte]\nSenhor Jesus Cristo, Filho unigênito\nSenhor Deus, Cordeiro de Deus, Filho de Deus Pai\n\n[Dif]\n\nVós que tirais o pecado do mundo\nTende piedade de nós\nVós que tirais o pecado do mundo\nAcolhei a nossa súplica\nVós que estais à direita do Pai\nTende piedade de nós\n\n[Dif 2]\n\nSó Vós sois o Santo, só Vós o Senhor\nSó Vós o Altíssimo, Jesus Cristo\nCom o Espírito Santo\nNa glória de Deus Pai\nAmém!\n\n[Refrão]\nD9 A9 E (2x)"
+    },
+    {
+      "id": "mppxpv2s68p7j",
+      "name": "Virgem das Dores",
+      "artist": "Eliana Ribeiro",
+      "tone": "F#m",
+      "lyrics": "[Intro]\nF#m D7M Bm C#m F#m\n\n[Primeira Parte]\n\n  F#m7(9)                 D7M9\n      F#m7(9)                      D7M9\n   E             Bm7(9)            F#m        C#m7(9) \n    D          E            F#m\n\n[Refrão]\n  D9 E       F#m\nD7M  E     C#m  F#m7\nD9 E       F#m\nD9           E   C#m Dmaj7\nD9 E       F#m\n\n[Parte 2]\n  F#m7(9)               D7M9\n  F#m7(9)                      D7M9\n      E             Bm7(9)             F#m        C#m7(9) \nBm7        C#m7      D9\nBm7        C#m7      D9\n\n[Refrão]\n  D9 E       F#m\nD7M  E     C#m  F#m7\nD9 E       F#m\nD9           E   C#m Dmaj7\nD9 E       F#m",
+      "external_link": "https://www.youtube.com/watch?v=eR2oEt1oFVg&list=PLi7K6r57QZWiqQvyRvoK1zDsVZhKKo8PD&index=4",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Primeira Parte]\n\nQuanta dor existe em teu peito\npela espada que transpassará o coração.\nVerás teu filho puro e santo,despojado de seu manto,\nsuspenso no madeiro de uma cruz.\n\nD9 E F#m E/G# F#m/AF#mDmaj7\n\n[Refrão]\nVir_gem das dores,\ntua dor é nossa luz.\nSuporta as dores\nque a humanidade te impôs.\nVirgem das dores.\n\n[Parte 2]\nChorarás o vosso filho morto.\nAlcançará a contrição dos meus pecados.\nPela dor que experimentarás em meio a tantos tormentos.\nSê a nossa advogada,amém.\nSê a nossa advogada,amém.\n\n[Refrão]\nVir_gem das dores,\ntua dor é nossa luz.\nSuporta as dores\nque a humanidade te impôs.\nVirgem das dores."
+    },
+    {
+      "id": "mppxpv3013ep2",
+      "name": "Nossa Senhora",
+      "artist": "Padre Fábio de Melo",
+      "tone": "G",
+      "lyrics": "[Intro]\nG C9 Em D/C F D4 D\n\n[Parte 1]\nG\n                         G\n                       Em7\n            Am7\n\n[Parte 2]\n\n    Am7 \nD7/A\n Am7               D7                   G/B C#dim Am D7\n\n[Parte 3]\nG       \n                     G\n G7                    Bdim         C\n                          Cm  G\n                      Em7\nAm7                      D7     \n\n[Refrão]\n\n G\n                  D G#dim\n          Am7 D4 D\nG\n                  D G#dim\n          Am7 D4 D\n         Am7   D7         G",
+      "external_link": "https://www.youtube.com/watch?v=-VhWKsVLY44&list=PLi7K6r57QZWiqQvyRvoK1zDsVZhKKo8PD&index=5",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\nCubra-me com seu manto de amor\nGuarda-me na paz desse olhar\nCura-me as feridas e a dor \nme faz suportar\n\n[Parte 2]\n\nQue as pedras do meu caminho\nMeus pés suportem pisar\nMesmo ferido de espinhos, me ajude a passar\n\n[Parte 3]\nSe ficaram mágoas em mim\nMãe tira do meu coração\nE aqueles que eu fiz sofrer peço perdão\nSe eu curvar meu corpo na dor\nMe alivia o peso da cruz\nInterceda por mim minha mãe, junto a Jesus\n\n[Refrão]\n\nNossa Senhora, me dê a mão\nCuida do meu coração\nDa minha vida, ----- do meu destino\nNossa Senhora, me dê a mão\nCuida do meu coração\nDa minha vida, ----- do meu destino\nDo meu caminho,  cuida de mim"
+    },
+    {
+      "id": "mppxpv3ah2txm",
+      "name": "Felicidade Eterna",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "G",
+      "lyrics": "[Intro]\nEm C G D\nEm C G D\n\n[Parte 1]\n\nEm      C          D4\nEm         D/F#\n   G/B   Em\n  C       Em\n   Am   Am/G      F D/F#\n\n[Refrão]\n      G      C      D4\n          G/B    C    D4\n      G    C      D4\n        G/B    C    D4",
+      "external_link": "https://youtu.be/B8UBXH0a2So?si=Bi02jrZqepB3uvVH",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\n\nEm     C          D4 (C Bm) \nÉs consolo e defensor \nAmável hospede da alma\nAlívio imcomparável \nDescanso no trabalho\nBrisa no calor ardente\nConsolo na   aflição\n\n[Refrão]\nÓ ó ó vem Espírito Santo\nManda do céu um raio de tua luz\nÓ ó ó vem Pai dos pobres\nVem doador de graça divina e de luz"
+    },
+    {
+      "id": "mppxpv3uhnysv",
+      "name": "Coroação a Nossa Senhora",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "G",
+      "lyrics": "[Intro]\nG G/B C9\n\n[Parte 1]\n   G      G/B        C9\n    G         G/B       C9\n      Am     G       Em    D      C\n      Am     G             C          D4 D\n\n[Parte 2]\n   G      G/B        C9\n    G         G/B       C9\n    Am     G       Em    D      C\n       Am        G         C        D\n          E9\n\n   A      A/C#        D9\n     A      A/C#        D9\n    Bm     A       F#m    E      D\n     Bm           A           F#m       E4 E",
+      "external_link": "https://youtu.be/8wT63Ud8LY8?si=-UCSsBqES3Kt7IPq",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\nSenhora Rainha, Tão Linda estás\nTrouxemos presentes pra te ofertar\nEste manto celeste, azul, cor do céu\nQue protege e guarda teus filhos pra Deus\n\n[Parte 2]\nSenhora, Rainha, tão linda estás\nTrouxemos presentes pra Te ofertar\nA coroa é prova de quem soube amar\nE pra ver Teu sorriso, colhemos pra Ti\nChuva de pétalas\n\nSenhora, Rainha, tão linda estás\nTrouxemos presentes pra Te ofertar\nAbençoa as famílias, o nosso país\nAs crianças e os jovens que esperam em Ti"
+    },
+    {
+      "id": "mppxpv4gq9yoa",
+      "name": "Perfeito é quem Te Criou",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "E",
+      "lyrics": "[Intro]\nE E7M C7M\n\n[Primeira Parte]\n\n       E                E7M\n     F#m\n  G#m                C#m\n          F#m          B\n\n[Refrão 1]\n\n           E7M   B/D# C#m\n           F#m     B         E   C7M\n\n[Segunda Parte]\n\n   E7M            \n     F#m\n      G#m               C#m\n      F#m          B\n[Refrão 2]\n\n          E7M  B/D# C#m\n          F#m     B\n           C#m\n\n[Ponte]\n\n    C              G\n  D/F#           Am     G/B\n   C          G\n   A         B\n\n[Terceira Parte]\n\n     E                  E7M\n    F#m\n       G#m          C#m\n\n[Refrão 3]\n\n       F#m      B  \n       E7M  B/D# C#m\n       F#m      B  \n        C#m\n       F#m      B  \n           E7M  B/D# C#m\n       F#m      B           C#m",
+      "external_link": "https://youtu.be/S6udRo0NX8g?si=sjs-gYcbN7jX3UUR",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Primeira Parte]\n\nSe um dia um anjo declarou\nQue tu eras cheia de Deus\nAgora penso quem sou eu\nPara não te dizer, também\n\n[Refrão 1]\n\nCheia de graça,  oh  Mãe\nCheia de graça oh Mãe, agraciada\n\n[Segunda Parte]\n\nSe a palavra ensinou\nQue todos hão de concordar\nE as gerações te proclamar\nAgora eu também direi\n[Refrão 2]\n\nTu és bendita, ó   Mãe\nTu és bendita, ó Mãe\nBem-aventurada\n\n[Ponte]\n\nSurgiu um grande sinal no céu\nUma mulher revestida de sol\nA lua debaixo de seus pés\nE na cabeça uma coroa\n\n[Terceira Parte]\n\nNão há com que se comparar\nPerfeito é quem te criou\nSe o criador te coroou\n\n[Refrão 3]\n\nTe coroamos oh Mãe\nTe coroamos oh  Mãe \nTe coroamos oh Mãe\nNossa rainha \nTe coroamos oh Mãe\nNós te coroamos oh  Mãe \nTe coroamos oh Mãe, nossa rainha"
+    },
+    {
+      "id": "mppxpv4pk7il5",
+      "name": "Esposa das Esposas",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "F",
+      "lyrics": "[Intro] \nF9 C/F Dm A#9 F9 C/F Am A#9\n\n[Parte 1]\n\n F9          C/F     Bb    C9\nDm          Am         Bb         C9   D9\n[Parte 2]\n\nG9           D/G      C9            D         D#º\nEm       Bm    C9 D9\n\n[Parte 3]\n\nG9          D/G     C9             D  D#º\n Em              Bm    C9   E\n\n[Parte 4]\n\nA9          E/A           D         E         Fº\nF#m         C#m         Bm       D         E4 E\n\n[Parte 4]\n\nA9      E/A           D     E4\nF#m     C#m           D Bm E4 E\n\n[Refrão]\n\nA9 E/A D  E  A9 E/A D E\nF#m C#m D E F#m C#m D E\n\n[Parte 5]\nA9      E/A           D     E4\nF#m         C#m       D     E4 E\n\n[Refrão]\n\nA9 E/A D  E  A9 E/A D E\nF#m C#m D E F#m C#m D E\n\n[Parte 5]\nA9      E/A           D     E4\nF#m         C#m       D     E4 E\n\n[Refrão]\n\nA9 E/A D  E  A9 E/A D E\nF#m C#m D E F#m C#m D E",
+      "external_link": "https://www.youtube.com/watch?v=1PV5jG4FCJ0&list=PLi7K6r57QZWiqQvyRvoK1zDsVZhKKo8PD&index=9",
+      "tone_offset": 0,
+      "note": "[Intro] \n\n[Parte 1]\n\nNão, não há, Maria, alma esposa\nQue Não se una a ti, Esposa das Esposas\n[Parte 2]\n\nNão, não há, o olhar que contemple ame o filho\nFora do teu olhar\n\n[Parte 3]\n\nNão, não há coração que se una ao Dele\nSem ser um com o teu coração\n\n[Parte 4]\n\nTeus olhos para nós qual chagas de dor e amor\nSão janelas pelas quais passa a luz da verdade\n\n[Parte 4]\n\nDo amor com que Deus ama o mundo\nDo amor com que Deus ama,  ama\n\n[Refrão]\n\nMariiiiiia  Mariiiiiia\nMariiiiiia, Mariiiiiia\n\n[Parte 5]\nDo amor com que Deus ama o mundo\nChega a nós por teu olha....ar 2x\n\n[Refrão]\n\nMariiiiiia  Mariiiiiia\nMariiiiiia, Mariiiiiia\n\n[Parte 5]\nDo amor com que Deus ama o mundo\nChega a nós por teu olha....ar 2x\n\n[Refrão]\n\nMariiiiiia  Mariiiiiia\nMariiiiiia, Mariiiiiia"
+    },
+    {
+      "id": "mpwzwlstp5a2k",
+      "name": "Entrada - Cristo Pão dos Pobres",
+      "artist": "CNBB",
+      "tone": "G",
+      "lyrics": "[Intro]\nC D G D7\n\n[Parte 1]\n\n G   E7      Am  \n C           D7         G   \n C        C#º     Bm       Em\n Am                 D7      G\n\n[Refrão]\n   G            \n Am7\n  C          A7          D7\n  G            \n Am7\n  C          D            G\n\n[Parte 2]\n\n G   E7        Am  \n Am           D7            G   \nC        C#º     Bm       Em\n Am       C      D7    G",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\n\nTodos  convidados\ncheguem ao banquete do Senhor\nFesta preparada, bem participada\nVenham partilhar do pão do amor\n\n[Refrão]\nCristo pão dos pobres \njuntos nesta mesa \nPois a eucaristia faz a igreja\nCristo pão dos pobres \njuntos nesta mesa \nPois a eucaristia faz a igreja (bis)\n\n[Parte 2]\n\nVejam  quanta fome\nmuitos lares sem ternura e pão\nDor e violência, quanta resistência \nVamos acolher a cada irmão"
+    },
+    {
+      "id": "mpwzwltbbg2sb",
+      "name": "Ato Penitencial",
+      "artist": "CNBB",
+      "tone": "Gm",
+      "lyrics": "[Intro]\nGm F D# D\n[Parte 1]\n  Gm\n                                            F\n Gm     D#        D\n\n[Refrão]\n Gm F D#  Gm F Dm Gm\n\n[Parte 2]\n  Gm\n                       F\n Gm     D#        D\n\n[Refrão]\n Gm F D#  Gm F Dm Gm\n\n[Parte 3]\n  Gm\n                     F\n Gm     D#        D",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": "[Intro]\n[Parte 1]\nSenhor, que subindo aos céus \nvos tornastes Rei do universo e Senhor dos séculos \ntende piedade de nós.\n\n[Refrão]\nKyrie    eleison!\n\n[Parte 2]\nCristo, que na vossa ascensão \nlevastes cativo o cativeiro, \ntende piedade de nós.\n\n[Refrão]\nChriste   eleison!\n\n[Parte 3]\nSenhor, que voltando à casa do Pai\nabristes o céu para nós,\ntende piedade de nós."
+    },
+    {
+      "id": "mpwzwlthi5pt3",
+      "name": "Glória",
+      "artist": "Coral Palestrina",
+      "tone": "E",
+      "lyrics": "[Refrão]\n\n E                  B7\n F#m               E\n E7                  A\n                    E         B7    E\n\n[Parte 1]\n\n                      B7\n                 F#m\n B7         E\n\n    E7         A\n               E\n   B7            E\n\n[Parte 2]\n                              B7\n  F#m        B7                 E\n                    B7       E\n          F#     B7\n E                  B7     E\n\n           B7       E\n           A      E         B7\n          E\n\n[Parte 3]\n               B7                 E\n          B7              E\n        A       E\n    A             E       B7     E",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": "[Refrão]\n\nGlória a Deus nas alturas\nGlória a Deus nas alturas\nGlória a Deus nas alturas\nE paz na terra aos homens por Ele amados\n\n[Parte 1]\n\nSenhor Deus, Rei dos céus\nDeus Pai todo poderoso\nNós vos louvamos\n\nNós vos bendizemos\n\nNos vos adoramos\nNós vos glorificamos\nNós vos damos graças\nPor vossa imensa glória\n\n[Parte 2]\nSenhor Jesus Cristo, Filho Unigênito, Senhor Deus\nCordeiro de Deus, Filho de Deus Pai\nVós que tirais o pecado do mundo\nTende piedade de nós\nVós que tirais o pecado do mundo\n\nAcolhei a nossa súplica\nVós que estais à direita do Pai\nTende piedade de nós\n\n[Parte 3]\nSó vós sois o Santo, só vós o Senhor\nSó vós o Altíssimo Jesus Cristo\nCom o Espírito Santo\nNa glória de Deus Pai.     A  - mém!"
+    },
+    {
+      "id": "mpwzwltp44401",
+      "name": "Salmo",
+      "artist": "Coral Palestrina",
+      "tone": "G",
+      "lyrics": "[Intro]\nG C D\nD Am\nAm D\n\n[Refrão]\n  G   C         Am   Am    D\n   Am          Em   C  D\n\n[Parte 1]\n  D           Em        D   \n   D             Am            G\n         Em           D               G\n            Am            C       D   D \n\n[Refrão]\n  G   C         Am   Am    D\n   Am          Em   C  D\n\n[Parte 2]\n\n   D            Em        D \n     D          Am                G\n     Em           D               G\n     Am              C         D   D \n\n[Refrão]\n  G   C         Am   Am    D\n   Am          Em   C  D",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\nGlorifica o Senhor, Jerusalém!\nCelebra o teu Deus, ó Sião!\n\n[Parte 1]\nGlorifica o Senhor, Jerusalém!\nÓ Sião, canta louvores ao teu Deus!\nPois reforçou com segurança as tuas portas\nE os teus filhos em teu seio abençoou\n\n[Refrão]\nGlorifica o Senhor, Jerusalém!\nCelebra o teu Deus, ó Sião!\n\n[Parte 2]\n\nA paz em teus limites garantiu\nE te dá como alimento a flor do trigo\nEle envia suas ordens para a terra\nE a palavra que ele diz corre veloz\n\n[Refrão]\nGlorifica o Senhor, Jerusalém!\nCelebra o teu Deus, ó Sião!"
+    },
+    {
+      "id": "mpwzwltw4thxp",
+      "name": "Sequência",
+      "artist": "Coral Palestrina",
+      "tone": "E",
+      "lyrics": "[Intro]\n\n[Parte 1]\n         A       A#° Bm\n         A       A#° Bm\n         A      E7  A\n\n[Parte 2]\n         A       A#° Bm\n         A       A#° Bm\n         A      E7  A\n\n[Parte 3]\n         A       A#° Bm\n         A   A#° Bm\n        A      E7  A\n\n[Parte 4]\n\n[Parte 5]\n\n[Parte 6]\n\n[Parte 7]\n\n[Parte 8]\n\n[Parte 9]\n\n[Parte 10]",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\nTerra, exulta de alegria\n      E7            A    (E7)\nLouva teu pastor e guia\nCom teus hinos, tua voz \nCom teus hinos, tua voz\n\n[Parte 2]\nTanto possas, tanto ouses \n      E7            A    (E7)\nEm louvá-lo não repouses \nSempre excede o teu louvor \nSempre excede o teu louvor\n\n[Parte 3]\nHoje a Igreja te convida\n        E7          A    (E7)\nAo pão vivo que dá vida\nVem com ela celebrar\nVem com ela celebrar\n\n[Parte 4]\nEste pão, que o mundo creia\nPor Jesus, na santa ceia\nFoi entregue aos que escolheu\nFoi entregue aos que escolheu\n\n[Parte 5]\nNosso júbilo cantemos \nNosso amor manifestemos \nPois transborda o coração \nPois transborda o coração\n\n[Parte 6]\nQuão solene a festa, o dia \nQue da santa Eucaristia\nNos recorda a instituição \nNos recorda a instituição\n\n[Parte 7]\nNovo Rei e nova mesa\nNova Páscoa e realeza \nFoi-se a páscoa dos judeus\nFoi-se a páscoa dos judeus\n\n[Parte 8]\nEra sombra o antigo povo\nO que é velho cede ao novo\nFoge a noite, chega a luz\nFoge a noite, chega a luz\n\n[Parte 9]\nO que o Cristo fez na ceia\nManda a Igreja que o rodeia\nRepeti-lo até voltar\nRepeti-lo até voltar\n\n[Parte 10]\nSeu preceito conhecemos\nPão e vinho consagremos\nPara a nossa salvação\nPara a nossa salvação"
+    },
+    {
+      "id": "mpwzwlu9zu6zx",
+      "name": "Aclamação",
+      "artist": "Coral Palestrina",
+      "tone": "E",
+      "lyrics": "[Intro]\nA B7 E\n\n[Refrão]\nE  A     B7   E             \nC#m F#m            A    B   E\n\n[Estrofe]\n\nC#m                           B \n A                                   E  ",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\nALELUIA, ALELUIA, \nALELUIA,    A L E L U  (U) I A! (BIS)\n\n[Estrofe]\n\nEu sou o pão vivo descido do céu; \nquem deste pão come, sempre há de viver!"
+    },
+    {
+      "id": "mpwzwluk1t6rc",
+      "name": "Bendito Sejais",
+      "artist": "Frei Turra",
+      "tone": "G",
+      "lyrics": "[Intro]\n\nC D G D7\n\n[Parte 1]\n       C          D            G\n            Em      D          G\n       D          Am        Em\n          C       D             G\n\n[Refrão]\n    G      C         Am      D\n    Bm     C          Am          D\n    C       D\n    Em        C    D    G\n\n[Parte 2]\n  G          C       D           G\n            Em      D          G\n       D          Am        Em\n          C       D             G\n\n[Refrão]\n    G      C         Am      D\n    Bm     C          Am          D\n    C       D\n    Em        C    D    G",
+      "external_link": "https://youtu.be/c74ipqfhPXk?si=objInl7wa51uvGYY",
+      "tone_offset": 9,
+      "note": ">Strings + Piano Fica bom\n\n[Intro]\n\n[Parte 1]\nQue maravilha, Senhor, estar aqui!\nSentir-se Igreja reunida a celebrar\nApresentando os frutos do caminho\nNo pão e vinho, ofertas desse altar\n\n[Refrão]\nBendito sejais por todos os dons!\nBendito sejais pelo vinho e pelo pão!\nBendito, bendito\nBendito seja Deus para sempre\n\n[Parte 2]\nQue grande bênção servir nesta missão\nMissão de Cristo, tarefa do cristão\nTornar-se igreja, formar comunidade\nSer solidário, tornar-se um povo irmão\n\n[Refrão]\nBendito sejais por todos os dons!\nBendito sejais pelo vinho e pelo pão!\nBendito, bendito\nBendito seja Deus para sempre"
+    },
+    {
+      "id": "mpwzwluzcojlh",
+      "name": "Santo",
+      "artist": "Frei Turra",
+      "tone": "E",
+      "lyrics": "[Refrão]\n A E   F#m  C#m\n D            A          B7 E\n A E   F#m  C#m\n D            A          B7 E\n\n[Parte 1]\n   D       E        A            F#m\n   Bm      E          A F#m\n\n[Parte 2]\n    Bm         E       A         F#m\n    Bm     E          A F#m\n\n  Bm       E A A7\n    Bm     E          A F#m\n\n  Bm       E  A Dm A",
+      "external_link": "https://youtu.be/c74ipqfhPXk?si=objInl7wa51uvGYY",
+      "tone_offset": 0,
+      "note": "[Refrão]\nSanto, San  to, \nSanto Senhor Deus do universo\nSanto, San  to, \nSanto Senhor Deus do universo\n\n[Parte 1]\nO céu e a terra proclamam Vossa Glória. \nHosana, Hosana nas Alturas.\n\n[Parte 2]\nBendito o que vem, em nome do Senhor. \nHosana, Hosana nas alturas, \n\nHosana, Hosana\nHosana, Hosana nas alturas, \n\nHosana, Hosanaa a  a"
+    },
+    {
+      "id": "mpwzwlv7lpngi",
+      "name": "Cordeiro de Deus",
+      "artist": "Amor e Adoração",
+      "tone": "F",
+      "lyrics": "[Intro]\nF F7M\n\nF9 Am7 \nBb9\n\nF9 Am7 \nBb9\n\nF9 Am7 \nBb9\nGm Bb C F7M9",
+      "external_link": "https://youtu.be/janev45m3K4?si=39UAeyp13KUt8qXN",
+      "tone_offset": 0,
+      "note": "[Intro]\n\nGm C9 C4 F (Bb/F C/F)\n\nGm C9 C4 F (Bb/F C/F)"
+    },
+    {
+      "id": "mpwzwlvet3tev",
+      "name": "Comunhão",
+      "artist": "Frei Turra",
+      "tone": "G",
+      "lyrics": "[Parte 1]\n          G             C     \n                   D                 G  \n          G           C\n                D               G\n\n[Refrão]\n G7                C     \n D                G\n    Em                 Am  \n  C            D\n\n G7                C     \n D                G\n    Em                 Am  \n  C   D        G  D7     \n\n[Parte 2]\n\n[Parte 3]\n\n[Parte 4]\n\n[Parte 5]",
+      "external_link": "https://youtu.be/c74ipqfhPXk?si=objInl7wa51uvGYY",
+      "tone_offset": 9,
+      "note": "[Parte 1]\n  Bem-vindos à mesa do Pai,\n  onde o Filho se faz fraternal refeição\n  É Cristo a forte comida,\n  o Pão que dá vida com amor-comunhão.\n\n[Refrão]\nVinde, ó irmãos, adorar\nVinde adorar o Senhor\nA eucaristia nos faz igreja,\ncomunidade de amor\n\nVinde, ó irmãos, adorar\nVinde adorar o Senhor\nA eucaristia nos faz igreja,\ncomunidade de amor\n\n[Parte 2]\nPartimos o único pão\nNo altar-refeição\nó mistério de amor\nNós somos sinais de unidade\nNa fé, na verdade\nconvosco, ó Senhor\n\n[Parte 3]\nNo longo caminho que temos/ O pão que\ncomemos nos sustentará/ É Cristo o pão repartido/\nQue o povo sofrido vem alimentar\n\n[Parte 4]\nHá gente morrendo de fome/ Sofrendo e sem\nnome, sem terra e sem lar/ Não é a vontade de\nDeus/ Pois Jesus, filho Seu, quis por nós se doar\n\n[Parte 5]\nQueremos servir a igreja/ Na plena certeza de\nnossa missão/ Vivendo na eucaristia/ O pão da\nalegria e da libertação"
+    },
+    {
+      "id": "mpwzwlvnttkt5",
+      "name": "Glória a Jesus",
+      "artist": "Frei Turra",
+      "tone": "E",
+      "lyrics": "          C   F          C               Dm    D         G\n             C     F     C              Dm    D   G   G7\n\nC                Dm         G                    C\n        Gm     C      F         C        D     G\n        F  G/F      Em  Am      Dm        G     C\n\n           C    F      C              Dm     D   G\n         C        F     C                  Dm     D    G   G7\n\n           C    F          C                 Dm     D      G\n       C     F      C               Dm      D      G    G7",
+      "external_link": "https://youtu.be/c74ipqfhPXk?si=objInl7wa51uvGYY",
+      "tone_offset": 0,
+      "note": "Glória a Jesus na Hóstia Santa, que se consagra sobre o altar\nE aos nossos olhos se levanta para o Brasil abençoar\n\nQue o Santo Sacramento, que é o próprio Cristo Jesus\nSeja adorado e seja amado nesta terra de Santa Cruz\nSeja adorado e seja amado nesta terra de Santa Cruz\n\nGlória a Jesus, prisioneiro do nosso amor, a esperar\nLá no Sacrário, o dia inteiro, que o vamos todos procurar\n\nGlória a Jesus, Deus escondido, que vindo a nós na comunhão\nPurificado, enriquecido, deixa-nos sempre o coração"
+    },
+    {
+      "id": "mpwzwlvwmur5l",
+      "name": "Tão Sublime",
+      "artist": "Músicas católicas",
+      "tone": "E",
+      "lyrics": "B7     E     E  B  C#m             \n      A   B     E\nB7        E    B      C#m  \n C#m7   A      B      E\n\n[Refrão]\n\n B       E   B        C#m    \nA     E  C#m  F# B E\n\n[Segunda Parte]\n\nB7     E      E  B  C#m  \nB7      A      B   E\nB7     E      E  B  C#m \n C#m7   B     A  B   E\n\n[Refrão]\n\nB       E   B        C#m  \nA  E  A  B     E\nB  E   B  E",
+      "external_link": "https://youtu.be/c74ipqfhPXk?si=objInl7wa51uvGYY",
+      "tone_offset": 0,
+      "note": "Tão Sublime Sacramento\nAdoremos neste altar\nPois o Antigo Testamento\nDeu ao novo o seu lu_gar\n\n[Refrão]\n\nVenha a fé, por suplemento \nOs senti_dos completar\n\n[Segunda Parte]\n\nAo eterno Pai cantemos\nE a   Jesus o Salvador\nAo Espírito exaltemos\nNa Trindade eterno amor\n\n[Refrão]\n\nAo Deus Uno e Trino demos\nA alegri__a do louvor\nA_mém, a_mém"
+    },
+    {
+      "id": "mpyndx0j9qkz5",
+      "name": "Amém",
+      "artist": "Músicas Católicas",
+      "tone": "Dm",
+      "lyrics": "[Intro]\n\nDm A\n\n[Refrão]\nDm    Am  Dm\nDm    Am  Dm    C\n\nEm    Bm  Em\nEm    Bm  E",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\nA- A- A-A-MÉM!\nA- A- A-A-MÉM!\n\nA- A- A-A-MÉM!\nA- A- A-A-MÉM!"
+    },
+    {
+      "id": "mpyoxaswtf7sy",
+      "name": "Venho Senhor",
+      "artist": "Corinhos evangélicos",
+      "tone": "E",
+      "lyrics": "[Intro]\n\nE                   B/D#      C#m \nC#m/B\n\nA           E/G#      F#m      B\nE            B/D#     C#m     C#m/B\n\nA    B/A       G#m  C#m\nF#m  B         C#m\nG#m\n   A         G#m7\n F#m7         B           E   Bm7  E7\nA           B/A       G#4   G#/C   C#m\n\nA    B/A       G#m  C#m\nF#m  B         C#m\nG#m\n   A         G#m7\n F#m7         B           E7   Bm7  E7\nA           B/A       G#4   G#/C   C#m",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\nVenho senhor minha vida oferecer\n\nComo oferta de amor e sacrifício\nQuero a minha vida a ti entregar\nA            B          E      (Bm\nComo oferta viva em teu altar\n  E7)\n\nPois pra te adoraaaaar\nFoi que eu nasci\nCumpra em mim\nO teu querer\nFaça o que está em teu coração\nE que a cada dia eu queira mais e mais\n   F#m G#m7 A7M  B7(4/9)  E  Bm7  E7\nEstar  ao  teu  lado, senhor\n\nPois pra te adoraaaaar\nFoi que eu nasci\nCumpra em mim\nO teu querer\nFaça o que está em teu coração\nE que a cada dia eu queira mais e mais\n   F#m G#m7 A7M  B7(4/9)   E  Bm E7\nEstar  ao  teu  lado,  senhor"
+    },
+    {
+      "id": "mq3y9myivl2ef",
+      "name": "CANTO DE ENTRADA",
+      "artist": "Arquidiocese de Goiânia",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n     C        A7        Dm\n         F          G         C \n     C       C7         F  F#°\n     G         G7       C\n\n[Refrão]\n\n   F              C\n   G7              C     C7\n      F              C\n   G7            C\n\n[Parte 2]\n     C        A7        Dm\n         F       G        C \n     C       C7         F  F#°\n     G          G7    C\n\n[Refrão]\n\n   F              C\n   G7              C     C7\n      F              C\n   G7            C",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\n\nEntoai ao Senhor novo canto,\npois prodígios foi ele quem fez\nSua mão e o seu braço santo\na vitória lhe deram de vez\n\n[Refrão]\n\nEntão, os povos viram\no Deus que nos salvou,\npor isso, ó terra inteira,\ncantai louvor a Deus!\n\n[Parte 2]\nO Senhor revelou seu auxílio,\nsua justiça aos povos mostrou.\nRecordou-se de sua bondade,\nem favor de seu povo fiel\n\n[Refrão]\n\nEntão, os povos viram\no Deus que nos salvou,\npor isso, ó terra inteira,\ncantai louvor a Deus!\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9mz1m2669",
+      "name": "ATO PENITENCIAL",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "D",
+      "lyrics": "[Intro]\n\nD Em Bm A4 A\nD Em Bm A4 A\n\n[Parte 1]\n     D        \n           Bm7\n          G7M   D/F#\n Em7     Bm       A/C# G/B A \n\n[Refrão] \nD Em7  D/F# G \nD Em7  D/F# G \n  Bm   A4 A D G/D \n\n[Parte 2]\n  D        \n  Bm7\n   G7M   D/F#\n Em7     Bm       A/C# G/B A \n\n[Refrão]\nD Em7  D/F# G \nD Em7  D/F# G \n  Bm   A4 A D G/D \n\n[Parte 3]\n  D        \n Bm7\n G7M       D/F#\n Em7     Bm       A/C# G/B A ",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\n Senhor que viestes \n Não para condenar \n Mas para perdoar \nTende piedade de nós\n\n[Refrão] \nKyrie Eleison \nKyrie Eleison\nKyrie Eleison\n\n[Parte 2]\n Cristo que vos alegrais \n Pelo pecador \n Arrependido\nTende piedade de nós\n\n[Refrão]\nKyrie Eleison \nKyrie Eleison\nKyrie Eleison\n\n[Parte 3]\n Senhor que muito perdoais\n A todo aquele \n Que muito ama\nTende piedade de nós\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9mzfjyo7w",
+      "name": "GLÓRIA",
+      "artist": "Anjos do Céu",
+      "tone": "E",
+      "lyrics": "[Intro]\n\n[Refrão]\nE C#m G#m\nA E B\nE C#m G#m\nA B E\n\n[Estrofe]\n\nG# C#m\nF# B\nA B E C#m\nF# B",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\n\n[Estrofe]\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9mzra1pu1",
+      "name": "SALMO",
+      "artist": "",
+      "tone": "F",
+      "lyrics": "[Intro]\nF Bb9 Dm Gm Bb C F\n\n[Refrão]\n\nF Bb9 Dm\nGm Bb9\nF Bb\nF Bb9 Dm\nGm Bb C F\n\n[Parte 1]\nDm C Bb\nDm C F\nBb C Am Dm\nGm Bb C4 C",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\n\n[Parte 1]\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n05e1iz4",
+      "name": "ACLAMAÇÃO",
+      "artist": "",
+      "tone": "D",
+      "lyrics": "[Intro]\nG A D A7\n\n[Refrão]\n\n   D     A/C#      Bm  Bm/A\n    G D/F# Em A D A7\n\n[Antífona]\n\nBm A \nG Em A",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\n\nAleluia Aleluia Aleluia\nAlelu---------uuuua\n\n[Antífona]\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n0ccdje3",
+      "name": "OFERTÓRIO",
+      "artist": "Comunidade Católica Shalom",
+      "tone": "Em",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\nEm7               C7M \n G          B7(4)\nEm7              C7M\n     G             D\n       Em7       C/E         G/D  D\n    Em7      C/E      G/D  D\n    C         G/B        Am \n G    D  G D\n\n[Refrão]\n               G       A/G C/G\n     G     D/F#\n   Em7      Em7/D   C G/B Am\n     G          D\n               G      A/G C/G\n           G   D/F#\n   Em7     Em7/D   C G/B Am\n         D          Em7 C\n G       D   Em D C Bm C   G       D",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\n\nMão na Terra e o coração\nAlém deste céu\nE a semente que brota é\nUm germe de eternidade\nVai brotando, crescendo, esperando    \nÉ a vida que vem despontar\neste trigo maduro, a colheita o\nrecolherá\n\n[Refrão]\nEstar em Tuas mãos, ó Pai\nE a vida ofertar\nNo pão e no vinho a Ti\nE o céu se abrirá\nEstar em Tuas mãos, Senhor\nE a vida entregar\nA minha oblação em Ti\nSe perderá, frutificará\nFrutificará, frutificará, frutificará!\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n0i0l81v",
+      "name": "SANTO",
+      "artist": "Banda Capella",
+      "tone": "C",
+      "lyrics": "[Intro]\n\nC G7\n\n[Parte 1]\n C             G\n F               Am  G\n   C                G               F   G\n C             G               F               Am  G \n   C                G               F   G\n  Am  G        C\n\n[Parte 2]\n   Am            Em Dm            C G\n  Am       G          F\n  Am       G          A\n\n  D             A \n  G              Bm A\n   D                                A \n   G    A      D",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\nSanto, Santo, Santo o Senhor\nSenhor Deus do Universo\nO céu e a terra proclamam a Vossa glóriaa\nSanto, Santo, Santo o Senhor, Senhor Deus do Universo\nO céu e a terra proclamam a Vossa glória\nHosaaana nas alturas\n\n[Parte 2]\nBendito o o que vem em nome do Senhor\nHosana, Hosana nas altuuras\nHosana, Hosana nas altuuras\n\nSanto, Santo, Santo o Senhor\nSenhor Deus do Universo\nO céu e a terra proclamam a Vossa glória\nHosana nas altuuras\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n0q9axym",
+      "name": "AMÉM",
+      "artist": "Tradicional",
+      "tone": "D",
+      "lyrics": "[Refrão]\n\nD A/C# Bm Bm/A",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Refrão]\n\nG D Em A D (2x)\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n0x059yi",
+      "name": "CORDEIRO DE DEUS",
+      "artist": "Amor e Adoração",
+      "tone": "F",
+      "lyrics": "[Intro]\nF F7M\n\n[Parte 1]\nF9 Am7 \nBb9\n\n[Parte 2]\nF9 Am7 \nBb9\n\n[Parte 3]\nF9 Am7 \nBb9\nGm Bb C F7M9",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\nGm C9 C4 F (Bb/F C/F)\n\n[Parte 2]\nGm C9 C4 F (Bb/F C/F)\n\n[Parte 3]\n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n150xhiq",
+      "name": "COMUNHÃO",
+      "artist": "Músicas Católicas",
+      "tone": "D",
+      "lyrics": "[Intro]\n\n[Parte 1]\n     D               A7\n     Bm                F#m\n    G                    D \n    E                      A\n\n[Refrão]\n\n      D                    A   A#º\n    Bm                 F#m\n      G         A       D Bm\n    E        A7       D    A",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Parte 1]\n Cantar a beleza da vida \n Presente do amor sem igual\n Missão do Teu povo escolhido \n Senhor, vem livrar-nos do mal \n\n[Refrão]\n\n Vem dar-nos Teu Filho, Senhor \n Sustento no pão e no vinho \n E a força do Espírito Santo \n Unindo Teu povo a caminho \n\n--------------------------------------------------"
+    },
+    {
+      "id": "mq3y9n1c17c0e",
+      "name": "FINAL",
+      "artist": "Músicas Católicas",
+      "tone": "D",
+      "lyrics": "[Intro]\nG A D A7\n\n[Refrão]\nD B7 Em\nG A D\nD G Gm\nA G A D\n\n[Parte 1]\nA D\nA D\nA D\nEm A D",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "[Intro]\n\n[Refrão]\n\n[Parte 1]"
+    },
+    {
+      "id": "mq5i4x6taxa9l",
+      "name": "Entrada",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=9EAWrjClpWgXWyvs",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4x7o7txoz",
+      "name": "Ato Penitencial",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/ItfRKnIfxoc?si=8e8kxmrNNQVSwb8E",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4x8icqvhp",
+      "name": "Hino De Louvor",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/PRAaMS0qs2c?si=wvVee71wXCioeCBu",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4x96v15pv",
+      "name": "Aclamação",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "Melodia do \"alguém do povo exclamar\""
+    },
+    {
+      "id": "mq5i4x9wxew4j",
+      "name": "Ofertas",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/c74ipqfhPXk?si=12_6f8qXqURCR7Fu",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4xaiiiigd",
+      "name": "Santo",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/qM60p0pqJBY?si=T3rjeTsrYvODw02t",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4xb7l0n2p",
+      "name": "Cordeiro De Deus",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/janev45m3K4?si=-K_ZLU-VNEDKz85d",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4xc27np5m",
+      "name": "Comunhão",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/YYztxONpGvI?si=aVDAobpUmY7_UGms",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5i4xco8h6sv",
+      "name": "Exposição Do Santíssimo",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/opJz6z3ayeQ?si=zVJXyjMTeQEFwua4",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2igl42s15",
+      "name": "Teste de Música",
+      "artist": "",
+      "tone": "E",
+      "lyrics": "[Intro]\nA  B  E  B7\n\n[Parte 1]\nE  C#m  G#m\nA  E  B7\nE  C#m  G#m\nA  B  E\n\n[Refrão]\nF#  B\n\n[Final]",
+      "external_link": "https://youtu.be/dlbg78WxwuU",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2ihgsexa6",
+      "name": "Ato Penitencial",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\nC  G  Am  F\n\n[Parte 1]\n\n[Refrão]\n\n[Final]",
+      "external_link": "https://youtu.be/sNI-zMtH_ew",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2ihzyu7tf",
+      "name": "Hino De Louvor",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/3UX4gHYAi_4",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2iih509f9",
+      "name": "Aclamação",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/auja5RfLrKI",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2iizcvcmr",
+      "name": "Ofertas",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/MmZJlsboSPA",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2ijggvotl",
+      "name": "Santo",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/OKYV6KXL00s",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2ik1r5chc",
+      "name": "Cordeiro De Deus",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/SK1GA17PNeI",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2ikm5de8b",
+      "name": "Comunhão",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/TgeaBcjb4YU",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mq5k2il7t9irx",
+      "name": "Final",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "",
+      "external_link": "https://youtu.be/1pAGYbU0-tg",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxijny35d",
+      "name": "Agora é tempo de ser Igreja",
+      "artist": "Músicas Católicas",
+      "tone": "C",
+      "lyrics": "[Intro]\nC  G\n\n[Parte 1]\nC  G\nDm  G  C\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/-UsYby3JDbQ?si=bO-GmJo5W35n07k7",
+      "tone_offset": 0,
+      "note": "Tennenxnnensneb"
+    },
+    {
+      "id": "mqmgpxj5fnb6n",
+      "name": "Entrada 2",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/3Mzauk4I-vs?si=a483flv8u2aXZMEI",
+      "tone_offset": 0,
+      "note": "C"
+    },
+    {
+      "id": "mqmgpxjnlxeta",
+      "name": "Ato Penitencial 1- (d)",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/z-2wg4w7Imo?si=k4RKHjoEyoRZonMC",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxk57vnrl",
+      "name": "Ato Penitencial 2",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "Confesso a Deus (G"
+    },
+    {
+      "id": "mqmgpxkmgawof",
+      "name": "Glória 1",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": "Eliana Ribeiro (D"
+    },
+    {
+      "id": "mqmgpxl534k5u",
+      "name": "Glória 2",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/-SzbBwWkvGA?si=GUQO-3yUXidg5687",
+      "tone_offset": 0,
+      "note": "D"
+    },
+    {
+      "id": "mqmgpxlndpisd",
+      "name": "Aclamação (d)",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxm613xz1",
+      "name": "Ofertório 1",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/E2LspKoSLhU?si=RxCkqo1Yf2oyhIoY",
+      "tone_offset": 0,
+      "note": "Sabes senhor (C"
+    },
+    {
+      "id": "mqmgpxmnnmz0p",
+      "name": "Ofertório 2",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/wrTyd6vdRmA?si=2ujnTxm28GQq0Nyc",
+      "tone_offset": 0,
+      "note": "G"
+    },
+    {
+      "id": "mqmgpxn44y4sp",
+      "name": "Santo 1",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxnke8b6o",
+      "name": "Santo 2",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxnzholgx",
+      "name": "Comunhão 1",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxoej31zv",
+      "name": "Comunhão 2",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqmgpxou4e2jw",
+      "name": "Final",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszetcfe00",
+      "name": "Agora é Tempo de Ser Igreja",
+      "artist": "Músicas Católicas",
+      "tone": "C",
+      "lyrics": "[Intro]\nF G C G7\n\n[Refrão]\n\n          C             G\nAGORA É TEMPO DE SER IGREJA,\n           Dm   G    C\nCAMINHAR JUNTOS, PARTICIPAR. (BIS)\n\n\n[Parte 1]\n               C                      Am\nSOMOS POVO ESCOLHIDO NA FRONTE ASSINALADOS\n                Dm          F             G7 C G\nCOM O NOME DO SENHOR QUE CAMINHA AO NOSSO LADO.\n\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszfdz0aa4",
+      "name": "Toda a Igreja Unida Celebra",
+      "artist": "Coral Palestrina",
+      "tone": "C",
+      "lyrics": "[Intro]\nF G C G7\n\n[Refrão]\n         C     F       C \nToda a igreja unida celebra\n   Dm       Am          D   G\nA memória pascal do Cordeiro\n   C          F           C  \nIrmanada com Pedro e com Paulo\n       F         G             C    C7\nQue seguiram a Cristo por primeiro!\n\n[Parte 1]\n   F               C         F           C\nPublicai em toda Terra os prodígios do Senhor\n   D                          D7        G7\nReuniu seu povo amado para o canto do louvor\n\n[Refrão]\n         C     F       C \nToda a igreja unida celebra\n   Dm       Am          D   G\nA memória pascal do Cordeiro\n   C          F           C  \nIrmanada com Pedro e com Paulo\n       F         G             C    C7\nQue seguiram a Cristo por primeiro!\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszfxobgnb",
+      "name": "Senhor que viestes ao mundo",
+      "artist": "Capella",
+      "tone": "A",
+      "lyrics": "[Intro]\nA7M  Bm7  C#m7 E7\n\n[Primeira Parte]\n\n    A7M       Bm7       C#m7\nSenhor, que viestes ao mundo\n D7M         A9          Bm7     E\nPara nos salvar, tem piedade de nós\n\n[Refrão]\n\n F#m  C#m7  D7M  A9  Bm7    A9  E\nKyri__e,   Kyri__e, Kyrie Elei_son\n F#m  C#m7  D7M  A9  Bm7    E4 E A9\nKyri__e,   Kyri__e, Kyrie Elei_son\n\n[Segunda Parte]\n\n    A7M        Bm7   C#m7\nÓ Cristo, que continuais \n D7M       A9          Bm7     E\nA nos visitar, tem piedade de nós\n\n\n[Refrão]\n\n   F#m  C#m7  D7M     A9    Bm7     A9    E\nChris__ te,       Chris__te,    Christe Elei_son\n F#m  C#m7  D7M  A9  Bm7    E4 E A9\nChris__te, Chris__te, Christe Elei_son\n\n[Terceira Parte]\n\n    A7M        Bm7     C#m7\nSenhor, que vireis um dia  \n D7M         A9          Bm7     E\nPara nos julgar, tem piedade de nós\n\n[Refrão]\n\n F#m  C#m7  D7M  A9  Bm7    A9  E\nKyri__e,   Kyri__e, Kyrie Elei_son\n F#m  C#m7  D7M  A9  Bm7    E4 E A9\nKyri__e,   Kyri__e, Kyrie Elei____son\n\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszgficzf3",
+      "name": "ATO PENITENCIAL 2",
+      "artist": "Músicas Católicas",
+      "tone": "D",
+      "lyrics": "[Intro]\n Segura no D\n\n[Parte 1]\n\n   D                             F#m    \nSenhor, que oferecestes o vosso perdão\n              Bm\nA Pedro arrependido\n  G       \nTende piedade de nós\n  D       A     A7          D\nSenhor, tende piedade de nós\n\n   D                       F#m    \nCristo, que prometestes o paraíso\n         Bm\nAo bom ladrão\n  G       \nTende piedade de nós\n    D     A       A7     D\nCristo, tende piedade de nós\n\n   D                       F#m    \nSenhor, que acolheis toda pessoa \n                          Bm\nQue confia na vossa misericórdia\n  G       \nTende piedade de nós\n\n   D      A     A7        D\nSenhor, tende piedade de nós\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszgr46pqg",
+      "name": "ATO PENITENCIAL 3",
+      "artist": "Músicas Católicas",
+      "tone": "G",
+      "lyrics": "[Intro]\n\n[Parte]\n   G                    D/F#\nConfesso a Deus todo poderoso\nEm        Bm\nE a vós irmão e irmãs\n     C                  G\nQue pequei muitas vezes por pensamentos\n    Am             D4 D\npalavras, atos e omissões\n\n  G                             D/F#\nPor minha culpa tão grande culpa\nEm                Bm\nE peço a Virgem Maria\n              C                           \naos anjos e santos e a vós\n   G\nIrmão e irmãs\n       Am              C    \nQue rogueis por mim a Deus\n   D     G   D4 D\nNosso Senhor\n\n[Refrão]\n   G            Bm\nSenhor tende piedade\n C               G\nCristo tende piedade\n  Am            Em\nSenhor tende piedade,\n         Am        D4 D\ntende piedade, de nós\n\n  G            Bm\nSenhor tende piedade\n   C            G\nCristo tende piedade\n   Am          Em\nSenhor tende piedade,\n         Am      D D4      G7M    \ntende piedade, piedade de nós\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszh4vacod",
+      "name": "GLÓRIA 1",
+      "artist": "Coral Palestrina",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Refrão]\n   C                 G7\nGlória a Deus nas alturas\n  Dm      G7        C\nGlória a Deus nas alturas\n   C7                 F\nGlória a Deus nas alturas\n\n   Fm                C          F   G7   C\nE paz na terra aos homens por ele amados\n\n[Parte 1]\n   C                  G7\nSenhor Deus, Rei dos céus\n                Dm\nDeus pai todo poderoso\n G7        C                  C\nNós vos louvamos, nós vos bendizemos\n           C                     F    Fm\nNós vos adoramos, nós vos glorificamos\n                C          F      G      C\nNós vos damos graças por vossa imensa glória\n\n[Parte 2]\n   C                                           G7\nSenhor Jesus Cristo, Filho unigênito, Senhor Deus\n      Dm           F          G7                 C\nCordeiro de Deus, Filho de Deus Pai\n        C                    C             D     G\nVós que tirais o pecado do mundo, tende piedade nós\n          C                  C      F         G7     C\nVós que tirais o pecado do mundo, acolhei a nossa súplica\n         F                   C             G7      C\nVós que estais à direita do Pai, tende piedade de nós\n\n[Parte 3]\n    G7                  G7     C\nSó Vós Sois O Santo, Só Vós o Senhor\n    G7                      C\nSó Vós O Altíssimo Jesus Cristo!\n        F        C          F             C\nCom o Espírito Santo, na Glória de Deus Pai\n   G7   C\nAmém!\n\n--------------------------------------------------",
+      "external_link": "https://www.youtube.com/watch?v=ORXy8k0P_Po",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszhlbq84s",
+      "name": "GLÓRIA 2",
+      "artist": "Músicas Católicas",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n\n[Refrão]\n     C                    G7\nGLÓRIA, GLÓRIA, GLÓRIA, ALELUIA\n   Dm              G       C\nGLÓRIA, GLÓRIA, GLÓRIA, ALELUIA\n                 C7\nGLÓRIA, GLÓRIA, GLÓRIA,\n       F         Fm\nA DEUS NOS ALTOS CÉUS,\n        C       G     C\nPAZ NA TERRA A TODOS NÓS!\n\n[Parte 1]\n  C                   G7\nDEUS E PAI NÓS VOS LOUVAMOS (GLÓRIA A DEUS)\n    Dm      G7                  C  \nADORAMOS, BENDIZEMOS (GLÓRIA A DEUS)\n C7                    F              Fm\nDAMOS GLÓRIA AO VOSSO NOME (GLÓRIA A DEUS)\n        C      G     C\nVOSSOS DONS AGRADECEMOS!\n\n[Parte 2]\n    C                 G7\nSENHOR NOSSO, JESUS CRISTO (GLÓRIA A DEUS)\n    Dm     G7         C  \nUNIGÊNITO DO PAI (GLÓRIA A DEUS)\n   C7                  F                Fm\nVÓS DE DEUS, CORDEIRO SANTO (GLÓRIA A DEUS)\n         C      G     C\nNOSSAS CULPAS PERDOAI!\n\n--------------------------------------------------",
+      "external_link": "https://www.youtube.com/watch?v=ORXy8k0P_Po",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszi2yec0p",
+      "name": "SALMO",
+      "artist": "",
+      "tone": "?",
+      "lyrics": "--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszifhwvf0",
+      "name": "ACLAMAÇÃO - Aleluia Tradicional",
+      "artist": "Músicas Católicas",
+      "tone": "D",
+      "lyrics": "[Refrão]\n D A/C# Bm Bm/A\n G D/F# Em A D A7\n\n[Antífona]\nBm A\nG Em A\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszkdo0l8r",
+      "name": "Sabes Senhor",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n\n[Refrão]\n    C    Dm\nSABES, SENHOR,\n         F           G       C   \nO QUE TEMOS É TÃO POUCO PRA DAR,\nC7        F     Fm\nMAS ESSE POUCO,\n       C              G         C\nNÓS QUEREMOS COM OS IRMÃOS COMPARTILHAR\n\n[Parte 1]\n\n  Dm             F\nQUEREMOS NESTA HORA,\n  G7         Em\nDIANTE DOS IRMÃOS,\n   A7           Dm\nCOMPROMETER A VIDA,\n    F        G    C\nBUSCANDO A UNIÃO.\n\n[Refrão]\n    C    Dm\nSABES, SENHOR,\n         F           G       C   \nO QUE TEMOS É TÃO POUCO PRA DAR,\nC7        F     Fm\nMAS ESSE POUCO,\n       C              G         C\nNÓS QUEREMOS COM OS IRMÃOS COMPARTILHAR\n\n[Parte 2]\n  Dm             F\nSABEMOS QUE É DIFÍCIL,\n  G7         Em\nOS BENS COMPARTILHAR,\n     A7        Dm\nMAS COM A TUA GRAÇA,\n    F      G      C\nSENHOR, QUEREMOS DAR.\n\n--------------------------------------------------",
+      "external_link": "https://www.youtube.com/watch?v=9yrhjSjdYGU",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszktgqmoi",
+      "name": "Santo III",
+      "artist": "",
+      "tone": "D",
+      "lyrics": "[Intro] - Léo\n\n   D                     \nSanto santo saantoo\n  Bm                     \nSanto santo saantoo\n    Em                A\no senhor Deus do Univeerso\n   D                     \no céu e a teeeera\n   Bm                     \no céu e a teeeera\n    Em               A\nproclamam a vossa glóoria\n\n  Bm       D\nHosana, Hosana,\n  A           D F# \nHosana nas alturas\n   Bm       D\nHosana, Hosana, \n   G    A     D\nHosana nas alturas\n\n   D                     \nBendito o que veeem\n   Bm                     \nBendito o que veeem\n    Em       A\nem nome do senhor (2x)\n\n   Bm      D\nHosana, Hosana,\n  A          D  F# \nHosana nas alturas\n  Bm         D\nHosana, Hosana, \n G      A     D\nHosana nas alturas\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszlbi6xio",
+      "name": "SANTO 2",
+      "artist": "",
+      "tone": "Bm",
+      "lyrics": "[Intro]\nD A7\n\n\n    D               A/C#\nSanto santo santo o senhor\n   Em\nSenhor Deus do Universo\n   Bm               A              G A\nO Céu e a terra proclamam a vossa glória\n   D          A/C#\nSanto santo santo o senhor\n  Em\nSenhor Deus do Universo\n   Bm               A               G \nO Céu e a terra proclamam a vossa glória\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszlq6uuk5",
+      "name": "CORDEIRO DE DEUS",
+      "artist": "Amor e Adoração",
+      "tone": "F",
+      "lyrics": "[Intro]\n\n             F9\nCordeiro de Deus\n      Am9               Bb9\nQue tirais o pecado do mundo\n              Gm7      C4 C     F F/Bb F/C\nTende piedade, piedade de nós.\n\n\n             F9\nCordeiro de Deus\n     Am9                    Bb9\nQue tirais o pecado do mundo\n       Gm7       C4 C      F F/Bb F/C\nTende piedade, piedade de nós.\n\n             F9\nCordeiro de Deus\n     Am9                Bb9\nQue tirais o pecado do mundo\n          Gm7    Bb9   C   F\nDai-nos a paz, a vo---ssa paz\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszm467ppw",
+      "name": "Vem e eu mostrarei",
+      "artist": "Músicas Católicas",
+      "tone": "D",
+      "lyrics": "[Intro]\n\n D          Bm                   G                 A\nVem, e eu mostrarei que o meu caminho te leva ao pai\n   D               Bm             G          A\nGuiarei os passos teus e junto a ti ei de seguir\n\n         Bm      F#           G         A\nSim, eu irei e saberei como chegar ao fim\n         Bm         F#             G     A        D Bm G A\nDe onde vim, aonde vou, por onde irás, irei também\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszmm9099f",
+      "name": "Tu te abeirastes na praia",
+      "artist": "Músicas Católicas",
+      "tone": "C",
+      "lyrics": "  C          G/B            Am\nTu te abeiraste da praia\n       F    Dm                  G7\nNão buscaste   nem sábios, nem ricos\n          C  G/B             Am  Gm7 C7\nSomente queres   que eu te siga\n   F     G                   Em Am\nSenhor, Tu me olhaste nos olhos\n   Dm     G                         Gm7 C7\nA sorrir,     pronunciaste meu nome\n       F      G                     Em  Am\nLá na praia, eu larguei o meu barco\n        Dm  G                  C\nJunto a Ti,   buscarei outro mar\n\n\n--------------------------------------------------",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mqwpszn9g4oac",
+      "name": "Hino de São Pedro",
+      "artist": "Diego Vitorino",
+      "tone": "F",
+      "lyrics": "[Intro]  \n\n[Parte 1]\n    Bb            C        F\nPescador sempre humilde vivendo,\n          Bb        C        F\nSobre as águas num barco a pescar,\n          Bb    C       F    Dm\nPedro um dia a Jesus conhecendo,\n       Bb           C      F\ndeixa tudo pra os homens salvar\n\n\n[Refrão]\n        A               Dm\nJesus Cristo te deu o primado.\n      Gm          B°          C\nTuas mãos têm as chaves dos céus.\n     Bb         C            F   Dm\nDa Bahia, São Pedro, ouve o brado:\n      Bb      C            A\nnosso povo conduze pra Deus!\n    Bb        C               F  Dm\nDa Bahia, São Pedro, ouve o brado:\n      Bb      C          F\nnosso povo conduze pra Deus!\n\n\n[Parte 2]\n      Bb            C        F\n Foste, ó Pedro, por Cristo escolhido\n        Bb           C             F\n do rebanho supremo pastor.\n         Bb          C             F    Dm\nDas ovelhas escuta o pedido:\n                Bb           C            F\nguarda a todos na paz e no amor. \n\n[Refrão]\n        A               Dm\nJesus Cristo te deu o primado.\n      Gm          B°          C\nTuas mãos têm as chaves dos céus.\n     Bb         C            F   Dm\nDa Bahia, São Pedro, ouve o brado:\n      Bb      C            A\nnosso povo conduze pra Deus!\n    Bb        C               F  Dm\nDa Bahia, São Pedro, ouve o brado:\n      Bb      C          F\nnosso povo conduze pra Deus!",
+      "external_link": "https://youtu.be/X_IXf3gl3CU?si=QbC6P5PCsmIgFRz8",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr45xewpwwcat",
+      "name": "Ó senhor vos nos destes a vida",
+      "artist": "",
+      "tone": "F",
+      "lyrics": "[Intro]\nGm  F  Dm  A#  C  F  C7\n\n[Parte 1]\nF  A#  F\nGm  C  F\nF  A#  F\nGm  C  F\n\n[Refrão]\nA#  C\nAm  Dm\nGm  C  Am  Dm\nGm  C  F  F7\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/qBeUYsZol68?si=nIa-Ej-43VLnYDXv",
+      "tone_offset": 11,
+      "note": ""
+    },
+    {
+      "id": "mr45xexc3sgwn",
+      "name": "Ato Penitencial",
+      "artist": "",
+      "tone": "A#",
+      "lyrics": "[Intro]\n\n[Parte 1]\nA#  Dm\nD#  F  A#  A#7\n\n[Refrão]\nD#  D#m\nPiedade\nA#  Gm\nPiedade \nCm  F  A#\nPiedade de Nós\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/z8WRe8YGbEM?si=d6qD_FBQ9na_OGyF",
+      "tone_offset": 7,
+      "note": ""
+    },
+    {
+      "id": "mr45xexvmtkpq",
+      "name": "Glória",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/XtrBoeXXpu8",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr45xeykmbj2e",
+      "name": "Ofertório",
+      "artist": "",
+      "tone": "Dm",
+      "lyrics": "[Intro]\nDm  Gm\nA7  Dm\n\n[Parte 1]\nDm  Gm  C  Dm\nDm  Gm  A7  Dm\n\n[Refrão]\nD7  Gm  C  Dm\nDm  Gm  A7  Dm  D7\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/uj-FKrtC2SE?si=740i3jX5QL453vy7",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr45xez9gtlz2",
+      "name": "Levanta-te e come [-3]",
+      "artist": "",
+      "tone": "G",
+      "lyrics": "[Intro]\nG  G7  C  Cm\nG  Am  D  G\n\n[Parte 1]\nG  E°  Am  D7\nG  Em  Am  B7\nEm  G7\nC  E7\nAm  D7\n\n[Refrão]\nG  G7  C  Cm\nG  A7  D  G\nG  Em  Am\nG  Em  A7  D7\nG  G7  C  Cm\nG  A7  D7  G",
+      "external_link": "https://youtu.be/czSDh21BdEQ?si=8hqZpdnk4OM0nGWa",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr45xezr41hpo",
+      "name": "MARIA MÃE DOS CAMINHANTES",
+      "artist": "",
+      "tone": "E",
+      "lyrics": "[Intro]\nE  B  C#m  B\nA  B  E\n\n[Parte 1]\nE  B7\nA  B  E\nE  B7\nA  B  E\n\n[Refrão]\nE  B  C#m\nA  E  B7\nE  B  C#m  B\nA  B  E\n\n[Parte 2]\n\n[Final]",
+      "external_link": "https://youtu.be/FZFmN5SfR2w?si=riDQAtR9zpzNv2rN",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr6gd8hzeptlw",
+      "name": "Salmo",
+      "artist": "",
+      "tone": "Em",
+      "lyrics": "[Intro]\n\n[Refrão]\nEm  Am\nEm  B  Em\n\n[Parte 1]\nE  Am\nD  G\nC  Am\nB  Em",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr7qjhpha5s9v",
+      "name": "Todos reunidos",
+      "artist": "",
+      "tone": "E",
+      "lyrics": "[Intro]\n\n[Parte 1]\nE  A\nE  A\n\n[Refrão]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr7qmdwudzdoz",
+      "name": "Muito Perdoais",
+      "artist": "",
+      "tone": "D",
+      "lyrics": "[Intro]\n\n[Parte 1]\nD\nBm7\nG  D\nEm7  Bm  A\n\n[Refrão]\nD  Em7  D  G\nD  Em7  D  G\nBm  Asus4  A  D",
+      "external_link": "",
+      "tone_offset": 7,
+      "note": ""
+    },
+    {
+      "id": "mr7qnb17jykfy",
+      "name": "Face",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\nC  G7\n\n[Parte 1]\nC  G  Dm  Am\nF  Am  G\nDm  C\nF  G\nDm  C\nF  Am\nF  C\nF  Am\nDm  Am\nF  G\nC  G  Dm  Am\nF  C  F  G\nDm  Em\nF  G\nDm  Em\nF  G\nDm  Em\nF  G\nC  G\nF  C\nF  C  F\nDm  C  F\nG  C\n\n[Refrão]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr7qo0zaf3xct",
+      "name": "Aclamação",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\n\n[Refrão]\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mr7qu1dm0ywmv",
+      "name": "Oferta no silêncio",
+      "artist": "",
+      "tone": "A",
+      "lyrics": "[Intro]\nA  E\n\n[Parte 1]\nA  E\nA  E  F°\nF#m  C#m  D\nA  E\nA  E  F°\nF#m  C#m  D\n\n[Refrão]\nE  A\nE  F°  F#m\nC#m  D  A\nBm  D  A\nE  A\nE  F°  F#m\nC#m  D  A\nBm  D  E  A\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrgrruk1h39l2",
+      "name": "Santo",
+      "artist": "",
+      "tone": "Cm",
+      "lyrics": "[Intro]\n\n[Parte 1]\nCm  Fm\nA#  Cm\nCm  G#\nG  Cm\n\n[Parte 2]\nC  Fm\nA#  D#\nG#  D°\nG  Cm",
+      "external_link": "https://youtu.be/U0DaSk4SyWE?si=w5OHnI0nVfttcGjJ",
+      "tone_offset": 9,
+      "note": ""
+    },
+    {
+      "id": "mrgwus5wfknzk",
+      "name": "Aclamação",
+      "artist": "",
+      "tone": "C",
+      "lyrics": "[Intro]\n\n[Parte 1]\nC  Em\nAm  Em\nA#  Dm  G\n\n[Refrão]\nAm  G\nA#  G\n\n[Final]",
+      "external_link": "",
+      "tone_offset": 9,
+      "note": ""
+    },
+    {
+      "id": "mrs44unn59xlw",
+      "name": "Agnus Dei - Glória ao nosso Deus",
+      "artist": "Paulus",
+      "tone": "D",
+      "lyrics": "[Intro]\nG D Em Bm\nC Am D4 D\n\n\n[Parte 1]\n   G        D         Em\nQuando a Igreja se levanta\n        Bm          Am          D               \nPara exaltar o nome do Senhor Jesus\n   G        D         Em\nO céu e a terra em harmonia\n        Bm         Am          D               \nIrão cantar o nome do Senhor Jesus\n\n     C          Am           D \nO Espírito de Deus ao nosso encontro vem\n       Em        C           D\nE os anjos se levantam pra cantar também\n\n[Refrão]\n  G                    Em\nAmém, glória ao nosso Deus!\n               Am   C   D\nSanto é nosso Deus! Aleluia!\n\n G      D           Em\nNos louvores Deus habita\n        Bm          Am          D               \nVamos provar essa presença do Senhor\n   G                  D         Em\nSentir que em nosso meio está Jesus\nBm       Am       D               \nO nosso Deus Dominador\n\n     C          Am            D \nO Espírito de Deus ao nosso encontro vem\n       Em        C            D\nE os anjos se levantam pra cantar também\n\n[Refrão]\n  G                    Em\nAmém, glória ao nosso Deus!\n               Am   C   D\nSanto é nosso Deus! Aleluia!",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44uo4ty6u6",
+      "name": "Senhor, vós que sois o caminho",
+      "artist": "Jair Costa",
+      "tone": "D",
+      "lyrics": "[Parte 1]\n  D                  F#m\nSenhor, que sois o caminho \n             Bm\nque leva ao Pai,\n  G\ntende piedade de nós.\n\n[Refrão]\n   D      A7              D\nSenhor, tende piedade de nós\n\n[Parte 2]\n  D                  F#m\nCristo, que sois a verdade \n                Bm\nque ilumina os povos,\n  G\ntende piedade de nós.\n\n[Refrão]\n   D      A7              D\nCristo, tende piedade de nós\n\n[Parte 3]\n  D                 F#m\nSenhor, que sois a vida \n               Bm\nque renova o mundo, \n  G\ntende piedade de nós.\n\n[Refrão]\n\n   D      A7              D\nSenhor, tende piedade de nós",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44uov1nyo5",
+      "name": "Glória",
+      "artist": "Coral Palestrina",
+      "tone": "E",
+      "lyrics": "[Refrão]\n\n E                  B7\nGlória a Deus nas alturas\n F#m               E\nGlória a Deus nas alturas\n E7                  A\nGlória a Deus nas alturas\n                    E         B7    E\nE paz na terra aos homens por Ele amados\n\n\n[Parte 1]\n\n                      B7\nSenhor Deus, Rei dos céus\n                 F#m\nDeus Pai todo poderoso\n B7         E\nNós vos louvamos\n\nNós vos bendizemos\n\nNos vos adoramos\n    E7         A\nNós vos glorificamos\n               E\nNós vos damos graças\n   B7            E\nPor vossa imensa glória\n\n[Parte 2]\n                              B7\nSenhor Jesus Cristo, Filho Unigênito, Senhor Deus\n  F#m        B7                 E\nCordeiro de Deus, Filho de Deus Pai\n                    B7       E\nVós que tirais o pecado do mundo\n          F#     B7\nTende piedade de nós\n E                  B7     E\nVós que tirais o pecado do mundo\n\n           B7       E\nAcolhei a nossa súplica\n           A      E         B7\nVós que estais à direita do Pai\n          E\nTende piedade de nós\n\n\n[Parte 3]\n               B7                 E\nSó vós sois o Santo, só vós o Senhor\n          B7              E\nSó vós o Altíssimo Jesus Cristo\n        A       E\nCom o Espírito Santo\n    A             E       B7     E\nNa glória de Deus Pai.     A  - mém!",
+      "external_link": "https://youtu.be/EFhnMsTUK60?si=R_hwv0YQFtbIyWyk",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44upe8o2bv",
+      "name": "O Evangelho da vida",
+      "artist": "Coral Palestrina",
+      "tone": "D",
+      "lyrics": "[Refrão]\n     D     G         D\nÓ Senhor, vós sois bom, \n        A         D\nsois clemente e fiel!\n     D     G         D\nÓ Senhor, vós sois bom, \n        A         D\nsois clemente e fiel!\n\n[Estrofe]\n     D              G        D\nÓ Senhor, vós sois bom e clemente,\n        D          G         D\nsois perdão para quem vos invoca. \n    G         A7           D \nEscutai, ó Senhor, minha prece, \n       A7             D\no lamento da minha oração! ",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44upw012v0",
+      "name": "O Evangelho da vida",
+      "artist": "Coral Palestrina",
+      "tone": "Bm",
+      "lyrics": "[Refrão]\nBm           D   F#            Bm\nAleluia, aleluia, aleluia, aleluia\nBm           D   F#            Bm  B\nAleluia, aleluia, aleluia, aleluia! \n \n\n[Estrofe]\n       G\nNo Evangelho da vida\n                   Bm\nQue nos traz a salvação\n                    D   F#\nJesus Cristo nos convida\n                 Bm\nE nos guia na missão",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44uqqx1td3",
+      "name": "É o Dízimo Senhor",
+      "artist": "Coral Palestrina",
+      "tone": "E",
+      "lyrics": "[Intro] E  B7  A  E\n        E  B7  A  B7  E\n\n[Refrão]\n     E         B7\nÉ o dízimo, Senhor\n                       E\nQue nos mostra com certeza\n                 B7\nGratidão ao Criador\n       A    B7    E\nCompromisso na Igreja\n\n     E         B7\nÉ o dízimo, Senhor\n                       E\nQue nos mostra com certeza\n                 B7\nGratidão ao Criador\n       A    B7    E\nCompromisso na Igreja\n\n[Estrofe]\n\nE7          A              Am                 E\n   Nada me falta (Nada me falta) em meu \n               C#7\ncaminhar (em meu caminhar)\n             F#m\nO Senhor abençoa\n             B7          E\nA quem aprendeu a partilhar\nC#m7          F#m\nO Senhor abençoa\n             B7          E     A  E\nA quem aprendeu a partilhar\n\n[Refrão]\n     E         B7\nÉ o dízimo, Senhor\n                       E\nQue nos mostra com certeza\n                 B7\nGratidão ao Criador\n       A    B7    E\nCompromisso na Igreja\n\n     E         B7\nÉ o dízimo, Senhor\n                       E\nQue nos mostra com certeza\n                 B7\nGratidão ao Criador\n       A    B7    E\nCompromisso na Igreja\n\n[Estrofe]\n\n   E7           A        Am    E\n   Vem ser dizimista na comunidade\nC#7       F#m\nCaminho seguro\n         B7            E\nDe verdadeira fraternidade\nC#m7      F#m\nCaminho seguro\n         B7            E    A  E\nDe verdadeira fraternidade",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44ur8bfdwp",
+      "name": "Santo",
+      "artist": "Coral Palestrina",
+      "tone": "G",
+      "lyrics": " G                    C              G\nSanto santo santo, senhor Deus do Universo!\n                     C              G\nO Céu e a terra proclamam a vossa glória\n\n   D7     G        D7         G\nHosana, Hosana, Hosana nas alturas!\n\n   D7     G        D7         G\nHosana, Hosana, Hosana nas alturas!\n\n   G                  C         G\nBendito o que vem em nome do Senhor!",
+      "external_link": "",
+      "tone_offset": 10,
+      "note": ""
+    },
+    {
+      "id": "mrs44uruiv6nk",
+      "name": "CORDEIRO DE DEUS",
+      "artist": "Amor e Adoração",
+      "tone": "F",
+      "lyrics": "[Intro]\nF F7M\n\nF9 Am7 \nBb9\nGm C9 C4 F (Bb/F C/F)\n\nF9 Am7 \nBb9\nGm C9 C4 F (Bb/F C/F)\n\nF9 Am7 \nBb9\nGm Bb C F7M9",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44usis6h6l",
+      "name": "O Pão da Vida, Comunhão",
+      "artist": "CNBB",
+      "tone": "D",
+      "lyrics": "[Intro]\n\nG D A D\nG D A D\n\n[Refrão]\n           A7       D\nO pão da vida, a comunhão\n            A7            D\nNos une a Cristo e aos irmãos\n         G               D          G                 D\nE nos ensina a abrir as mãos para partir, repartir o pão\n         G               D          G                 D\nE nos ensina a abrir as mãos para partir, repartir o pão\n\n[Parte 1]\n\n         F#7         Bm\nLá no deserto, a multidão\n           B7           Em\nCom fome Segue o bom pastor\n     Bm                 F#\nCom sede busca a nova palavra\n           G        F#      Bm\nJesus tem pena e reparte o pão\n\n[Parte 2]\n\n    F#7         Bm\nNa Páscoa nova da nova lei\n         B7           Em\nQuando amou-nos até o fim\n          Bm                    F#\nPartiu o pão disse Isto é meu corpo\n         G      F#     Bm\nPor vós doado tomai, comei!",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    },
+    {
+      "id": "mrs44ut2ytrbo",
+      "name": "Ó Virgem Mãe da Graça",
+      "artist": "Francisco Muniz",
+      "tone": "A",
+      "lyrics": "[Intro]\n\nBm E\nA E/G# F#m\nBm E\nA E\n\n[Estrofe 1]\n      A    A#°       Bm\nOh! Virgem, Mãe da Graça!\n      D   E           A E/G#\nNos braços trazes o amor\n    F#m         Bm\nO vosso Filho Bendito\n    D    E       A   E  A\nEle é o nosso Senhor\n\nA#°  Bm\nAve-Maria\n E              A A E/G# F#m\nAve cheia da Graça\nA#°  Bm\nAve-Maria\nD      E        A D E A\nAve-Maria do amor\n\n[Estrofe 2]\n\n   A    A#°       Bm\nA Graça é vosso Filho\n      D   E           A E/G#\nPara nós tornou-se Pai\n    F#m         Bm\nOh! Virgem Mãe Bendita\n    D    E       A   E  A\nQuanto bem ele nos faz",
+      "external_link": "",
+      "tone_offset": 0,
+      "note": ""
+    }
+  ],
+  "playlist_chords": [
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjezxlvmsg3",
+      "sort_order": 0,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjgaj0kxsf2",
+      "sort_order": 1,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjhiyqz7il1",
+      "sort_order": 2,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjiybphun7g",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjkiweg5dm1",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjmazcdd4c6",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjnaxar8nif",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjog27y4o0v",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjqnisup637",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjsholz8863",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjutrnxm6aw",
+      "sort_order": 10,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mnzjc9df3575e",
+      "chord_id": "mnzjvsa41i0l7",
+      "sort_order": 11,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3avptdwvkvz",
+      "sort_order": 1,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3bfarz8uu71",
+      "sort_order": 2,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3brz8gjbr6v",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3ctotmy09ex",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3d5ayqybxta",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3djekkx4mof",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3dv8p55q1n1",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3ea1micwais",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mo3at2jowi8k7",
+      "chord_id": "mo3eryuhzej6e",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c5vaqdu1",
+      "sort_order": 1,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c68j6j4i",
+      "sort_order": 2,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c6mce8ap",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c6se5qmz",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c70e3n5y",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c760ljib",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c7fms2lb",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c7u8pfd5",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c83ew4zx",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c8upfo6u",
+      "sort_order": 10,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c92c3bn5",
+      "sort_order": 11,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c9a7ft74",
+      "sort_order": 12,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c9hbhov1",
+      "sort_order": 13,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpd50c5oovhuh",
+      "chord_id": "mpd50c9pwxxsq",
+      "sort_order": 14,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv23j5n32",
+      "sort_order": 1,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv2dc82qy",
+      "sort_order": 2,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv2jjurzk",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv2s68p7j",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv3013ep2",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv3ah2txm",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv3uhnysv",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv4gq9yoa",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mppxpv1ty7sra",
+      "chord_id": "mppxpv4pk7il5",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlstp5a2k",
+      "sort_order": 1,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwltbbg2sb",
+      "sort_order": 2,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlthi5pt3",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwltp44401",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwltw4thxp",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlu9zu6zx",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwluk1t6rc",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwluzcojlh",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlv7lpngi",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpyndx0j9qkz5",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlvet3tev",
+      "sort_order": 10,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlvnttkt5",
+      "sort_order": 11,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpwzwlvwmur5l",
+      "sort_order": 12,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mpwzwls93sr71",
+      "chord_id": "mpyoxaswtf7sy",
+      "sort_order": 13,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9myivl2ef",
+      "sort_order": 1,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9mz1m2669",
+      "sort_order": 2,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9mzfjyo7w",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9mzra1pu1",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n05e1iz4",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n0ccdje3",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n0i0l81v",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n0q9axym",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n0x059yi",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n150xhiq",
+      "sort_order": 10,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mq3y9my1crra8",
+      "chord_id": "mq3y9n1c17c0e",
+      "sort_order": 11,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszetcfe00",
+      "sort_order": 1,
+      "moment": "CANTO DE ENTRADA 1"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszfdz0aa4",
+      "sort_order": 2,
+      "moment": "CANTO DE ENTRADA 2"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszfxobgnb",
+      "sort_order": 3,
+      "moment": "ATO PENITENCIAL 1"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszgficzf3",
+      "sort_order": 4,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszgr46pqg",
+      "sort_order": 5,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszh4vacod",
+      "sort_order": 6,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszhlbq84s",
+      "sort_order": 7,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszi2yec0p",
+      "sort_order": 8,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszifhwvf0",
+      "sort_order": 9,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszkdo0l8r",
+      "sort_order": 10,
+      "moment": "OFERTÓRIO"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszktgqmoi",
+      "sort_order": 11,
+      "moment": "SANTO 1"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszlbi6xio",
+      "sort_order": 12,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszlq6uuk5",
+      "sort_order": 13,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszm467ppw",
+      "sort_order": 14,
+      "moment": "COMUNHÃO 1"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszmm9099f",
+      "sort_order": 15,
+      "moment": "COMUNHÃO 2"
+    },
+    {
+      "playlist_id": "mqwpsze0hb76x",
+      "chord_id": "mqwpszn9g4oac",
+      "sort_order": 16,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr45xewpwwcat",
+      "sort_order": 0,
+      "moment": "Entrada"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr45xexc3sgwn",
+      "sort_order": 1,
+      "moment": "Ato Penitencial"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr45xexvmtkpq",
+      "sort_order": 2,
+      "moment": "Aleluia"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr45xeykmbj2e",
+      "sort_order": 4,
+      "moment": "Santo"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr45xez9gtlz2",
+      "sort_order": 6,
+      "moment": "Comunhão"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr45xezr41hpo",
+      "sort_order": 7,
+      "moment": "Final"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mr6gd8hzeptlw",
+      "sort_order": 8,
+      "moment": "Salmo"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mrgrruk1h39l2",
+      "sort_order": 9,
+      "moment": "Santo"
+    },
+    {
+      "playlist_id": "mr45xew7z3ba6",
+      "chord_id": "mrgwus5wfknzk",
+      "sort_order": 10,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mr7qimypunxgt",
+      "chord_id": "mr7qjhpha5s9v",
+      "sort_order": 0,
+      "moment": "Entrada"
+    },
+    {
+      "playlist_id": "mr7qimypunxgt",
+      "chord_id": "mr7qmdwudzdoz",
+      "sort_order": 1,
+      "moment": "Ato Penitencial"
+    },
+    {
+      "playlist_id": "mr7qimypunxgt",
+      "chord_id": "mr7qnb17jykfy",
+      "sort_order": 2,
+      "moment": "Glória"
+    },
+    {
+      "playlist_id": "mr7qimypunxgt",
+      "chord_id": "mr7qo0zaf3xct",
+      "sort_order": 3,
+      "moment": ""
+    },
+    {
+      "playlist_id": "mr7qimypunxgt",
+      "chord_id": "mr7qu1dm0ywmv",
+      "sort_order": 4,
+      "moment": "Ofertório"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44unn59xlw",
+      "sort_order": 1,
+      "moment": "CANTO DE ENTRADA"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44uo4ty6u6",
+      "sort_order": 2,
+      "moment": "ATO PENITENCIAL"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44uov1nyo5",
+      "sort_order": 3,
+      "moment": "GLÓRIA"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44upe8o2bv",
+      "sort_order": 4,
+      "moment": "SALMO"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44upw012v0",
+      "sort_order": 5,
+      "moment": "ACLAMAÇÃO"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44uqqx1td3",
+      "sort_order": 5,
+      "moment": "OFERTÓRIO"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44ur8bfdwp",
+      "sort_order": 6,
+      "moment": "SANTO"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44uruiv6nk",
+      "sort_order": 7,
+      "moment": "CORDEIRO DE DEUS"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44usis6h6l",
+      "sort_order": 7,
+      "moment": "COMUNHÃO"
+    },
+    {
+      "playlist_id": "mrs44una9jrst",
+      "chord_id": "mrs44ut2ytrbo",
+      "sort_order": 7,
+      "moment": "ENTRADA DA IMAGEM"
+    }
+  ]
+}

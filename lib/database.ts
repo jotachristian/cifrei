@@ -1,321 +1,341 @@
-import * as SQLite from 'expo-sqlite';
+import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { db } from './firebase';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-let _db: SQLite.SQLiteDatabase | null = null;
+export interface Playlist { id: string; name: string; description: string; sort_order: number; created_at: number; }
+export interface Chord {
+  id: string;
+  name: string;
+  artist: string;
+  tone: string;
+  lyrics: string;
+  external_link: string;
+  tone_offset: number;
+  note: string;
+  created_at: number;
+  keyboard_bank?: number;
+  keyboard_slot?: number;
+  capo?: number;
+}
+export interface PlaylistChordLink { playlist_id: string; chord_id: string; sort_order: number; moment: string; created_at: number; }
+export interface ChordWithPlaylist extends Chord { playlist_name: string; }
+export interface ChordInPlaylist extends Chord { moment: string; link_sort_order: number; }
 
-function db(): SQLite.SQLiteDatabase {
-  if (!_db) _db = SQLite.openDatabaseSync('cifrei.db');
-  return _db;
+export let chords: Chord[] = [];
+export let playlists: Playlist[] = [];
+export let playlist_chords: PlaylistChordLink[] = [];
+
+let isInitialized = false;
+type Listener = () => void;
+const listeners = new Set<Listener>();
+
+export function addDatabaseListener(listener: Listener) {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
 }
 
-function tableHasColumn(table: string, col: string): boolean {
-  const rows = db().getAllSync<{ name: string }>(`PRAGMA table_info(${table})`);
-  return rows.some(r => r.name === col);
+function notify() {
+  listeners.forEach(l => l());
 }
 
-export function initDatabase(): void {
-  // schema novo (sem playlist_id/sort_order em chords — agora vivem em playlist_chords)
-  db().execSync(`
-    CREATE TABLE IF NOT EXISTS playlists (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      description TEXT DEFAULT '',
-      sort_order INTEGER DEFAULT 0,
-      created_at INTEGER DEFAULT (strftime('%s','now')*1000)
-    );
-    CREATE TABLE IF NOT EXISTS chords (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      artist TEXT DEFAULT '',
-      tone TEXT DEFAULT 'C',
-      lyrics TEXT DEFAULT '',
-      external_link TEXT DEFAULT '',
-      tone_offset INTEGER DEFAULT 0,
-      note TEXT DEFAULT '',
-      created_at INTEGER DEFAULT (strftime('%s','now')*1000)
-    );
-    CREATE TABLE IF NOT EXISTS playlist_chords (
-      playlist_id TEXT NOT NULL,
-      chord_id TEXT NOT NULL,
-      sort_order INTEGER DEFAULT 0,
-      moment TEXT DEFAULT '',
-      created_at INTEGER DEFAULT (strftime('%s','now')*1000),
-      PRIMARY KEY (playlist_id, chord_id)
-    );
-    CREATE INDEX IF NOT EXISTS idx_pc_playlist ON playlist_chords(playlist_id);
-    CREATE INDEX IF NOT EXISTS idx_pc_chord    ON playlist_chords(chord_id);
-  `);
-
-  // migracoes idempotentes pra DBs criados em versoes anteriores
-  try { db().execSync('ALTER TABLE chords ADD COLUMN tone_offset INTEGER DEFAULT 0'); } catch { /* ja existe */ }
-  try { db().execSync('ALTER TABLE chords ADD COLUMN note TEXT DEFAULT \'\''); } catch { /* ja existe */ }
-
-  // Se o DB ja existia com playlist_id/sort_order, garante backfill antes de
-  // remover as colunas. INSERT OR IGNORE deixa idempotente.
-  if (tableHasColumn('chords', 'playlist_id')) {
-    db().execSync(`
-      INSERT OR IGNORE INTO playlist_chords (playlist_id, chord_id, sort_order, moment)
-      SELECT playlist_id, id, COALESCE(sort_order,0), ''
-      FROM chords
-      WHERE playlist_id IS NOT NULL AND playlist_id <> ''
-    `);
-    rebuildChordsTableWithoutLegacy();
-  } else if (tableHasColumn('chords', 'sort_order')) {
-    // tinha sort_order mas nao playlist_id (estado intermediario improvavel) — rebuild mesmo assim
-    rebuildChordsTableWithoutLegacy();
+async function saveToCache() {
+  try {
+    await Promise.all([
+      AsyncStorage.setItem('cache_chords', JSON.stringify(chords)),
+      AsyncStorage.setItem('cache_playlists', JSON.stringify(playlists)),
+      AsyncStorage.setItem('cache_playlist_chords', JSON.stringify(playlist_chords)),
+    ]);
+  } catch (e) {
+    console.error('Erro ao salvar cache local:', e);
   }
 }
 
-/**
- * Padrao recomendado pelo SQLite pra remover colunas: cria tabela nova,
- * copia dados das colunas que ficam, dropa antiga, renomeia.
- * Removidas: playlist_id, sort_order (migradas pra playlist_chords).
- */
-function rebuildChordsTableWithoutLegacy(): void {
-  db().execSync(`
-    BEGIN TRANSACTION;
-    CREATE TABLE chords_new (
-      id TEXT PRIMARY KEY,
-      name TEXT NOT NULL,
-      artist TEXT DEFAULT '',
-      tone TEXT DEFAULT 'C',
-      lyrics TEXT DEFAULT '',
-      external_link TEXT DEFAULT '',
-      tone_offset INTEGER DEFAULT 0,
-      note TEXT DEFAULT '',
-      created_at INTEGER DEFAULT (strftime('%s','now')*1000)
-    );
-    INSERT INTO chords_new (id, name, artist, tone, lyrics, external_link, tone_offset, note, created_at)
-      SELECT id, name, artist, tone, lyrics, external_link,
-             COALESCE(tone_offset,0), COALESCE(note,''), created_at
-      FROM chords;
-    DROP TABLE chords;
-    ALTER TABLE chords_new RENAME TO chords;
-    COMMIT;
-  `);
+export async function initDatabase(): Promise<void> {
+  if (isInitialized) return Promise.resolve();
+
+  try {
+    const [cCache, pCache, lCache] = await Promise.all([
+      AsyncStorage.getItem('cache_chords'),
+      AsyncStorage.getItem('cache_playlists'),
+      AsyncStorage.getItem('cache_playlist_chords'),
+    ]);
+    if (cCache) chords = JSON.parse(cCache);
+    if (pCache) playlists = JSON.parse(pCache);
+    if (lCache) playlist_chords = JSON.parse(lCache);
+    notify();
+  } catch (e) {
+    console.error('Erro ao carregar cache local:', e);
+  }
+
+  return new Promise((resolve) => {
+    let cLoaded = false; let pLoaded = false; let lLoaded = false;
+    const check = () => { if (cLoaded && pLoaded && lLoaded) { isInitialized = true; resolve(); } };
+
+    onSnapshot(collection(db, 'chords'), snap => {
+      chords = snap.docs.map(d => d.data() as Chord);
+      saveToCache();
+      if (isInitialized) notify();
+      cLoaded = true; check();
+    }, () => {
+      cLoaded = true; check();
+    });
+    onSnapshot(collection(db, 'playlists'), snap => {
+      playlists = snap.docs.map(d => d.data() as Playlist);
+      saveToCache();
+      if (isInitialized) notify();
+      pLoaded = true; check();
+    }, () => {
+      pLoaded = true; check();
+    });
+    onSnapshot(collection(db, 'playlist_chords'), snap => {
+      playlist_chords = snap.docs.map(d => d.data() as PlaylistChordLink);
+      saveToCache();
+      if (isInitialized) notify();
+      lLoaded = true; check();
+    }, () => {
+      lLoaded = true; check();
+    });
+  });
 }
 
 function genId(): string {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
 
-export interface Playlist {
-  id: string; name: string; description: string;
-  sort_order: number; created_at: number;
-}
-
-export interface Chord {
-  id: string; name: string; artist: string; tone: string;
-  lyrics: string; external_link: string;
-  tone_offset: number; note: string;
-  created_at: number;
-}
-
-// Resultado da busca: cifra + nomes das playlists em que aparece (concatenados)
-export interface ChordWithPlaylist extends Chord { playlist_name: string; }
-
-// Chord como aparece dentro de uma playlist (com dados do vinculo)
-export interface ChordInPlaylist extends Chord {
-  moment: string;          // do vinculo playlist_chords
-  link_sort_order: number; // sort_order do vinculo
-}
-
-export interface PlaylistChordLink {
-  playlist_id: string; chord_id: string;
-  sort_order: number; moment: string; created_at: number;
-}
-
-// ─── playlists ──────────────────────────────────────────────────────────────
-
 export function getPlaylists(): Playlist[] {
-  return db().getAllSync<Playlist>(
-    'SELECT * FROM playlists ORDER BY created_at DESC, sort_order DESC'
-  );
+  return [...playlists].sort((a, b) => {
+    if (a.created_at !== b.created_at) return b.created_at - a.created_at;
+    return b.sort_order - a.sort_order;
+  });
 }
 
 export function getPlaylist(id: string): Playlist | null {
-  return db().getFirstSync<Playlist>('SELECT * FROM playlists WHERE id=?', [id]) ?? null;
+  return playlists.find(p => p.id === id) || null;
 }
 
 export function createPlaylist(name: string, description: string): string {
   const id = genId();
-  const row = db().getFirstSync<{ n: number }>(
-    'SELECT COALESCE(MAX(sort_order)+1,0) as n FROM playlists'
-  );
-  db().runSync(
-    'INSERT INTO playlists (id,name,description,sort_order) VALUES (?,?,?,?)',
-    [id, name, description, row?.n ?? 0]
-  );
+  const sort_order = playlists.length > 0 ? Math.max(...playlists.map(p => p.sort_order)) + 1 : 0;
+  const p: Playlist & { _secret: string } = { id, name, description, sort_order, created_at: Date.now(), _secret: 'sappinessvocationswingingtreachery8targetnative2026$' };
+  playlists.push(p);
+  setDoc(doc(db, 'playlists', id), p);
+  saveToCache();
+  notify();
   return id;
 }
 
 export function updatePlaylist(id: string, name: string, description: string): void {
-  db().runSync('UPDATE playlists SET name=?,description=? WHERE id=?', [name, description, id]);
+  const p = playlists.find(p => p.id === id);
+  if (p) {
+    p.name = name;
+    p.description = description;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'playlists', id), { name, description, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
 }
 
-/**
- * Deleta uma playlist e seus vinculos. As cifras NAO sao deletadas —
- * elas podem estar vinculadas a outras playlists ou ser usadas standalone.
- */
 export function deletePlaylist(id: string): void {
-  db().runSync('DELETE FROM playlist_chords WHERE playlist_id=?', [id]);
-  db().runSync('DELETE FROM playlists WHERE id=?', [id]);
-}
+  playlists = playlists.filter(p => p.id !== id);
+  playlist_chords = playlist_chords.filter(l => l.playlist_id !== id);
+  saveToCache();
+  notify();
 
-// ─── chords ────────────────────────────────────────────────────────────────
+  deleteDoc(doc(db, 'playlists', id));
+  playlist_chords.filter(l => l.playlist_id === id).forEach(l => {
+    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`));
+  });
+}
 
 export function getChord(id: string): Chord | null {
-  return db().getFirstSync<Chord>('SELECT * FROM chords WHERE id=?', [id]) ?? null;
+  return chords.find(c => c.id === id) || null;
 }
 
 export function getAllChords(): Chord[] {
-  return db().getAllSync<Chord>('SELECT * FROM chords');
+  return [...chords];
 }
 
 export function findChordByYoutubeLink(link: string): Chord | null {
   if (!link) return null;
-  return db().getFirstSync<Chord>(
-    'SELECT * FROM chords WHERE external_link = ? LIMIT 1',
-    [link]
-  ) ?? null;
+  return chords.find(c => c.external_link === link) || null;
 }
 
 export function searchChords(query: string): ChordWithPlaylist[] {
-  const q = '%' + query + '%';
-  return db().getAllSync<ChordWithPlaylist>(
-    `SELECT c.*,
-            COALESCE((
-              SELECT GROUP_CONCAT(p.name, ', ')
-              FROM playlist_chords pc
-              JOIN playlists p ON p.id = pc.playlist_id
-              WHERE pc.chord_id = c.id
-            ), '') as playlist_name
-     FROM chords c
-     WHERE c.name LIKE ? OR c.artist LIKE ?
-     ORDER BY c.name ASC`,
-    [q, q]
-  );
+  const q = query.toLowerCase();
+  const matched = chords.filter(c => c.name.toLowerCase().includes(q) || c.artist.toLowerCase().includes(q));
+  return matched.map(c => {
+    const pNames = playlist_chords
+      .filter(l => l.chord_id === c.id)
+      .map(l => playlists.find(p => p.id === l.playlist_id)?.name)
+      .filter(Boolean)
+      .join(', ');
+    return { ...c, playlist_name: pNames };
+  }).sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export function getTotalCount(): number {
-  return db().getFirstSync<{ n: number }>('SELECT COUNT(*) as n FROM chords')?.n ?? 0;
+  return chords.length;
 }
 
-export function createChord(data: {
-  name: string; artist: string; tone: string; lyrics: string;
-  externalLink?: string; note?: string;
-}): string {
+export function createChord(data: { name: string; artist: string; tone: string; lyrics: string; externalLink?: string; note?: string; keyboard_bank?: number; keyboard_slot?: number; capo?: number; }): string {
   const id = genId();
-  db().runSync(
-    'INSERT INTO chords (id,name,artist,tone,lyrics,external_link,note) VALUES (?,?,?,?,?,?,?)',
-    [id, data.name, data.artist, data.tone, data.lyrics,
-     data.externalLink ?? '', data.note ?? '']
-  );
+  const c: Chord & { _secret: string } = {
+    id, name: data.name, artist: data.artist, tone: data.tone, lyrics: data.lyrics,
+    external_link: data.externalLink || '', tone_offset: 0, note: data.note || '', created_at: Date.now(),
+    keyboard_bank: data.keyboard_bank, keyboard_slot: data.keyboard_slot, capo: data.capo,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  };
+  chords.push(c);
+  setDoc(doc(db, 'chords', id), c);
+  saveToCache();
+  notify();
   return id;
 }
 
-export function updateChord(id: string, data: {
-  name: string; artist: string; tone: string; lyrics: string;
-  externalLink?: string; note?: string;
-}): void {
-  db().runSync(
-    'UPDATE chords SET name=?,artist=?,tone=?,lyrics=?,external_link=?,note=? WHERE id=?',
-    [data.name, data.artist, data.tone, data.lyrics,
-     data.externalLink ?? '', data.note ?? '', id]
-  );
+export function updateChord(id: string, data: { name: string; artist: string; tone: string; lyrics: string; externalLink?: string; note?: string; keyboard_bank?: number; keyboard_slot?: number; capo?: number; }): void {
+  const c = chords.find(c => c.id === id);
+  if (c) {
+    c.name = data.name;
+    c.artist = data.artist;
+    c.tone = data.tone;
+    c.lyrics = data.lyrics;
+    c.external_link = data.externalLink || '';
+    c.note = data.note || '';
+    c.keyboard_bank = data.keyboard_bank;
+    c.keyboard_slot = data.keyboard_slot;
+    c.capo = data.capo;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'chords', id), {
+    name: data.name, artist: data.artist, tone: data.tone, lyrics: data.lyrics,
+    external_link: data.externalLink || '', note: data.note || '',
+    keyboard_bank: data.keyboard_bank ?? null, keyboard_slot: data.keyboard_slot ?? null, capo: data.capo ?? null,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  });
 }
 
 export function updateChordNote(id: string, note: string): void {
-  db().runSync('UPDATE chords SET note=? WHERE id=?', [note, id]);
+  const c = chords.find(c => c.id === id);
+  if (c) {
+    c.note = note;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'chords', id), { note, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
 }
 
 export function updateChordLyricsAndNote(id: string, lyrics: string, note: string): void {
-  db().runSync('UPDATE chords SET lyrics=?, note=? WHERE id=?', [lyrics, note, id]);
+  const c = chords.find(c => c.id === id);
+  if (c) {
+    c.lyrics = lyrics;
+    c.note = note;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'chords', id), { lyrics, note, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
 }
 
 export function deleteChord(id: string): void {
-  db().runSync('DELETE FROM playlist_chords WHERE chord_id=?', [id]);
-  db().runSync('DELETE FROM chords WHERE id=?', [id]);
+  chords = chords.filter(c => c.id !== id);
+  playlist_chords = playlist_chords.filter(l => l.chord_id !== id);
+  saveToCache();
+  notify();
+
+  deleteDoc(doc(db, 'chords', id));
+  playlist_chords.filter(l => l.chord_id === id).forEach(l => {
+    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`));
+  });
 }
 
 export function updateChordToneOffset(id: string, offset: number): void {
-  db().runSync('UPDATE chords SET tone_offset=? WHERE id=?', [offset, id]);
+  const c = chords.find(c => c.id === id);
+  if (c) {
+    c.tone_offset = offset;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'chords', id), { tone_offset: offset, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
 }
-
-// ─── playlist_chords (vinculos N:N) ─────────────────────────────────────────
 
 export function getPlaylistChords(playlistId: string): ChordInPlaylist[] {
-  return db().getAllSync<ChordInPlaylist>(
-    `SELECT c.*, pc.moment as moment, pc.sort_order as link_sort_order
-     FROM playlist_chords pc
-     JOIN chords c ON c.id = pc.chord_id
-     WHERE pc.playlist_id = ?
-     ORDER BY pc.sort_order ASC, c.created_at DESC`,
-    [playlistId]
-  );
+  const links = playlist_chords.filter(l => l.playlist_id === playlistId);
+  return links.map(l => {
+    const c = chords.find(ch => ch.id === l.chord_id);
+    if (!c) return null;
+    return { ...c, moment: l.moment, link_sort_order: l.sort_order };
+  }).filter((c): c is ChordInPlaylist => c !== null)
+    .sort((a, b) => {
+      if (a.link_sort_order !== b.link_sort_order) return a.link_sort_order - b.link_sort_order;
+      return b.created_at - a.created_at;
+    });
 }
 
-/** Versao legacy mantida pra compat — retorna so Chord, sem dados do vinculo. */
 export function getChordsForPlaylist(playlistId: string): Chord[] {
   return getPlaylistChords(playlistId);
 }
 
 export function getPlaylistsForChord(chordId: string): Playlist[] {
-  return db().getAllSync<Playlist>(
-    `SELECT p.* FROM playlists p
-     JOIN playlist_chords pc ON pc.playlist_id = p.id
-     WHERE pc.chord_id = ?
-     ORDER BY p.sort_order ASC, p.created_at DESC`,
-    [chordId]
-  );
+  const links = playlist_chords.filter(l => l.chord_id === chordId);
+  return links.map(l => playlists.find(p => p.id === l.playlist_id))
+    .filter((p): p is Playlist => p !== undefined)
+    .sort((a, b) => {
+      if (a.sort_order !== b.sort_order) return a.sort_order - b.sort_order;
+      return b.created_at - a.created_at;
+    });
 }
 
 export function getAllLinks(): PlaylistChordLink[] {
-  return db().getAllSync<PlaylistChordLink>('SELECT * FROM playlist_chords');
+  return [...playlist_chords];
 }
 
-export function linkChordToPlaylist(
-  chordId: string,
-  playlistId: string,
-  opts?: { sortOrder?: number; moment?: string }
-): void {
+export function linkChordToPlaylist(chordId: string, playlistId: string, opts?: { sortOrder?: number; moment?: string }): void {
   let sortOrder = opts?.sortOrder;
   if (sortOrder === undefined) {
-    const row = db().getFirstSync<{ n: number }>(
-      'SELECT COALESCE(MAX(sort_order)+1,0) as n FROM playlist_chords WHERE playlist_id=?',
-      [playlistId]
-    );
-    sortOrder = row?.n ?? 0;
+    const existing = playlist_chords.filter(l => l.playlist_id === playlistId);
+    sortOrder = existing.length > 0 ? Math.max(...existing.map(l => l.sort_order)) + 1 : 0;
   }
-  db().runSync(
-    'INSERT OR IGNORE INTO playlist_chords (playlist_id, chord_id, sort_order, moment) VALUES (?,?,?,?)',
-    [playlistId, chordId, sortOrder, opts?.moment ?? '']
-  );
+  const l: PlaylistChordLink & { _secret: string } = {
+    playlist_id: playlistId, chord_id: chordId, sort_order: sortOrder, moment: opts?.moment || '', created_at: Date.now(),
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  };
+  playlist_chords.push(l);
+  saveToCache();
+  notify();
+
+  setDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`), l);
 }
 
 export function unlinkChordFromPlaylist(chordId: string, playlistId: string): void {
-  db().runSync(
-    'DELETE FROM playlist_chords WHERE playlist_id=? AND chord_id=?',
-    [playlistId, chordId]
-  );
+  playlist_chords = playlist_chords.filter(l => !(l.playlist_id === playlistId && l.chord_id === chordId));
+  saveToCache();
+  notify();
+
+  deleteDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`));
 }
 
 export function updateLinkMoment(chordId: string, playlistId: string, moment: string): void {
-  db().runSync(
-    'UPDATE playlist_chords SET moment=? WHERE playlist_id=? AND chord_id=?',
-    [moment, playlistId, chordId]
-  );
+  const l = playlist_chords.find(l => l.playlist_id === playlistId && l.chord_id === chordId);
+  if (l) {
+    l.moment = moment;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`), { moment, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
 }
 
 export function updateLinkSortOrder(chordId: string, playlistId: string, sortOrder: number): void {
-  db().runSync(
-    'UPDATE playlist_chords SET sort_order=? WHERE playlist_id=? AND chord_id=?',
-    [sortOrder, playlistId, chordId]
-  );
+  const l = playlist_chords.find(l => l.playlist_id === playlistId && l.chord_id === chordId);
+  if (l) {
+    l.sort_order = sortOrder;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`), { sort_order: sortOrder, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
 }
 
 export function getLink(chordId: string, playlistId: string): { sort_order: number; moment: string } | null {
-  return db().getFirstSync<{ sort_order: number; moment: string }>(
-    'SELECT sort_order, moment FROM playlist_chords WHERE playlist_id=? AND chord_id=?',
-    [playlistId, chordId]
-  ) ?? null;
+  const l = playlist_chords.find(l => l.playlist_id === playlistId && l.chord_id === chordId);
+  if (!l) return null;
+  return { sort_order: l.sort_order, moment: l.moment };
 }

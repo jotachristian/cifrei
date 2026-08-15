@@ -1,16 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity, Modal, Linking } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import YoutubePlayer from 'react-native-youtube-iframe';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getChord, getChordsForPlaylist, updateChordToneOffset, getLink, Chord } from '@/lib/database';
 import { transposeTone, semitonesBetween, MAJOR_TONES, MINOR_TONES } from '@/lib/transpose';
-import { extractYoutubeId } from '@/lib/youtube';
 import ChordDisplay from '@/components/ChordDisplay';
-import ChordSampler, { ChordSamplerHandle } from '@/components/ChordSampler';
 
 const MIN_FONT = 10, MAX_FONT = 32;
 
@@ -24,7 +21,6 @@ export default function ChordScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
-  const synthRef = useRef<ChordSamplerHandle>(null);
   // Lazy init: chama getChord/getChordsForPlaylist sincronamente no primeiro render,
   // entao o primeiro paint ja mostra a cifra (sem aparecer so o botao voltar).
   const [chord, setChord] = useState<Chord | null>(() => getChord(id));
@@ -34,10 +30,8 @@ export default function ChordScreen() {
   const [showLyrics, setShowLyrics] = useState<boolean>(() => prefsCache?.showLyrics ?? true);
   const [moment, setMoment] = useState<string>(() => playlistId ? (getLink(id, playlistId)?.moment ?? '') : '');
   const [toneModal, setToneModal] = useState(false);
-  const [playerOpen, setPlayerOpen] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [showNote, setShowNote] = useState(false);
 
-  // Le AsyncStorage uma unica vez no app inteiro
   useEffect(() => {
     if (prefsCache) return;
     Promise.all([
@@ -63,8 +57,6 @@ export default function ChordScreen() {
       setSiblings(getChordsForPlaylist(playlistId));
       setMoment(getLink(id, playlistId)?.moment ?? '');
     }
-    setPlayerOpen(false);
-    setPlaying(false);
     scrollRef.current?.scrollTo({ y: 0, animated: false });
   }, [id, playlistId]));
 
@@ -91,9 +83,14 @@ export default function ChordScreen() {
   const resetTone = () => {
     if (!chord) return;
     setSemitones(0);
-    updateChordToneOffset(chord.id, 0);
     setChord({ ...chord, tone_offset: 0 });
     setToneModal(false);
+  };
+
+  const openEdit = () => {
+    if (chord) {
+      router.push({ pathname: '/chord/edit', params: { id: chord.id, playlistId } });
+    }
   };
 
   const idx = siblings.findIndex(c => c.id === id);
@@ -114,8 +111,14 @@ export default function ChordScreen() {
   const displayTone = transposeTone(chord.tone, semitones);
   const isMinor = chord.tone.endsWith('m');
   const toneOptions = isMinor ? MINOR_TONES : MAJOR_TONES;
-  const videoId = extractYoutubeId(chord.external_link);
-  const playChord = (c: string) => synthRef.current?.play(c);
+
+  const openYoutube = () => {
+    if (chord.external_link) {
+      Linking.openURL(chord.external_link).catch(() => {
+        // failed to open
+      });
+    }
+  };
 
   return (
     <SafeAreaView style={sty.container}>
@@ -134,17 +137,29 @@ export default function ChordScreen() {
             <Text style={[sty.toneText, { color: colors.accent }]}>{displayTone}</Text>
             <Ionicons name="chevron-down" size={14} color={colors.accent} style={{ marginLeft: 2 }} />
           </TouchableOpacity>
-          {videoId && (
-            <TouchableOpacity
-              style={sty.audioBtn}
-              onPress={() => { setPlayerOpen(true); setPlaying(true); }}
-              activeOpacity={0.7}
-            >
-              <Ionicons name="musical-notes" size={16} color={colors.accent} />
-              <Text style={[sty.audioBtnTxt, { color: colors.accent }]}>Tocar</Text>
-            </TouchableOpacity>
-          )}
         </View>
+
+        {/* Info do Teclado & Capotraste */}
+        {(chord.keyboard_bank || chord.keyboard_slot || chord.capo !== undefined) ? (
+          <View style={sty.infoRow}>
+            {chord.keyboard_bank || chord.keyboard_slot ? (
+              <View style={sty.infoChip}>
+                <Ionicons name="musical-notes-outline" size={14} color={colors.textSub} />
+                <Text style={sty.infoChipTxt}>
+                  Reg: {chord.keyboard_bank ? `B${chord.keyboard_bank}` : ''}{chord.keyboard_slot ? ` C${chord.keyboard_slot}` : ''}
+                </Text>
+              </View>
+            ) : null}
+            {chord.capo !== undefined ? (
+              <View style={sty.infoChip}>
+                <Ionicons name="bookmark-outline" size={14} color={colors.textSub} />
+                <Text style={sty.infoChipTxt}>
+                  Capo/Transp: {chord.capo > 0 ? `+${chord.capo}` : chord.capo}
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        ) : null}
 
         {/* controles */}
         <View style={sty.controlsWrap}>
@@ -173,14 +188,35 @@ export default function ChordScreen() {
               >
                 <Ionicons
                   name={showLyrics ? 'eye' : 'eye-off'}
-                  size={15}
+                  size={18}
                   color={showLyrics ? '#ffffff' : colors.textSub}
                 />
-                <Text style={[sty.toggleTxt, { color: showLyrics ? '#ffffff' : colors.textSub }]}>
-                  {showLyrics ? 'On' : 'Off'}
-                </Text>
               </TouchableOpacity>
             </View>
+
+            <View style={sty.divider} />
+
+            <View style={sty.ctrlGroup}>
+              <Text style={sty.ctrlLabel}>VÍDEO</Text>
+              <TouchableOpacity
+                style={[sty.toggleBtn, !chord.external_link && { opacity: 0.3 }]}
+                onPress={openYoutube}
+                disabled={!chord.external_link}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="logo-youtube" size={18} color={chord.external_link ? '#ffffff' : colors.textSub} />
+              </TouchableOpacity>
+            </View>
+            
+            <View style={sty.divider} />
+
+            <View style={sty.ctrlGroup}>
+              <Text style={sty.ctrlLabel}>EDITAR</Text>
+              <TouchableOpacity style={sty.toggleBtn} onPress={openEdit} activeOpacity={0.7}>
+                <Ionicons name="pencil" size={18} color={colors.textSub} />
+              </TouchableOpacity>
+            </View>
+
           </View>
         </View>
 
@@ -188,35 +224,8 @@ export default function ChordScreen() {
         <ChordDisplay
           lyrics={chord.lyrics} semitones={semitones}
           showLyrics={showLyrics} fontSize={fontSize} colors={colors}
-          onChordPress={playChord}
         />
       </ScrollView>
-
-      <ChordSampler ref={synthRef} />
-
-      {playerOpen && videoId && (
-        <View style={sty.playerBar}>
-          <View style={sty.playerHeader}>
-            <Ionicons name="logo-youtube" size={16} color="#ff0000" />
-            <Text style={sty.playerTitle} numberOfLines={1}>{chord.name}</Text>
-            <TouchableOpacity
-              onPress={() => { setPlaying(false); setPlayerOpen(false); }}
-              hitSlop={10}
-            >
-              <Ionicons name="close" size={20} color={colors.text} />
-            </TouchableOpacity>
-          </View>
-          <YoutubePlayer
-            height={180}
-            play={playing}
-            videoId={videoId}
-            onChangeState={(state: string) => {
-              if (state === 'ended' || state === 'paused') setPlaying(false);
-              if (state === 'playing') setPlaying(true);
-            }}
-          />
-        </View>
-      )}
 
       {siblings.length > 0 && (
         <View style={sty.navRow}>
@@ -266,6 +275,9 @@ export default function ChordScreen() {
           </Pressable>
         </Pressable>
       </Modal>
+
+
+
     </SafeAreaView>
   );
 }
@@ -278,8 +290,16 @@ function makeStyles(c: any) {
 
     moment: { fontSize: 11, fontFamily: 'Inter_700Bold', color: c.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 2 },
     songTitle: { fontSize: 22, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 6 },
-    metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 },
+    metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
     artist: { fontSize: 14, color: c.textSub, fontFamily: 'Inter_400Regular' },
+    infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+    infoChip: {
+      flexDirection: 'row', alignItems: 'center', gap: 6,
+      backgroundColor: c.input, borderRadius: 16,
+      paddingHorizontal: 10, paddingVertical: 4,
+      borderWidth: 1, borderColor: c.border
+    },
+    infoChipTxt: { fontSize: 12, fontWeight: '600', color: c.text },
     toneBadge: {
       flexDirection: 'row', alignItems: 'center',
       paddingHorizontal: 10, paddingVertical: 3,
@@ -292,18 +312,6 @@ function makeStyles(c: any) {
       borderRadius: 20, borderWidth: 1, borderColor: c.accent,
     },
     audioBtnTxt: { fontSize: 12, fontFamily: 'Inter_600SemiBold' },
-    playerBar: {
-      borderTopWidth: 1, borderColor: c.border,
-      backgroundColor: c.card,
-      paddingBottom: 4,
-    },
-    playerHeader: {
-      flexDirection: 'row', alignItems: 'center', gap: 8,
-      paddingHorizontal: 12, paddingVertical: 8,
-    },
-    playerTitle: {
-      flex: 1, fontSize: 13, fontFamily: 'Inter_600SemiBold', color: c.text,
-    },
 
     controlsWrap: {
       marginBottom: 24, gap: 8,
@@ -325,12 +333,11 @@ function makeStyles(c: any) {
     ctrlVal: { fontSize: 14, fontFamily: 'Inter_600SemiBold', color: c.text, minWidth: 24, textAlign: 'center' },
     divider: { width: 1, height: 32, backgroundColor: c.border },
     toggleBtn: {
-      flexDirection: 'row', alignItems: 'center', gap: 5,
-      paddingHorizontal: 14, height: 28, borderRadius: 14,
-      borderWidth: 1, borderColor: c.border,
+      alignItems: 'center', justifyContent: 'center',
+      width: 44, height: 44, borderRadius: 22,
+      backgroundColor: c.input,
     },
-    toggleBtnOn: { backgroundColor: c.accent, borderColor: c.accent },
-    toggleTxt: { fontSize: 12, fontFamily: 'Inter_700Bold' },
+    toggleBtnOn: { backgroundColor: c.accent },
     resetBtn: {
       alignSelf: 'flex-start',
       paddingHorizontal: 12, paddingVertical: 6,
@@ -380,5 +387,10 @@ function makeStyles(c: any) {
       borderRadius: 8, borderWidth: 1, borderColor: c.accent,
     },
     modalResetTxt: { fontSize: 13, color: c.accent, fontFamily: 'Inter_500Medium' },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    modalBox: { backgroundColor: c.card, borderTopLeftRadius: 20, borderTopRightRadius: 20, paddingTop: 24, flex: 1, marginTop: 40 },
+    inputLabel: { fontSize: 13, color: c.textSub, marginTop: 12, marginBottom: 4, fontWeight: '600' },
+    input: { backgroundColor: c.input, borderRadius: 10, padding: 12, fontSize: 15, color: c.text, borderWidth: 1, borderColor: c.border },
+    saveBtn: { padding: 16, borderRadius: 10, backgroundColor: c.accent, alignItems: 'center', marginTop: 20 },
   });
 }

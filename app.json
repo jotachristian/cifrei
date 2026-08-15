@@ -4,13 +4,13 @@
     "slug": "cifrei",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/logo-cifrei-adaptive.png",
+    "icon": "./assets/logo-cifrei-adaptative.png",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/logo-cinza.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#dd2c00"
     },
     "ios": {
       "supportsTablet": true,
@@ -18,7 +18,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/logo-cifrei-adaptive.png",
+        "foregroundImage": "./assets/logo-cifrei-adaptative.png",
         "backgroundColor": "#0139fe"
       },
       "package": "com.christian.cifrei"
