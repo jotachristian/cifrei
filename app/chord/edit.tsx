@@ -7,8 +7,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord } from '@/lib/database';
-import { MAJOR_TONES, MINOR_TONES } from '@/lib/transpose';
+import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord, linkChordToPlaylist } from '@/lib/database';
+import { MAJOR_TONES, MINOR_TONES, transposeTone } from '@/lib/transpose';
 
 // Tabela de Campo Harmônico para o Teclado de Acordes
 const HARMONIC_FIELDS: Record<string, string[]> = {
@@ -196,14 +196,24 @@ export default function ChordEditScreen() {
         setNote(c.note || '');
         setLyrics(c.lyrics || '');
         
-        if (c.capo !== undefined && c.capo !== 0) {
+        if (typeof c.capo === 'number' && c.capo !== 0 && !isNaN(c.capo)) {
           setHasCapo(true);
           setCapoFret(c.capo);
+        } else {
+          setHasCapo(false);
+          setCapoFret(0);
         }
 
-        if (c.keyboard_bank || c.keyboard_slot || c.note?.includes('Style:')) {
+        const initialTimbre = c.timbre || (c.keyboard_bank ? `Banco ${c.keyboard_bank}, Slot ${c.keyboard_slot || 1}` : '');
+        const initialStyle = c.style || '';
+        if (initialTimbre || initialStyle) {
           setHasTimbres(true);
-          setTimbreText(c.keyboard_bank ? `Banco ${c.keyboard_bank}, Slot ${c.keyboard_slot || 1}` : '');
+          setTimbreText(initialTimbre);
+          setStyleText(initialStyle);
+        } else {
+          setHasTimbres(false);
+          setTimbreText('');
+          setStyleText('');
         }
       }
     }
@@ -358,7 +368,9 @@ export default function ChordEditScreen() {
       lyrics: finalLyrics,
       externalLink: externalLink.trim(),
       note: note.trim(),
-      capo: hasCapo && capoFret !== 0 ? capoFret : undefined,
+      capo: hasCapo && typeof capoFret === 'number' && capoFret !== 0 ? capoFret : undefined,
+      timbre: hasTimbres && timbreText.trim() ? timbreText.trim() : undefined,
+      style: hasTimbres && styleText.trim() ? styleText.trim() : undefined,
     };
 
     if (isEditing && id) {
@@ -366,6 +378,9 @@ export default function ChordEditScreen() {
       router.back();
     } else {
       const newId = createChord(chordData);
+      if (playlistId) {
+        linkChordToPlaylist(newId, playlistId);
+      }
       router.replace({ pathname: '/chord/[id]', params: { id: newId, playlistId } });
     }
   }
@@ -583,27 +598,27 @@ export default function ChordEditScreen() {
                     {hasCapo && (
                       <View style={sty.capoStepperWrap}>
                         <Text style={sty.capoFretDisplay}>
-                          {capoFret === 0 
+                          {(capoFret || 0) === 0 
                             ? '0 (Original / Sem Capo)' 
-                            : (capoFret > 0 ? `+${capoFret} (${capoFret}ª Casa / Semitons Acima)` : `${capoFret} (${Math.abs(capoFret)} Semitons Abaixo)`)}
+                            : `${transposeTone(tone, capoFret || 0)} (${(capoFret || 0) > 0 ? `+${capoFret}` : capoFret})`}
                         </Text>
                         <View style={sty.stepperRow}>
                           <TouchableOpacity
                             style={sty.stepperBtn}
-                            onPress={() => setCapoFret(prev => Math.max(-12, prev - 1))}
-                            disabled={capoFret <= -12}
+                            onPress={() => setCapoFret(prev => Math.max(-12, (prev || 0) - 1))}
+                            disabled={(capoFret || 0) <= -12}
                           >
                             <Text style={sty.stepperTxt}>−</Text>
                           </TouchableOpacity>
                           
                           <Text style={sty.stepperValue}>
-                            {capoFret > 0 ? `+${capoFret}` : capoFret}
+                            {(capoFret || 0) > 0 ? `+${capoFret}` : (capoFret || 0)}
                           </Text>
 
                           <TouchableOpacity
                             style={sty.stepperBtn}
-                            onPress={() => setCapoFret(prev => Math.min(12, prev + 1))}
-                            disabled={capoFret >= 12}
+                            onPress={() => setCapoFret(prev => Math.min(12, (prev || 0) + 1))}
+                            disabled={(capoFret || 0) >= 12}
                           >
                             <Text style={sty.stepperTxt}>+</Text>
                           </TouchableOpacity>

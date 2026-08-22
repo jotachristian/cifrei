@@ -16,6 +16,8 @@ export interface Chord {
   keyboard_bank?: number;
   keyboard_slot?: number;
   capo?: number;
+  timbre?: string;
+  style?: string;
 }
 export interface PlaylistChordLink { playlist_id: string; chord_id: string; sort_order: number; moment: string; created_at: number; }
 export interface ChordWithPlaylist extends Chord { playlist_name: string; }
@@ -59,43 +61,79 @@ export async function initDatabase(): Promise<void> {
       AsyncStorage.getItem('cache_playlists'),
       AsyncStorage.getItem('cache_playlist_chords'),
     ]);
-    if (cCache) chords = JSON.parse(cCache);
-    if (pCache) playlists = JSON.parse(pCache);
-    if (lCache) playlist_chords = JSON.parse(lCache);
-    notify();
+    if (cCache) {
+      try {
+        const parsed = JSON.parse(cCache);
+        if (Array.isArray(parsed) && parsed.length > 0) chords = parsed;
+      } catch (e) {}
+    }
+    if (pCache) {
+      try {
+        const parsed = JSON.parse(pCache);
+        if (Array.isArray(parsed) && parsed.length > 0) playlists = parsed;
+      } catch (e) {}
+    }
+    if (lCache) {
+      try {
+        const parsed = JSON.parse(lCache);
+        if (Array.isArray(parsed) && parsed.length > 0) playlist_chords = parsed;
+      } catch (e) {}
+    }
   } catch (e) {
     console.error('Erro ao carregar cache local:', e);
   }
 
-  return new Promise((resolve) => {
-    let cLoaded = false; let pLoaded = false; let lLoaded = false;
-    const check = () => { if (cLoaded && pLoaded && lLoaded) { isInitialized = true; resolve(); } };
+  isInitialized = true;
+  notify();
 
+  startFirestoreSync();
+  return Promise.resolve();
+}
+
+let syncStarted = false;
+function startFirestoreSync() {
+  if (syncStarted) return;
+  syncStarted = true;
+
+  try {
     onSnapshot(collection(db, 'chords'), snap => {
-      chords = snap.docs.map(d => d.data() as Chord);
-      saveToCache();
-      if (isInitialized) notify();
-      cLoaded = true; check();
-    }, () => {
-      cLoaded = true; check();
+      if (!snap.empty) {
+        chords = snap.docs
+          .map(d => d.data() as Chord & { is_deleted?: boolean; deleted?: boolean })
+          .filter(c => !c.is_deleted && !c.deleted) as Chord[];
+        saveToCache();
+        notify();
+      }
+    }, err => {
+      console.warn('Firestore offline mode (chords):', err);
     });
+
     onSnapshot(collection(db, 'playlists'), snap => {
-      playlists = snap.docs.map(d => d.data() as Playlist);
-      saveToCache();
-      if (isInitialized) notify();
-      pLoaded = true; check();
-    }, () => {
-      pLoaded = true; check();
+      if (!snap.empty) {
+        playlists = snap.docs
+          .map(d => d.data() as Playlist & { is_deleted?: boolean; deleted?: boolean })
+          .filter(p => !p.is_deleted && !p.deleted) as Playlist[];
+        saveToCache();
+        notify();
+      }
+    }, err => {
+      console.warn('Firestore offline mode (playlists):', err);
     });
+
     onSnapshot(collection(db, 'playlist_chords'), snap => {
-      playlist_chords = snap.docs.map(d => d.data() as PlaylistChordLink);
-      saveToCache();
-      if (isInitialized) notify();
-      lLoaded = true; check();
-    }, () => {
-      lLoaded = true; check();
+      if (!snap.empty) {
+        playlist_chords = snap.docs
+          .map(d => d.data() as PlaylistChordLink & { is_deleted?: boolean; deleted?: boolean })
+          .filter(l => !l.is_deleted && !l.deleted) as PlaylistChordLink[];
+        saveToCache();
+        notify();
+      }
+    }, err => {
+      console.warn('Firestore offline mode (playlist_chords):', err);
     });
-  });
+  } catch (err) {
+    console.warn('Erro ao inicializar listeners do Firestore:', err);
+  }
 }
 
 function genId(): string {
@@ -120,7 +158,7 @@ export function createPlaylist(name: string, description: string): string {
   const sort_order = playlists.length > 0 ? Math.max(...playlists.map(p => p.sort_order)) + 1 : 0;
   const p: Playlist & { _secret: string } = { id, name, description, sort_order, created_at: Date.now(), _secret: 'sappinessvocationswingingtreachery8targetnative2026$' };
   playlists.push(p);
-  setDoc(doc(db, 'playlists', id), p);
+  setDoc(doc(db, 'playlists', id), p).catch(() => {});
   saveToCache();
   notify();
   return id;
@@ -134,7 +172,7 @@ export function updatePlaylist(id: string, name: string, description: string): v
     saveToCache();
     notify();
   }
-  updateDoc(doc(db, 'playlists', id), { name, description, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' });
+  updateDoc(doc(db, 'playlists', id), { name, description, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' }).catch(() => {});
 }
 
 export function deletePlaylist(id: string): void {
@@ -144,13 +182,21 @@ export function deletePlaylist(id: string): void {
   saveToCache();
   notify();
 
-  deleteDoc(doc(db, 'playlists', id)).catch(err => {
-    console.warn('Firestore deletePlaylist warn:', err);
-  });
+  updateDoc(doc(db, 'playlists', id), {
+    is_deleted: true,
+    deleted: true,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  }).catch(() => {});
+
+  deleteDoc(doc(db, 'playlists', id)).catch(() => {});
+
   linksToDelete.forEach(l => {
-    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`)).catch(err => {
-      console.warn('Firestore delete link warn:', err);
-    });
+    updateDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`), {
+      is_deleted: true,
+      deleted: true,
+      _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+    }).catch(() => {});
+    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`)).catch(() => {});
   });
 }
 
@@ -194,7 +240,19 @@ export function getTotalCount(): number {
   return chords.length;
 }
 
-export function createChord(data: { name: string; artist: string; tone: string; lyrics: string; externalLink?: string; note?: string; keyboard_bank?: number; keyboard_slot?: number; capo?: number; }): string {
+export function createChord(data: {
+  name: string;
+  artist: string;
+  tone: string;
+  lyrics: string;
+  externalLink?: string;
+  note?: string;
+  keyboard_bank?: number;
+  keyboard_slot?: number;
+  capo?: number;
+  timbre?: string;
+  style?: string;
+}): string {
   const id = genId();
   const c: Chord = {
     id,
@@ -209,6 +267,8 @@ export function createChord(data: { name: string; artist: string; tone: string; 
     keyboard_bank: data.keyboard_bank,
     keyboard_slot: data.keyboard_slot,
     capo: data.capo,
+    timbre: data.timbre,
+    style: data.style,
   };
   chords.push(c);
 
@@ -216,13 +276,25 @@ export function createChord(data: { name: string; artist: string; tone: string; 
     ...c,
     _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
   });
-  setDoc(doc(db, 'chords', id), payload);
+  setDoc(doc(db, 'chords', id), payload).catch(() => {});
   saveToCache();
   notify();
   return id;
 }
 
-export function updateChord(id: string, data: { name: string; artist: string; tone: string; lyrics: string; externalLink?: string; note?: string; keyboard_bank?: number; keyboard_slot?: number; capo?: number; }): void {
+export function updateChord(id: string, data: {
+  name: string;
+  artist: string;
+  tone: string;
+  lyrics: string;
+  externalLink?: string;
+  note?: string;
+  keyboard_bank?: number;
+  keyboard_slot?: number;
+  capo?: number;
+  timbre?: string;
+  style?: string;
+}): void {
   const c = chords.find(c => c.id === id);
   if (c) {
     c.name = data.name;
@@ -234,6 +306,8 @@ export function updateChord(id: string, data: { name: string; artist: string; to
     c.keyboard_bank = data.keyboard_bank;
     c.keyboard_slot = data.keyboard_slot;
     c.capo = data.capo;
+    c.timbre = data.timbre;
+    c.style = data.style;
     saveToCache();
     notify();
   }
@@ -247,9 +321,11 @@ export function updateChord(id: string, data: { name: string; artist: string; to
     keyboard_bank: data.keyboard_bank ?? null,
     keyboard_slot: data.keyboard_slot ?? null,
     capo: data.capo ?? null,
+    timbre: data.timbre ?? null,
+    style: data.style ?? null,
     _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
   });
-  updateDoc(doc(db, 'chords', id), payload);
+  updateDoc(doc(db, 'chords', id), payload).catch(() => {});
 }
 
 export function updateChordNote(id: string, note: string): void {
@@ -280,13 +356,21 @@ export function deleteChord(id: string): void {
   saveToCache();
   notify();
 
-  deleteDoc(doc(db, 'chords', id)).catch(err => {
-    console.warn('Firestore deleteChord warn:', err);
-  });
+  updateDoc(doc(db, 'chords', id), {
+    is_deleted: true,
+    deleted: true,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  }).catch(() => {});
+
+  deleteDoc(doc(db, 'chords', id)).catch(() => {});
+
   linksToDelete.forEach(l => {
-    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`)).catch(err => {
-      console.warn('Firestore delete link warn:', err);
-    });
+    updateDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`), {
+      is_deleted: true,
+      deleted: true,
+      _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+    }).catch(() => {});
+    deleteDoc(doc(db, 'playlist_chords', `${l.playlist_id}_${l.chord_id}`)).catch(() => {});
   });
 }
 
@@ -353,7 +437,12 @@ export function unlinkChordFromPlaylist(chordId: string, playlistId: string): vo
   saveToCache();
   notify();
 
-  deleteDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`));
+  updateDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`), {
+    is_deleted: true,
+    deleted: true,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  }).catch(() => {});
+  deleteDoc(doc(db, 'playlist_chords', `${playlistId}_${chordId}`)).catch(() => {});
 }
 
 export function updateLinkMoment(chordId: string, playlistId: string, moment: string): void {

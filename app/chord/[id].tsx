@@ -162,22 +162,49 @@ export default function ChordScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Info do Teclado & Capotraste */}
-        {(chord.keyboard_bank || chord.keyboard_slot || chord.capo !== undefined) ? (
+        {/* Badge Chamativo de Transposição / Capotraste (Ex: C(-2)) */}
+        {typeof chord.capo === 'number' && chord.capo !== 0 ? (
+          <View style={sty.transposHighlightBadge}>
+            <Ionicons name="bookmark" size={15} color="#ffffff" />
+            <Text style={sty.transposHighlightTxt}>
+              TRANSPOS: {transposeTone(displayTone, chord.capo)}({chord.capo > 0 ? `+${chord.capo}` : chord.capo})
+            </Text>
+          </View>
+        ) : null}
+
+        {/* Timbres, Estilos / Ritmos e Anotações */}
+        {(chord.timbre || chord.style || chord.keyboard_bank || chord.keyboard_slot || chord.note) ? (
           <View style={sty.infoRow}>
-            {chord.keyboard_bank || chord.keyboard_slot ? (
+            {chord.timbre ? (
               <View style={sty.infoChip}>
-                <Ionicons name="musical-notes-outline" size={14} color={colors.textSub} />
+                <Ionicons name="musical-notes" size={14} color={colors.accent} />
                 <Text style={sty.infoChipTxt}>
-                  Reg: {chord.keyboard_bank ? `B${chord.keyboard_bank}` : ''}{chord.keyboard_slot ? ` C${chord.keyboard_slot}` : ''}
+                  <Text style={sty.infoChipLabel}>Timbre: </Text>{chord.timbre}
+                </Text>
+              </View>
+            ) : (chord.keyboard_bank || chord.keyboard_slot ? (
+              <View style={sty.infoChip}>
+                <Ionicons name="musical-notes-outline" size={14} color={colors.accent} />
+                <Text style={sty.infoChipTxt}>
+                  <Text style={sty.infoChipLabel}>Reg: </Text>{chord.keyboard_bank ? `B${chord.keyboard_bank}` : ''}{chord.keyboard_slot ? ` C${chord.keyboard_slot}` : ''}
+                </Text>
+              </View>
+            ) : null)}
+
+            {chord.style ? (
+              <View style={sty.infoChip}>
+                <Ionicons name="disc-outline" size={14} color={colors.accent} />
+                <Text style={sty.infoChipTxt}>
+                  <Text style={sty.infoChipLabel}>Ritmo: </Text>{chord.style}
                 </Text>
               </View>
             ) : null}
-            {chord.capo !== undefined ? (
+
+            {chord.note ? (
               <View style={sty.infoChip}>
-                <Ionicons name="bookmark-outline" size={14} color={colors.textSub} />
-                <Text style={sty.infoChipTxt}>
-                  TRANSPOS: {chord.capo > 0 ? `+${chord.capo}` : chord.capo}
+                <Ionicons name="information-circle-outline" size={14} color={colors.textSub} />
+                <Text style={sty.infoChipTxt} numberOfLines={1}>
+                  <Text style={sty.infoChipLabel}>Obs: </Text>{chord.note}
                 </Text>
               </View>
             ) : null}
@@ -348,14 +375,33 @@ function makeStyles(c: any) {
     songTitle: { fontSize: 22, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 6 },
     metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
     artist: { fontSize: 14, color: c.textSub, fontFamily: 'Inter_400Regular' },
-    infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+    transposHighlightBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: '#ff7700',
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 10,
+      alignSelf: 'flex-start',
+      marginBottom: 14,
+    },
+    transposHighlightTxt: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: '#ffffff',
+      fontFamily: 'Inter_700Bold',
+      letterSpacing: 0.5,
+    },
+    infoRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
     infoChip: {
       flexDirection: 'row', alignItems: 'center', gap: 6,
-      backgroundColor: c.input, borderRadius: 16,
-      paddingHorizontal: 10, paddingVertical: 4,
+      backgroundColor: c.input, borderRadius: 12,
+      paddingHorizontal: 10, paddingVertical: 5,
       borderWidth: 1, borderColor: c.border
     },
-    infoChipTxt: { fontSize: 12, fontWeight: '600', color: c.text },
+    infoChipLabel: { fontSize: 11, fontWeight: '600', color: c.textSub },
+    infoChipTxt: { fontSize: 12, fontWeight: '700', color: c.text },
     toneBadge: {
       flexDirection: 'row', alignItems: 'center',
       paddingHorizontal: 10, paddingVertical: 3,

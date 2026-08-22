@@ -73,7 +73,7 @@ export default function PlaylistsScreen() {
             activeOpacity={0.7}
           >
             <View style={sty.playlistThumb}>
-              <Ionicons name="musical-notes" size={24} color="#ffffff" />
+              <Ionicons name="albums" size={22} color="#ffffff" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={sty.playlistName}>{item.name}</Text>
@@ -146,7 +146,7 @@ function makeStyles(c: any) {
     },
     playlistThumb: {
       width: 48, height: 48, borderRadius: 12,
-      backgroundColor: c.accent,
+      backgroundColor: c.danger,
       alignItems: 'center', justifyContent: 'center',
     },
     playlistName: { fontSize: 16, fontWeight: '700', color: c.text },

@@ -43,9 +43,8 @@ export default function PlaylistScreen() {
   }
 
   function handleCreateAndAdd() {
-    const newId = createChord({ name: 'Nova Cifra', artist: '', tone: 'C', lyrics: '' });
-    handleAddChord(newId);
-    router.push({ pathname: '/chord/[id]', params: { id: newId, playlistId: id } });
+    setShowAddChord(false);
+    router.push({ pathname: '/chord/edit', params: { playlistId: id } });
   }
 
   function handleGoBack() {

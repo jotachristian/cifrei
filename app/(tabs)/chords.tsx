@@ -38,8 +38,7 @@ export default function ChordsScreen() {
   const displayList = query.length >= 2 ? results : allChords;
 
   function handleCreateChord() {
-    const newId = createChord({ name: 'Nova Cifra', artist: '', tone: 'C', lyrics: '' });
-    router.push({ pathname: '/chord/[id]', params: { id: newId } });
+    router.push('/chord/edit');
   }
 
   return (
