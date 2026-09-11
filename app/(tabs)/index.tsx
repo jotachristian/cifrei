@@ -1,13 +1,18 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, FlatList, Modal,
-  TouchableOpacity, StyleSheet, Pressable, Image, KeyboardAvoidingView, Platform
+  TouchableOpacity, StyleSheet, Pressable, Image, KeyboardAvoidingView, Platform, Dimensions
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { createPlaylist, Playlist, addDatabaseListener, getPlaylists } from '@/lib/database';
+import { PlaylistCover } from '@/components/PlaylistCover';
+
+const GRID_PADDING = 40;
+const GRID_GAP = 20;
+const COVER_SIZE = Math.floor((Dimensions.get('window').width - GRID_PADDING * 2 - GRID_GAP) / 2);
 
 export default function PlaylistsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
@@ -56,10 +61,12 @@ export default function PlaylistsScreen() {
       </View>
 
       <FlatList
-        key="playlists"
+        key="playlists-grid"
         data={playlists}
         keyExtractor={item => item.id}
-        contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 16, paddingBottom: 32 }}
+        numColumns={2}
+        columnWrapperStyle={sty.gridRow}
+        contentContainerStyle={{ padding: 30}}
         ListEmptyComponent={
           <View style={sty.emptyWrap}>
             <Image source={require('@/assets/playlist-none.png')} style={sty.emptyStateImage} resizeMode="contain" />
@@ -68,20 +75,24 @@ export default function PlaylistsScreen() {
         }
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={sty.playlistRow}
+            style={sty.gridCard}
             onPress={() => router.push({ pathname: '/playlist/[id]', params: { id: item.id } })}
-            activeOpacity={0.7}
+            activeOpacity={0.75}
           >
-            <View style={sty.playlistThumb}>
-              <Ionicons name="albums" size={22} color="#ffffff" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={sty.playlistName}>{item.name}</Text>
-              {item.description ? (
-                <Text style={sty.playlistDesc} numberOfLines={2}>{item.description}</Text>
-              ) : null}
-            </View>
-            <Ionicons name="chevron-forward" size={20} color={colors.placeholder} />
+            <PlaylistCover
+              playlistId={item.id}
+              size={COVER_SIZE}
+              borderRadius={14}
+              fallback={
+                <View style={sty.coverFallback}>
+                  <Ionicons name="albums" size={36} color="#ffffff" />
+                </View>
+              }
+            />
+            <Text style={sty.playlistName} numberOfLines={2}>{item.name}</Text>
+            {item.description ? (
+              <Text style={sty.playlistDesc} numberOfLines={2}>{item.description}</Text>
+            ) : null}
           </TouchableOpacity>
         )}
       />
@@ -130,7 +141,7 @@ export default function PlaylistsScreen() {
 
 function makeStyles(c: any) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: c.bg },
+    container: { flex: 1, backgroundColor: 'transparent' },
     header: {
       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
       backgroundColor: 'transparent', paddingHorizontal: 16, paddingVertical: 14,
@@ -139,18 +150,26 @@ function makeStyles(c: any) {
     brandRow: { flexDirection: 'row', alignItems: 'center' },
     brandImage: { width: 160, height: 50 },
     iconBtn: { padding: 4 },
-    playlistRow: {
-      flexDirection: 'row', alignItems: 'center', gap: 14,
-      backgroundColor: c.card, borderRadius: 14, padding: 12,
-      marginBottom: 10, borderWidth: 1, borderColor: c.border,
+    gridRow: {
+      justifyContent: 'space-between',
+      paddingHorizontal: 4,
     },
-    playlistThumb: {
-      width: 48, height: 48, borderRadius: 12,
-      backgroundColor: c.danger,
-      alignItems: 'center', justifyContent: 'center',
+    gridCard: {
+      width: COVER_SIZE,
+      marginBottom: 16,
     },
-    playlistName: { fontSize: 16, fontWeight: '700', color: c.text },
-    playlistDesc: { fontSize: 12, color: c.textSub, marginTop: 2 },
+    coverFallback: {
+      width: COVER_SIZE,
+      height: COVER_SIZE,
+      borderRadius: 14,
+      backgroundColor: c.card,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    playlistName: { fontSize: 14, fontWeight: '600', color: c.text, marginTop: 8, textAlign: 'center' },
+    playlistDesc: { fontSize: 12, color: c.textSub, marginTop: 3, textAlign: 'center' },
     emptyWrap: { padding: 48, alignItems: 'center', gap: 12 },
     emptyStateImage: { width: 160, height: 160, opacity: 0.9 },
     emptyText: { color: c.text, fontSize: 14, textAlign: 'center', lineHeight: 22 },

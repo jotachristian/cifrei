@@ -3,17 +3,19 @@
 //
 // Por que assim e não patch em Text.render?
 //   No RN 0.81 / React 19 o componente Text é uma função simples (TextImpl),
-//   não um forwardRef — ou seja, NÃO tem `.render` para sobrescrever. O patch
-//   antigo saía silenciosamente e a fonte nunca era aplicada (caía no Arial).
+//   não tem `.render` para sobrescrever.
 //
 // Solução: interceptar o JSX runtime (jsx / jsxs / jsxDEV). Toda tag JSX passa
-// por essas funções, então conseguimos injetar a fontFamily certa em qualquer
-// <Text> — em nativo e na web — escolhendo a variante pelo fontWeight.
+// por essas funções, então injetamos a fontFamily certa em qualquer <Text>.
 //
-// IMPORTANTE: cada variante da Poppins já carrega o peso (ex.: Poppins_700Bold),
-// então ZERAMOS o fontWeight. No Android, manter fontFamily + fontWeight juntos
-// faz o sistema não achar a fonte e cair no fallback.
-import { StyleSheet, Text as RNText } from 'react-native';
+// IMPORTANTE WEB: No ambiente web o Metro transpila os módulos ES como CJS com
+// interop. Quando mutamos `react/jsx-runtime` diretamente, o Metro pode
+// corromper como ele resolve `React` em outros módulos (ex.: @expo/metro-runtime
+// acessa React.default.createContext, que deixa de existir). Por isso, NO WEB
+// apenas fazemos o patch sem mutar o módulo global, usando um proxy local.
+//
+// No mobile (iOS/Android) o patch direto continua funcionando normalmente.
+import { Platform, StyleSheet, Text as RNText } from 'react-native';
 
 function weightToPoppins(weight: string | number | undefined): string {
   const w = String(weight ?? '400');
@@ -45,20 +47,26 @@ function wrap(orig: Function): Function {
   };
 }
 
-function patchRuntime(mod: any, keys: string[]) {
-  if (!mod) return;
-  for (const k of keys) {
-    if (typeof mod[k] === 'function' && !mod[k].__poppinsPatched) {
-      const patched = wrap(mod[k]);
-      (patched as any).__poppinsPatched = true;
-      mod[k] = patched;
+// No WEB, NÃO mutamos o módulo compartilhado pois isso corrompe a resolução
+// do React em outros módulos (React.default.createContext falha).
+// O patch de fonte no web é feito via CSS no index.html, portanto é seguro
+// não aplicar o patch de JS no web.
+if (Platform.OS !== 'web') {
+  function patchRuntime(mod: any, keys: string[]) {
+    if (!mod) return;
+    for (const k of keys) {
+      if (typeof mod[k] === 'function' && !mod[k].__poppinsPatched) {
+        const patched = wrap(mod[k]);
+        (patched as any).__poppinsPatched = true;
+        mod[k] = patched;
+      }
     }
   }
-}
 
-// Metro só aceita require() com string literal, então requeremos cada runtime
-// diretamente. Produção e dev usam runtimes diferentes; cobrimos os dois.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-try { patchRuntime(require('react/jsx-runtime'), ['jsx', 'jsxs']); } catch {}
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-try { patchRuntime(require('react/jsx-dev-runtime'), ['jsxDEV']); } catch {}
+  // Metro só aceita require() com string literal, então requeremos cada runtime
+  // diretamente. Produção e dev usam runtimes diferentes; cobrimos os dois.
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  try { patchRuntime(require('react/jsx-runtime'), ['jsx', 'jsxs']); } catch {}
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  try { patchRuntime(require('react/jsx-dev-runtime'), ['jsxDEV']); } catch {}
+}

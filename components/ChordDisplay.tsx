@@ -10,6 +10,8 @@ interface Props {
   fontSize: number;
   colors: Colors;
   onChordPress?: (chord: string) => void;
+  onSectionLayout?: (secIdx: number, title: string, y: number) => void;
+  highlightedSectionIdx?: number | null;
 }
 
 interface Seg { chord?: string; text: string; }
@@ -143,7 +145,7 @@ function groupSegs(segs: Seg[]): Seg[][] {
 
 // ── component ──────────────────────────────────────────────────────────────
 
-function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChordPress }: Props) {
+function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChordPress, onSectionLayout, highlightedSectionIdx }: Props) {
   const lines = lyrics.split('\n');
   const lineHeight = Math.round(fontSize * 1.75);
   const chordRowH  = Math.round(fontSize * 1.4);
@@ -298,14 +300,18 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
   return (
     <View style={{ gap: 14 }}>
       {sections.map((sec, secIdx) => {
-        // Cores em tons sutis de cinza harmoniosos com o tema
+        const isHighlighted = secIdx === highlightedSectionIdx;
         const isDark = colors.bg !== '#ffffff' && colors.bg !== '#f5f5f7';
-        
-        const bgColor = sec.isChorus
-          ? (isDark ? '#1a1b20' : '#ececef') // Refrão: tom de cinza ligeiramente destacado
-          : (isDark ? '#151619' : '#f4f4f7'); // Estrofe / Intro: tom de cinza suave
 
-        const borderColor = sec.isChorus
+        const bgColor = isHighlighted
+          ? (isDark ? 'rgba(255, 119, 0, 0.28)' : 'rgba(255, 119, 0, 0.20)')
+          : sec.isChorus
+          ? (isDark ? '#1a1b20' : colors.bg)
+          : (isDark ? '#151619' : colors.bg);
+
+        const borderColor = isHighlighted
+          ? colors.accent
+          : sec.isChorus
           ? (isDark ? '#2a2c34' : '#dedee5')
           : (isDark ? '#212328' : '#e7e7ed');
 
@@ -316,6 +322,11 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
         return (
           <View
             key={`sec-${secIdx}`}
+            onLayout={(e) => {
+              if (sec.title) {
+                onSectionLayout?.(secIdx, sec.title, e.nativeEvent.layout.y);
+              }
+            }}
             style={{
               backgroundColor: bgColor,
               borderRadius: 14,
@@ -332,7 +343,7 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
                   style={{
                     fontSize,
                     fontFamily: 'Inter_400Regular',
-                    color: isDark ? '#fefeffff' : '#fe7b04',
+                    color: isDark ? '#fefeffff' : colors.text,
                   }}
                 >
                   {sec.title}

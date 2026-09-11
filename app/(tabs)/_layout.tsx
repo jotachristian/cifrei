@@ -9,7 +9,8 @@ export default function TabsLayout() {
   return (
     <Tabs screenOptions={{
       headerShown: false,
-      tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
+      sceneStyle: { backgroundColor: 'transparent' },
+      tabBarStyle: { backgroundColor: colors.bg, borderTopColor: colors.border, borderTopLeftRadius: 30, borderBottomLeftRadius: 30, borderTopRightRadius: 30, borderBottomRightRadius: 30, margin: 20 },
       tabBarActiveTintColor: colors.accent,
       tabBarInactiveTintColor: colors.textSub,
     }}>

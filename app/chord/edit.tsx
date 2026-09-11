@@ -7,8 +7,11 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord, linkChordToPlaylist } from '@/lib/database';
+import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord, linkChordToPlaylist, updateChordCover, formatArtistName, findExistingChord } from '@/lib/database';
 import { MAJOR_TONES, MINOR_TONES, transposeTone } from '@/lib/transpose';
+import { ChordCover } from '@/components/ChordCover';
+import { searchAlbumCover, getYoutubeCoverUrl, cacheCoverImage } from '@/lib/coverService';
+import { extractYoutubeId, toYoutubeMusicUrl, getYoutubeThumbnailUrl } from '@/lib/youtube';
 
 // Tabela de Campo Harmônico para o Teclado de Acordes
 const HARMONIC_FIELDS: Record<string, string[]> = {
@@ -39,7 +42,7 @@ const HARMONIC_FIELDS: Record<string, string[]> = {
 function getChordVariations(baseChord: string): string[] {
   const root = baseChord.replace(/[°m794susdim]/g, '').trim() || 'C';
   const isMinor = baseChord.includes('m') && !baseChord.includes('maj');
-  
+
   if (isMinor) {
     return [
       baseChord,
@@ -160,6 +163,12 @@ export default function ChordEditScreen() {
   const [lyrics, setLyrics] = useState('');
   const [externalLink, setExternalLink] = useState('');
 
+  // Capa do Álbum
+  const [coverUrl, setCoverUrl] = useState('');
+  const [coverLocalUri, setCoverLocalUri] = useState('');
+  const [isSearchingCover, setIsSearchingCover] = useState(false);
+  const [coverSearchIndex, setCoverSearchIndex] = useState(0);
+
   // Artista Autocomplete
   const [showArtistSuggestions, setShowArtistSuggestions] = useState(false);
 
@@ -175,8 +184,17 @@ export default function ChordEditScreen() {
 
   const existingArtists = useMemo(() => {
     const all = getAllChords();
-    const unique = Array.from(new Set(all.map(c => c.artist?.trim()).filter(Boolean))) as string[];
-    return unique.sort((a, b) => a.localeCompare(b));
+    const map = new Map<string, string>();
+    for (const c of all) {
+      const formatted = formatArtistName(c.artist || '');
+      if (formatted) {
+        const key = formatted.toLowerCase();
+        if (!map.has(key)) {
+          map.set(key, formatted);
+        }
+      }
+    }
+    return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
   }, []);
 
   const filteredArtists = useMemo(() => {
@@ -195,7 +213,9 @@ export default function ChordEditScreen() {
         setExternalLink(c.external_link || '');
         setNote(c.note || '');
         setLyrics(c.lyrics || '');
-        
+        setCoverUrl(c.cover_url || '');
+        setCoverLocalUri(c.cover_local_uri || '');
+
         if (typeof c.capo === 'number' && c.capo !== 0 && !isNaN(c.capo)) {
           setHasCapo(true);
           setCapoFret(c.capo);
@@ -257,7 +277,7 @@ export default function ChordEditScreen() {
 
     const newContent = currentText.slice(0, start) + formatted + currentText.slice(end);
     handleUpdateCurrentSectionContent(newContent);
-    
+
     const newPos = start + formatted.length;
     setCursorPos({ start: newPos, end: newPos });
   }
@@ -330,6 +350,19 @@ export default function ChordEditScreen() {
       }
       return;
     }
+
+    const formattedArtist = formatArtistName(artist);
+    const dup = findExistingChord(name, formattedArtist, isEditing ? id : undefined);
+    if (dup) {
+      const msg = `Já existe uma música cadastrada com o nome "${dup.name}" para o artista "${dup.artist || 'Sem artista'}". Não é permitido cadastrar músicas duplicadas.`;
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert('Música Duplicada', msg);
+      }
+      return;
+    }
+
     setSubStep(2);
   }
 
@@ -350,9 +383,82 @@ export default function ChordEditScreen() {
     }
   }
 
+  function handleExternalLinkChange(text: string) {
+    const ytId = extractYoutubeId(text);
+    const formatted = ytId ? toYoutubeMusicUrl(text) : text;
+    setExternalLink(formatted);
+    if (ytId) {
+      const ytThumb = getYoutubeThumbnailUrl(ytId);
+      if (ytThumb && (!coverUrl || coverUrl.includes('ytimg.com') || coverUrl.includes('youtube'))) {
+        setCoverUrl(ytThumb);
+        setCoverLocalUri('');
+      }
+    }
+  }
+
+  async function handleSearchCover() {
+    if (!name.trim() && !externalLink.trim()) {
+      if (Platform.OS === 'web') {
+        window.alert('Digite o nome da música ou adicione o link do YouTube primeiro para buscar a capa.');
+      } else {
+        Alert.alert('Aviso', 'Digite o nome da música ou adicione o link do YouTube primeiro para buscar a capa.');
+      }
+      return;
+    }
+    setIsSearchingCover(true);
+    try {
+      // Se há link do YouTube informado e ainda não pesquisamos capas adicionais
+      if (externalLink.trim() && coverSearchIndex === 0 && !coverUrl) {
+        const ytCover = getYoutubeCoverUrl(externalLink.trim());
+        if (ytCover) {
+          setCoverUrl(ytCover);
+          setCoverLocalUri('');
+          setCoverSearchIndex(1);
+          return;
+        }
+      }
+
+      // Busca no YouTube / YouTube Music pelo nome da música/artista com índice rotativo
+      const cleanName = name.trim();
+      const cleanArtist = artist.trim();
+      const ytCover = await searchAlbumCover(cleanName, cleanArtist, coverSearchIndex);
+      if (ytCover) {
+        setCoverUrl(ytCover);
+        setCoverLocalUri('');
+        setCoverSearchIndex(prev => prev + 1);
+      } else if (externalLink.trim()) {
+        const directCover = getYoutubeCoverUrl(externalLink.trim());
+        if (directCover) {
+          setCoverUrl(directCover);
+          setCoverLocalUri('');
+        } else {
+          Alert.alert('Não encontrada', 'Não foi possível encontrar a capa do YouTube.');
+        }
+      } else {
+        Alert.alert('Não encontrada', 'Não foi possível encontrar capas no YouTube para esta música.');
+      }
+    } catch (err) {
+      console.warn('Erro ao buscar capa:', err);
+    } finally {
+      setIsSearchingCover(false);
+    }
+  }
+
   function handleSave() {
     if (!name.trim()) {
       Alert.alert('Atenção', 'O nome da música é obrigatório.');
+      return;
+    }
+
+    const formattedArtist = formatArtistName(artist);
+    const dup = findExistingChord(name, formattedArtist, isEditing ? id : undefined);
+    if (dup) {
+      const msg = `Já existe uma música cadastrada com o nome "${dup.name}" para o artista "${dup.artist || 'Sem artista'}". Não é permitido cadastrar músicas duplicadas.`;
+      if (Platform.OS === 'web') {
+        window.alert(msg);
+      } else {
+        Alert.alert('Música Duplicada', msg);
+      }
       return;
     }
 
@@ -361,23 +467,43 @@ export default function ChordEditScreen() {
       ? compileSectionsToLyrics(sections)
       : lyrics;
 
+    const formattedLink = externalLink.trim()
+      ? (extractYoutubeId(externalLink.trim()) ? toYoutubeMusicUrl(externalLink.trim()) : externalLink.trim())
+      : '';
+
     const chordData = {
       name: name.trim(),
-      artist: artist.trim(),
+      artist: formattedArtist,
       tone: tone,
       lyrics: finalLyrics,
-      externalLink: externalLink.trim(),
+      externalLink: formattedLink,
       note: note.trim(),
       capo: hasCapo && typeof capoFret === 'number' && capoFret !== 0 ? capoFret : undefined,
       timbre: hasTimbres && timbreText.trim() ? timbreText.trim() : undefined,
       style: hasTimbres && styleText.trim() ? styleText.trim() : undefined,
+      cover_url: coverUrl.trim(),
+      cover_local_uri: coverLocalUri.trim(),
     };
 
     if (isEditing && id) {
       updateChord(id, chordData);
+      if (coverUrl.trim()) {
+        cacheCoverImage(id, coverUrl.trim()).then(localUri => {
+          if (localUri && localUri !== coverUrl.trim()) {
+            updateChordCover(id, coverUrl.trim(), localUri);
+          }
+        }).catch(() => { });
+      }
       router.back();
     } else {
       const newId = createChord(chordData);
+      if (coverUrl.trim()) {
+        cacheCoverImage(newId, coverUrl.trim()).then(localUri => {
+          if (localUri && localUri !== coverUrl.trim()) {
+            updateChordCover(newId, coverUrl.trim(), localUri);
+          }
+        }).catch(() => { });
+      }
       if (playlistId) {
         linkChordToPlaylist(newId, playlistId);
       }
@@ -420,7 +546,7 @@ export default function ChordEditScreen() {
       {/* Header Superior */}
       <View style={sty.header}>
         <Pressable onPress={handleBack} style={sty.backBtn}>
-          <Ionicons name="arrow-back" size={24} color={colors.text} />
+          <Ionicons name="chevron-back-outline" size={24} color={colors.text} />
         </Pressable>
 
         <View style={sty.stepTitleWrap}>
@@ -428,8 +554,8 @@ export default function ChordEditScreen() {
             <Text style={sty.stepNumberBadgeTxt}>{step}.{subStep}</Text>
           </View>
           <Text style={sty.stepTitleText} numberOfLines={1}>
-            {step === 1 
-              ? (isEditing ? 'Editar Cifra' : 'Criar Cifra') 
+            {step === 1
+              ? (isEditing ? 'Editar Cifra' : 'Criar Cifra')
               : (subStep === 1 ? 'Letras & Sessões' : 'Cifras nas Sessões')}
           </Text>
         </View>
@@ -454,13 +580,13 @@ export default function ChordEditScreen() {
           keyboardShouldPersistTaps="handled"
           automaticallyAdjustKeyboardInsets={true}
         >
-          
+
           {/* =========================================================================
               ETAPA 1: METADADOS DA CIFRA
              ========================================================================= */}
           {step === 1 && (
             <View style={sty.stepContainer}>
-              
+
               {/* --- SUBETAPA 1: Música e Artista --- */}
               {subStep === 1 && (
                 <View style={sty.card}>
@@ -518,17 +644,57 @@ export default function ChordEditScreen() {
                   <View style={sty.fieldGroup}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                       <Ionicons name="logo-youtube" size={15} color="#ef4444" />
-                      <Text style={sty.label}>VÍDEO NO YOUTUBE (OPCIONAL)</Text>
+                      <Text style={sty.label}>VÍDEO NO YOUTUBE / YT MUSIC (OPCIONAL)</Text>
                     </View>
                     <TextInput
                       style={sty.input}
                       placeholder="https://www.youtube.com/watch?v=... ou https://youtu.be/..."
                       placeholderTextColor={colors.placeholder}
                       value={externalLink}
-                      onChangeText={setExternalLink}
+                      onChangeText={handleExternalLinkChange}
                       autoCapitalize="none"
                       autoCorrect={false}
                     />
+                  </View>
+
+                  <View style={sty.fieldGroup}>
+                    <Text style={sty.label}>CAPA DO ÁLBUM (OPCIONAL)</Text>
+                    <View style={sty.coverPickerRow}>
+                      <View style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: colors.input, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border }}>
+                        <ChordCover
+                          coverUrl={coverUrl}
+                          coverLocalUri={coverLocalUri}
+                          size={56}
+                          borderRadius={12}
+                          fallback={<Ionicons name="disc-outline" size={26} color={colors.accent} />}
+                        />
+                      </View>
+                      <View style={{ flex: 1, gap: 6 }}>
+                        <View style={{ flexDirection: 'row', gap: 8 }}>
+                          <TouchableOpacity
+                            style={[sty.searchCoverBtn, isSearchingCover && { opacity: 0.6 }]}
+                            onPress={handleSearchCover}
+                            disabled={isSearchingCover}
+                            activeOpacity={0.7}
+                          >
+                            <Ionicons name={isSearchingCover ? "sync-outline" : "disc-outline"} size={16} color="#ffffff" />
+                            <Text style={sty.searchCoverBtnTxt}>
+                              {isSearchingCover ? 'Buscando...' : (coverUrl ? 'Buscar Outra Capa' : 'Buscar Capa do YouTube')}
+                            </Text>
+                          </TouchableOpacity>
+                          {Boolean(coverUrl) && (
+                            <TouchableOpacity
+                              style={sty.removeCoverBtn}
+                              onPress={() => { setCoverUrl(''); setCoverLocalUri(''); }}
+                              activeOpacity={0.7}
+                            >
+                              <Ionicons name="trash-outline" size={16} color="#ff5c75" />
+                            </TouchableOpacity>
+                          )}
+                        </View>
+                        <Text style={sty.coverHintText}>Busca a capa no YouTube / YouTube Music e salva offline</Text>
+                      </View>
+                    </View>
                   </View>
 
                   <TouchableOpacity
@@ -563,7 +729,7 @@ export default function ChordEditScreen() {
                         <Ionicons name="musical-notes" size={18} color={colors.accent} />
                         <Text style={sty.toneSelectorLabel}>Tom Selecionado</Text>
                       </View>
-                      
+
                       <View style={sty.toneBadgeOfficial}>
                         <Text style={sty.toneBadgeText}>{tone}</Text>
                         <Ionicons name="chevron-down" size={14} color={colors.accent} />
@@ -578,7 +744,7 @@ export default function ChordEditScreen() {
                         <Text style={sty.switchLabel}>Adicionar Capotraste / Transposição?</Text>
                         <Text style={sty.switchSub}>Ajuste de afinação de -12 a +12 semitons</Text>
                       </View>
-                      
+
                       <View style={sty.yesNoToggle}>
                         <TouchableOpacity
                           style={[sty.yesNoBtn, !hasCapo && sty.yesNoBtnActive]}
@@ -598,8 +764,8 @@ export default function ChordEditScreen() {
                     {hasCapo && (
                       <View style={sty.capoStepperWrap}>
                         <Text style={sty.capoFretDisplay}>
-                          {(capoFret || 0) === 0 
-                            ? '0 (Original / Sem Capo)' 
+                          {(capoFret || 0) === 0
+                            ? '0 (Original / Sem Capo)'
                             : `${transposeTone(tone, capoFret || 0)} (${(capoFret || 0) > 0 ? `+${capoFret}` : capoFret})`}
                         </Text>
                         <View style={sty.stepperRow}>
@@ -610,7 +776,7 @@ export default function ChordEditScreen() {
                           >
                             <Text style={sty.stepperTxt}>−</Text>
                           </TouchableOpacity>
-                          
+
                           <Text style={sty.stepperValue}>
                             {(capoFret || 0) > 0 ? `+${capoFret}` : (capoFret || 0)}
                           </Text>
@@ -699,7 +865,7 @@ export default function ChordEditScreen() {
                       onPress={() => setSubStep(1)}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="arrow-back" size={16} color={colors.text} />
+                      <Ionicons name="chevron-back-outline" size={16} color={colors.text} />
                       <Text style={sty.secondaryActionTxt}>Voltar</Text>
                     </TouchableOpacity>
 
@@ -735,7 +901,7 @@ export default function ChordEditScreen() {
              ========================================================================= */}
           {step === 2 && (
             <View style={sty.stepContainer}>
-              
+
               {/* --- SUBETAPA 1: Letras e Sessões (Inserção Geral com Teclado Nativo) --- */}
               {subStep === 1 && (
                 <View style={sty.card}>
@@ -775,7 +941,7 @@ export default function ChordEditScreen() {
                       onPress={() => { setStep(1); setSubStep(2); }}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="arrow-back" size={16} color={colors.text} />
+                      <Ionicons name="chevron-back-outline" size={16} color={colors.text} />
                       <Text style={sty.secondaryActionTxt}>Voltar</Text>
                     </TouchableOpacity>
 
@@ -960,7 +1126,7 @@ export default function ChordEditScreen() {
                               <Ionicons name="close-circle" size={18} color={colors.textSub} />
                             </TouchableOpacity>
                           </View>
-                          
+
                           <View style={sty.variationsGrid}>
                             {getChordVariations(activeChordForVariations).map((vCh) => (
                               <TouchableOpacity
@@ -987,7 +1153,7 @@ export default function ChordEditScreen() {
                       onPress={handleBack}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="arrow-back" size={16} color={colors.text} />
+                      <Ionicons name="chevron-back-outline" size={16} color={colors.text} />
                       <Text style={sty.secondaryActionTxt}>Voltar</Text>
                     </TouchableOpacity>
 
@@ -1067,7 +1233,7 @@ function makeStyles(c: any) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: c.bg,
+      backgroundColor: 'transparent',
     },
     header: {
       flexDirection: 'row',
@@ -1077,7 +1243,7 @@ function makeStyles(c: any) {
       paddingVertical: 12,
       borderBottomWidth: 1,
       borderColor: c.border,
-      backgroundColor: c.bg,
+      backgroundColor: 'transparent',
     },
     backBtn: {
       padding: 6,
@@ -1763,6 +1929,43 @@ function makeStyles(c: any) {
       color: c.text,
       fontWeight: '600',
       fontSize: 13,
+    },
+    coverPickerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      backgroundColor: c.input,
+      borderRadius: 14,
+      padding: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    searchCoverBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: c.accent,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 8,
+    },
+    searchCoverBtnTxt: {
+      color: '#ffffff',
+      fontWeight: '700',
+      fontSize: 13,
+    },
+    removeCoverBtn: {
+      padding: 8,
+      borderRadius: 8,
+      backgroundColor: c.card,
+      borderWidth: 1,
+      borderColor: c.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    coverHintText: {
+      fontSize: 11,
+      color: c.textSub,
     },
   });
 }

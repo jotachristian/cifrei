@@ -5,47 +5,92 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getChord, getChordsForPlaylist, updateChordToneOffset, getLink, Chord } from '@/lib/database';
+import { getChord, getChordsForPlaylist, updateChordToneOffset, getLink, Chord, getSavedFontSize, saveFontSize, getSavedShowLyrics, saveShowLyrics } from '@/lib/database';
 import { transposeTone, semitonesBetween, MAJOR_TONES, MINOR_TONES } from '@/lib/transpose';
 import ChordDisplay from '@/components/ChordDisplay';
+import { ChordCover } from '@/components/ChordCover';
 
 const MIN_FONT = 10, MAX_FONT = 32;
 
-// Cache de prefs: AsyncStorage so e lido na primeira vez que a tela monta no app.
-// Navegacoes seguintes (prev/next) usam o cache e ja iniciam com valores corretos,
-// sem flash de "default → real" depois que a Promise resolve.
-let prefsCache: { fontSize: number; showLyrics: boolean } | null = null;
+interface SectionNavInfo {
+  id: number;
+  displayTitle: string;
+  isChorus: boolean;
+  shortLabel: string;
+  y: number;
+}
 
 export default function ChordScreen() {
   const { id, playlistId } = useLocalSearchParams<{ id: string; playlistId?: string }>();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const scrollRef = useRef<ScrollView>(null);
-  // Lazy init: chama getChord/getChordsForPlaylist sincronamente no primeiro render,
-  // entao o primeiro paint ja mostra a cifra (sem aparecer so o botao voltar).
   const [chord, setChord] = useState<Chord | null>(() => getChord(id));
   const [siblings, setSiblings] = useState<Chord[]>(() => playlistId ? getChordsForPlaylist(playlistId) : []);
   const [semitones, setSemitones] = useState<number>(() => getChord(id)?.tone_offset ?? 0);
-  const [fontSize, setFontSize] = useState<number>(() => prefsCache?.fontSize ?? 16);
-  const [showLyrics, setShowLyrics] = useState<boolean>(() => prefsCache?.showLyrics ?? true);
+  const [fontSize, setFontSize] = useState<number>(() => getSavedFontSize());
+  const [showLyrics, setShowLyrics] = useState<boolean>(() => getSavedShowLyrics());
   const [moment, setMoment] = useState<string>(() => playlistId ? (getLink(id, playlistId)?.moment ?? '') : '');
   const [toneModal, setToneModal] = useState(false);
   const [fontModal, setFontModal] = useState(false);
   const [showNote, setShowNote] = useState(false);
 
+  const [chordDisplayY, setChordDisplayY] = useState(0);
+  const [sectionsMap, setSectionsMap] = useState<Record<number, SectionNavInfo>>({});
+  const [highlightedSecIdx, setHighlightedSecIdx] = useState<number | null>(null);
+  const highlightTimerRef = useRef<any>(null);
+
   useEffect(() => {
-    if (prefsCache) return;
-    Promise.all([
-      AsyncStorage.getItem('cifrei_font_size'),
-      AsyncStorage.getItem('cifrei_show_lyrics'),
-    ]).then(([fsVal, slVal]) => {
-      const fs = fsVal !== null ? Number(fsVal) : 16;
-      const sl = slVal !== null ? slVal === '1' : true;
-      prefsCache = { fontSize: fs, showLyrics: sl };
-      setFontSize(fs);
-      setShowLyrics(sl);
-    });
+    setSectionsMap({});
+    setHighlightedSecIdx(null);
+  }, [id]);
+
+  const handleSectionLayout = useCallback((secIdx: number, rawTitle: string, y: number) => {
+    const cleanTitle = rawTitle.replace(/^\[|\]$/g, '').trim();
+    const lower = cleanTitle.toLowerCase();
+
+    // Ignora introdução conforme solicitado
+    if (lower.includes('intro')) return;
+
+    const isChorus = lower.includes('refr') || lower.includes('chorus');
+
+    // Rótulos curtos minimalistas (ex: "R", "E1", "E2", "P")
+    let shortLabel = '';
+    if (isChorus) {
+      shortLabel = 'R';
+    } else if (lower.includes('ponte') || lower.includes('bridge')) {
+      shortLabel = 'P';
+    } else if (lower.includes('solo')) {
+      shortLabel = 'S';
+    } else {
+      const num = cleanTitle.match(/\d+/)?.[0];
+      shortLabel = num ? `E${num}` : 'E';
+    }
+
+    setSectionsMap(prev => ({
+      ...prev,
+      [secIdx]: {
+        id: secIdx,
+        displayTitle: cleanTitle,
+        isChorus,
+        shortLabel,
+        y,
+      }
+    }));
   }, []);
+
+  const navSections = Object.values(sectionsMap).sort((a, b) => a.id - b.id);
+
+  const scrollToSection = (secIdx: number, secY: number) => {
+    const targetY = Math.max(0, chordDisplayY + secY - 12);
+    scrollRef.current?.scrollTo({ y: targetY, animated: true });
+
+    setHighlightedSecIdx(secIdx);
+    if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current);
+    highlightTimerRef.current = setTimeout(() => {
+      setHighlightedSecIdx(null);
+    }, 2500);
+  };
 
   // Refresh ao voltar do admin (edicoes na cifra ou playlist)
   useFocusEffect(useCallback(() => {
@@ -63,21 +108,18 @@ export default function ChordScreen() {
 
   const changeFont = (d: number) => setFontSize(prev => {
     const n = Math.max(MIN_FONT, Math.min(MAX_FONT, prev + d));
-    if (prefsCache) prefsCache.fontSize = n;
-    AsyncStorage.setItem('cifrei_font_size', String(n));
+    saveFontSize(n);
     return n;
   });
 
   const setSpecificFont = (size: number) => {
     setFontSize(size);
-    if (prefsCache) prefsCache.fontSize = size;
-    AsyncStorage.setItem('cifrei_font_size', String(size));
+    saveFontSize(size);
   };
 
   const toggleLyrics = () => setShowLyrics(prev => {
     const n = !prev;
-    if (prefsCache) prefsCache.showLyrics = n;
-    AsyncStorage.setItem('cifrei_show_lyrics', n ? '1' : '0');
+    saveShowLyrics(n);
     return n;
   });
   const pickTone = (newTone: string) => {
@@ -114,7 +156,7 @@ export default function ChordScreen() {
     const t = siblings[dir === 'prev' ? idx - 1 : idx + 1];
     if (t) router.replace({ pathname: '/chord/[id]', params: { id: t.id, playlistId } });
   };
-  const sty = makeStyles(colors);
+  const sty = makeStyles(colors, isDark);
 
   if (!chord) {
     return (
@@ -139,15 +181,48 @@ export default function ChordScreen() {
 
   const openYoutube = () => {
     if (chord.external_link) {
-      Linking.openURL(chord.external_link).catch(() => {});
+      Linking.openURL(chord.external_link).catch(() => { });
     }
   };
 
   return (
     <SafeAreaView style={sty.container}>
-      <Pressable onPress={handleGoBack} style={sty.backBtn}>
-        <Ionicons name="arrow-back" size={22} color={colors.text} />
-      </Pressable>
+      {/* Top Header Fixado — Botão Voltar + Navegação de Seções */}
+      <View style={sty.topHeaderRow}>
+        <Pressable onPress={handleGoBack} style={sty.backBtn}>
+          <Ionicons name="chevron-back-outline" size={22} color={colors.text} />
+        </Pressable>
+
+        {navSections.length > 0 && (
+          <View style={sty.sectionNavRow}>
+            {navSections.slice(0, 4).map((sec) => (
+              <TouchableOpacity
+                key={sec.id}
+                style={[
+                  sty.sectionBtnBase,
+                  sec.isChorus ? sty.sectionBtnChorus : sty.sectionBtnOutlined,
+                ]}
+                onPress={() => scrollToSection(sec.id, sec.y)}
+                activeOpacity={0.7}
+              >
+                <Ionicons
+                  name={sec.isChorus ? "repeat" : "bookmark-outline"}
+                  size={13}
+                  color={sec.isChorus ? "#ffffff" : colors.textSub}
+                />
+                <Text
+                  style={[
+                    sty.sectionBtnTxt,
+                    sec.isChorus ? sty.sectionBtnTxtChorus : sty.sectionBtnTxtOutlined,
+                  ]}
+                >
+                  {sec.shortLabel}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
 
       <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={sty.scrollContent}>
 
@@ -253,10 +328,17 @@ export default function ChordScreen() {
         </View>
 
         {/* Cifra */}
-        <ChordDisplay
-          lyrics={chord.lyrics} semitones={semitones}
-          showLyrics={showLyrics} fontSize={fontSize} colors={colors}
-        />
+        <View onLayout={(e) => setChordDisplayY(e.nativeEvent.layout.y)}>
+          <ChordDisplay
+            lyrics={chord.lyrics}
+            semitones={semitones}
+            showLyrics={showLyrics}
+            fontSize={fontSize}
+            colors={colors}
+            onSectionLayout={handleSectionLayout}
+            highlightedSectionIdx={highlightedSecIdx}
+          />
+        </View>
       </ScrollView>
 
       {siblings.length > 0 && (
@@ -313,15 +395,15 @@ export default function ChordScreen() {
         <Pressable style={sty.modalBackdrop} onPress={() => setFontModal(false)}>
           <Pressable style={sty.modalCard} onPress={e => e.stopPropagation()}>
             <Text style={sty.modalTitle}>Tamanho da Fonte</Text>
-            
+
             <View style={sty.fontPreviewWrap}>
               <Text style={[sty.fontPreviewText, { fontSize, color: colors.accent }]}>Exemplo de Cifra [G7M]</Text>
               <Text style={sty.fontSizeDisplay}>{fontSize} pt</Text>
             </View>
 
             <View style={sty.fontSizeStepper}>
-              <TouchableOpacity 
-                style={sty.fontStepBtn} 
+              <TouchableOpacity
+                style={sty.fontStepBtn}
                 onPress={() => changeFont(-1)}
                 disabled={fontSize <= MIN_FONT}
                 activeOpacity={0.7}
@@ -344,8 +426,8 @@ export default function ChordScreen() {
                 ))}
               </View>
 
-              <TouchableOpacity 
-                style={sty.fontStepBtn} 
+              <TouchableOpacity
+                style={sty.fontStepBtn}
                 onPress={() => changeFont(1)}
                 disabled={fontSize >= MAX_FONT}
                 activeOpacity={0.7}
@@ -367,8 +449,51 @@ export default function ChordScreen() {
 
 function makeStyles(c: any) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: c.bg },
-    backBtn: { paddingHorizontal: 16, paddingVertical: 12 },
+    container: { flex: 1, backgroundColor: 'transparent' },
+    topHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 6,
+      backgroundColor: 'transparent',
+      borderBottomColor: c.border,
+    },
+    backBtn: { paddingHorizontal: 10, paddingVertical: 8 },
+    sectionNavRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginLeft: 'auto',
+      marginRight: 10,
+    },
+    sectionBtnBase: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      height: 30,
+      paddingHorizontal: 9,
+      borderRadius: 8,
+      gap: 3,
+    },
+    sectionBtnChorus: {
+      backgroundColor: '#f73d13ff',
+      borderWidth: 0,
+    },
+    sectionBtnOutlined: {
+      backgroundColor: 'transparent',
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    sectionBtnTxt: {
+      fontSize: 12,
+      fontFamily: 'Inter_700Bold',
+    },
+    sectionBtnTxtChorus: {
+      color: '#ffffff',
+    },
+    sectionBtnTxtOutlined: {
+      color: c.textSub,
+    },
     scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
 
     moment: { fontSize: 11, fontFamily: 'Inter_700Bold', color: c.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 2 },
@@ -379,7 +504,7 @@ function makeStyles(c: any) {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: '#ff7700',
+      backgroundColor: '#f73d13ff',
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 10,
@@ -552,7 +677,7 @@ function makeStyles(c: any) {
       width: 64, height: 44, borderRadius: 10,
       borderWidth: 1, borderColor: c.border,
       alignItems: 'center', justifyContent: 'center',
-      backgroundColor: c.bg,
+      backgroundColor: 'transparent',
     },
     toneCellOriginal: { borderColor: c.accent, borderWidth: 1.5 },
     toneCellActive: { backgroundColor: c.accent, borderColor: c.accent },

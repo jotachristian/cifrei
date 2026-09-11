@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getAllChords, searchChords, Chord, ChordWithPlaylist, addDatabaseListener, createChord } from '@/lib/database';
+import { ChordCover } from '@/components/ChordCover';
 
 export default function ChordsScreen() {
   const { colors } = useTheme();
@@ -84,7 +85,25 @@ export default function ChordsScreen() {
               onPress={() => router.push({ pathname: '/chord/[id]', params: { id: item.id } })}
               activeOpacity={0.7}
             >
-              <Ionicons name="musical-notes" size={30} color={colors.accent} style={{ marginRight: 12 }} />
+              {item.cover_url || item.cover_local_uri ? (
+                <ChordCover
+                  chordId={item.id}
+                  coverUrl={item.cover_url}
+                  coverLocalUri={item.cover_local_uri}
+                  size={50}
+                  borderRadius={12}
+                  style={{ marginRight: 12 }}
+                  fallback={
+                    <View style={sty.coverFallback}>
+                      <Ionicons name="musical-notes" size={22} color={colors.accent} />
+                    </View>
+                  }
+                />
+              ) : (
+                <View style={sty.coverFallback}>
+                  <Ionicons name="musical-notes" size={22} color={colors.accent} />
+                </View>
+              )}
               <View style={{ flex: 1 }}>
                 <Text style={sty.songName} numberOfLines={1}>{item.name}</Text>
                 <Text style={sty.songSub} numberOfLines={1}>
@@ -110,7 +129,7 @@ export default function ChordsScreen() {
 
 function makeStyles(c: any) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: c.bg },
+    container: { flex: 1, backgroundColor: 'transparent' },
     header: {
       flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
       backgroundColor: 'transparent', paddingHorizontal: 16, paddingVertical: 14,
@@ -124,8 +143,13 @@ function makeStyles(c: any) {
     searchInput: { flex: 1, fontSize: 15, color: c.text },
     songCard: {
       flexDirection: 'row', alignItems: 'center',
-      backgroundColor: c.card, padding: 14,
-      marginBottom: 8,  borderColor: c.border,
+      backgroundColor: c.card, padding: 14, borderRadius: 16,
+      marginBottom: 8, borderWidth: 1, borderColor: c.border,
+    },
+    coverFallback: {
+      width: 50, height: 50, borderRadius: 12,
+      backgroundColor: c.card, alignItems: 'center', justifyContent: 'center',
+      borderWidth: 1, borderColor: c.border, marginRight: 12,
     },
     songName: { fontSize: 15, fontWeight: '600', color: c.text },
     songSub: { fontSize: 12, color: c.textSub, marginTop: 2 },

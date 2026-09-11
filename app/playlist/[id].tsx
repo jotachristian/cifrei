@@ -1,11 +1,177 @@
-import React, { useState, useCallback } from 'react';
-import { View, Text, Modal, TouchableOpacity, StyleSheet, Pressable, TextInput, KeyboardAvoidingView, Platform, Alert, FlatList } from 'react-native';
+import React, { useState, useCallback, useRef } from 'react';
+import {
+  View, Text, Modal, TouchableOpacity, StyleSheet, Pressable,
+  TextInput, KeyboardAvoidingView, Platform, Alert, FlatList,
+  ScrollView, PanResponder, Animated, LayoutChangeEvent
+} from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getPlaylist, getPlaylistChords, updatePlaylist, deletePlaylist, ChordInPlaylist, getAllChords, linkChordToPlaylist, Chord, updateLinkSortOrder, createChord, addDatabaseListener, unlinkChordFromPlaylist } from '@/lib/database';
+import {
+  getPlaylist, getPlaylistChords, updatePlaylist, deletePlaylist,
+  ChordInPlaylist, getAllChords, linkChordToPlaylist, Chord,
+  updateLinkSortOrder, addDatabaseListener, unlinkChordFromPlaylist
+} from '@/lib/database';
 import { transposeTone } from '@/lib/transpose';
+import { ChordCover } from '@/components/ChordCover';
+import { PlaylistCover } from '@/components/PlaylistCover';
+
+// ─── Drag & Drop nativo (sem dependências externas) ───────────────────────────
+// Cada item mede sua própria posição; ao soltar, calculamos o índice de destino
+// comparando o centro do item arrastado com as posições registradas.
+
+interface ItemLayout { y: number; height: number; }
+
+function DraggableEditList({
+  chords,
+  onReordered,
+  onRemove,
+  colors,
+  sty,
+}: {
+  chords: ChordInPlaylist[];
+  onReordered: (from: number, to: number) => void;
+  onRemove: (id: string, name: string) => void;
+  colors: any;
+  sty: any;
+}) {
+  const itemLayouts = useRef<Record<string, ItemLayout>>({});
+  const dragIndex = useRef<number | null>(null);
+  const dragAnim = useRef(new Animated.Value(0)).current;
+  const [dragging, setDragging] = useState<number | null>(null);
+  const [hoverIndex, setHoverIndex] = useState<number | null>(null);
+  const scrollRef = useRef<ScrollView>(null);
+  const scrollOffset = useRef(0);
+  const containerY = useRef(0);
+
+  // Calcula o índice alvo baseado na posição Y do dedo
+  function getTargetIndex(pageY: number): number {
+    const relY = pageY - containerY.current + scrollOffset.current;
+    let best = chords.length - 1;
+    for (let i = 0; i < chords.length; i++) {
+      const key = chords[i].id;
+      const layout = itemLayouts.current[key];
+      if (!layout) continue;
+      if (relY < layout.y + layout.height / 2) {
+        best = i;
+        break;
+      }
+    }
+    return best;
+  }
+
+  function makePanResponder(index: number) {
+    let startY = 0;
+    return PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gs) => Math.abs(gs.dy) > 4,
+      onPanResponderGrant: (evt) => {
+        startY = evt.nativeEvent.pageY;
+        dragIndex.current = index;
+        dragAnim.setValue(0);
+        setDragging(index);
+        setHoverIndex(index);
+      },
+      onPanResponderMove: (evt, gs) => {
+        dragAnim.setValue(gs.dy);
+        const target = getTargetIndex(evt.nativeEvent.pageY);
+        setHoverIndex(target);
+      },
+      onPanResponderRelease: (evt) => {
+        const from = dragIndex.current!;
+        const to = getTargetIndex(evt.nativeEvent.pageY);
+        dragAnim.setValue(0);
+        dragIndex.current = null;
+        setDragging(null);
+        setHoverIndex(null);
+        if (from !== to) {
+          onReordered(from, to);
+        }
+      },
+      onPanResponderTerminate: () => {
+        dragAnim.setValue(0);
+        dragIndex.current = null;
+        setDragging(null);
+        setHoverIndex(null);
+      },
+    });
+  }
+
+  return (
+    <ScrollView
+      ref={scrollRef}
+      style={sty.scrollableList}
+      contentContainerStyle={sty.listContent}
+      showsVerticalScrollIndicator={true}
+      scrollEventThrottle={16}
+      onScroll={(e) => { scrollOffset.current = e.nativeEvent.contentOffset.y; }}
+      onLayout={(e: LayoutChangeEvent) => {
+        containerY.current = e.nativeEvent.layout.y;
+      }}
+    >
+      {chords.map((item, index) => {
+        const itemTone = transposeTone(item.tone, item.tone_offset ?? 0);
+        const subInfo = [item.artist, itemTone].filter(Boolean).join(' • ');
+        const isDragging = dragging === index;
+        const isHover = hoverIndex === index && dragging !== null && dragging !== index;
+        const panResponder = makePanResponder(index);
+
+        return (
+          <View
+            key={item.id}
+            onLayout={(e: LayoutChangeEvent) => {
+              itemLayouts.current[item.id] = {
+                y: e.nativeEvent.layout.y,
+                height: e.nativeEvent.layout.height,
+              };
+            }}
+            style={[
+              sty.editItemWrap,
+              isHover && {
+                borderTopWidth: 2,
+                borderTopColor: colors.accent,
+              },
+            ]}
+          >
+            <Animated.View
+              style={[
+                sty.editItem,
+                isDragging && sty.itemDragging,
+                isDragging && { transform: [{ translateY: dragAnim }], zIndex: 99 },
+              ]}
+            >
+              {/* Botão de Remoção */}
+              <TouchableOpacity
+                style={sty.minusButton}
+                onPress={() => onRemove(item.id, item.name)}
+                activeOpacity={0.7}
+              >
+                <Ionicons name="remove-circle" size={24} color="#ff5c75" />
+              </TouchableOpacity>
+
+              <View style={{ flex: 1, marginHorizontal: 12 }}>
+                <Text style={sty.editSongName} numberOfLines={1}>{item.name}</Text>
+                <Text style={sty.editSongSub} numberOfLines={1}>{subInfo}</Text>
+              </View>
+
+              {/* Handle de arrastar */}
+              <View
+                {...panResponder.panHandlers}
+                style={sty.dragGridHandle}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+              >
+                <Ionicons name="grid-outline" size={20} color="#8e9297" />
+              </View>
+            </Animated.View>
+          </View>
+        );
+      })}
+    </ScrollView>
+  );
+}
+
+// ─── Tela Principal ───────────────────────────────────────────────────────────
 
 export default function PlaylistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -17,24 +183,41 @@ export default function PlaylistScreen() {
   const [showRename, setShowRename] = useState(false);
   const [renameInput, setRenameInput] = useState('');
   const [isEditingList, setIsEditingList] = useState(false);
-  
   const [showAddChord, setShowAddChord] = useState(false);
   const [allChords, setAllChords] = useState<Chord[]>([]);
   const [chordQuery, setChordQuery] = useState('');
 
+  // Pausa o listener do banco enquanto edita para evitar sobrescrita de estado
+  const isEditingRef = useRef(false);
+
   useFocusEffect(
     useCallback(() => {
       const reload = () => {
+        if (isEditingRef.current) return;
         const p = getPlaylist(id);
         setName(p?.name ?? 'Playlist');
         setChords(getPlaylistChords(id));
-        setAllChords(getAllChords().sort((a,b) => a.name.localeCompare(b.name)));
+        setAllChords(getAllChords().sort((a, b) => a.name.localeCompare(b.name)));
       };
       reload();
       const unsub = addDatabaseListener(reload);
       return () => unsub();
     }, [id])
   );
+
+  function startEditing() {
+    setShowMenu(false);
+    isEditingRef.current = true;
+    setIsEditingList(true);
+  }
+
+  function finishEditing() {
+    isEditingRef.current = false;
+    setIsEditingList(false);
+    const p = getPlaylist(id);
+    setName(p?.name ?? 'Playlist');
+    setChords(getPlaylistChords(id));
+  }
 
   function handleAddChord(chordId: string) {
     linkChordToPlaylist(chordId, id);
@@ -64,236 +247,205 @@ export default function PlaylistScreen() {
   }
 
   function handleRemoveChord(chordId: string, chordName: string) {
+    const doRemove = () => {
+      unlinkChordFromPlaylist(chordId, id);
+      setChords(prev => prev.filter(c => c.id !== chordId));
+    };
     if (Platform.OS === 'web') {
-      const confirmed = window.confirm(`Deseja remover "${chordName}" desta playlist?`);
-      if (confirmed) {
-        unlinkChordFromPlaylist(chordId, id);
-        setChords(getPlaylistChords(id));
-      }
+      if (window.confirm(`Deseja remover "${chordName}" desta playlist?`)) doRemove();
     } else {
-      Alert.alert(
-        'Remover Cifra',
-        `Deseja remover "${chordName}" desta playlist?`,
-        [
-          { text: 'Cancelar', style: 'cancel' },
-          {
-            text: 'Remover',
-            style: 'destructive',
-            onPress: () => {
-              unlinkChordFromPlaylist(chordId, id);
-              setChords(getPlaylistChords(id));
-            },
-          },
-        ]
-      );
+      Alert.alert('Remover Cifra', `Deseja remover "${chordName}" desta playlist?`, [
+        { text: 'Cancelar', style: 'cancel' },
+        { text: 'Remover', style: 'destructive', onPress: doRemove },
+      ]);
     }
   }
 
   function confirmDelete() {
     setShowMenu(false);
-    const deleteAction = () => {
-      deletePlaylist(id);
-      handleGoBack();
-    };
-
+    const deleteAction = () => { deletePlaylist(id); handleGoBack(); };
     if (Platform.OS === 'web') {
-      const confirmed = window.confirm('Tem certeza que deseja excluir esta playlist? As cifras continuarão salvas no acervo.');
-      if (confirmed) {
-        deleteAction();
-      }
+      if (window.confirm('Tem certeza que deseja excluir esta playlist? As cifras continuarão salvas no acervo.')) deleteAction();
     } else {
-      Alert.alert('Excluir Playlist', 'Tem certeza que deseja excluir esta playlist? As cifras continuarão salvas no acervo.', [
-        { text: 'Cancelar', style: 'cancel' },
-        { text: 'Excluir', style: 'destructive', onPress: deleteAction }
-      ]);
+      Alert.alert(
+        'Excluir Playlist',
+        'Tem certeza que deseja excluir esta playlist? As cifras continuarão salvas no acervo.',
+        [{ text: 'Cancelar', style: 'cancel' }, { text: 'Excluir', style: 'destructive', onPress: deleteAction }]
+      );
     }
   }
 
   async function onReordered(fromIndex: number, toIndex: number) {
-    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= chords.length || toIndex >= chords.length) return;
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 ||
+      fromIndex >= chords.length || toIndex >= chords.length) return;
+
     const newChords = [...chords];
     const [moved] = newChords.splice(fromIndex, 1);
     newChords.splice(toIndex, 0, moved);
-
-    // Salvar a nova ordem no banco
-    newChords.forEach((c, index) => {
-      updateLinkSortOrder(c.id, id, index + 1);
-    });
-
     setChords(newChords);
+    newChords.forEach((c, index) => updateLinkSortOrder(c.id, id, index + 1));
   }
 
-  // Render do Header Hero com capa, título e contagem
+  // ─── Header Hero ────────────────────────────────────────────────────────────
   const renderListHeader = () => (
     <View style={sty.heroHeader}>
       <View style={sty.coverShadowWrapper}>
-        <View style={sty.coverContainer}>
-          <View style={sty.coverGrid}>
-            <View style={[sty.coverQuadrant, { backgroundColor: '#202227' }]}>
-              <Ionicons name="musical-notes" size={24} color="#8e9297" />
-            </View>
-            <View style={[sty.coverQuadrant, { backgroundColor: '#282b31' }]}>
-              <Ionicons name="disc" size={24} color="#8e9297" />
-            </View>
-            <View style={[sty.coverQuadrant, { backgroundColor: '#1c1e22' }]}>
-              <Ionicons name="headset" size={24} color="#8e9297" />
-            </View>
-            <View style={[sty.coverQuadrant, { backgroundColor: '#24272d' }]}>
-              <Ionicons name="radio" size={24} color="#8e9297" />
-            </View>
-          </View>
-        </View>
+        <PlaylistCover
+          playlistId={id}
+          chords={chords}
+          size={170}
+          borderRadius={18}
+        />
       </View>
-
       <Text style={sty.heroTitle} numberOfLines={2}>{name}</Text>
-      
       <View style={sty.heroMetaRow}>
         <Text style={sty.heroMetaCount}>
           {chords.length} {chords.length === 1 ? 'música' : 'músicas'}
         </Text>
       </View>
-
-      {isEditingList ? (
-        <View style={sty.editingBanner}>
-          <Text style={sty.editingBannerText}>
-            Arraste para reordenar ou toque no botão (-) para remover
-          </Text>
-        </View>
-      ) : null}
     </View>
   );
 
-  // Render para FlatList padrão (Visualização Normal)
+  // ─── Item modo normal ────────────────────────────────────────────────────────
   function renderNormalItem({ item, index }: { item: ChordInPlaylist; index: number }) {
     const itemTone = transposeTone(item.tone, item.tone_offset ?? 0);
     const subInfo = [item.artist, itemTone].filter(Boolean).join(' • ');
     const formattedNumber = String(index + 1).padStart(2, '0');
-
     return (
       <View style={sty.songRowWrap}>
         <TouchableOpacity
           style={sty.songRow}
-          onPress={() => router.push({
-            pathname: '/chord/[id]',
-            params: { id: item.id, playlistId: id },
-          })}
+          onPress={() => router.push({ pathname: '/chord/[id]', params: { id: item.id, playlistId: id } })}
           activeOpacity={0.7}
         >
-          {/* Capa da Música */}
           <View style={sty.songThumb}>
-            <Ionicons name="musical-notes" size={18} color="#8e9297" />
+            {item.cover_url || item.cover_local_uri ? (
+              <ChordCover
+                chordId={item.id}
+                coverUrl={item.cover_url}
+                coverLocalUri={item.cover_local_uri}
+                size={50}
+                borderRadius={12}
+                fallback={<Ionicons name="musical-notes" size={22} color="#8e9297" />}
+              />
+            ) : (
+              <Ionicons name="musical-notes" size={22} color="#8e9297" />
+            )}
           </View>
-
-          {/* Numeração com 2 dígitos (01, 02, 03...) */}
           <Text style={sty.songIndexText}>{formattedNumber}</Text>
-
-          {/* Dados da Música */}
           <View style={{ flex: 1, marginLeft: 14 }}>
             <Text style={sty.songTitle} numberOfLines={1}>{item.name}</Text>
             <Text style={sty.songSubTitle} numberOfLines={1}>{subInfo}</Text>
           </View>
-
           <Ionicons name="ellipsis-vertical" size={18} color="#8e9297" style={{ padding: 4 }} />
         </TouchableOpacity>
       </View>
     );
   }
 
-  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  // ─── Web: item modo edição com HTML5 drag & drop ─────────────────────────────
+  const [webDraggedIndex, setWebDraggedIndex] = useState<number | null>(null);
+  const [webDragOverIndex, setWebDragOverIndex] = useState<number | null>(null);
 
-  // Render para modo de Edição
-  function renderEditItem(item: ChordInPlaylist, index: number, onDragStart?: () => void, onDragEnd?: () => void, isActive?: boolean) {
+  function renderWebEditItem(item: ChordInPlaylist, index: number) {
     const itemTone = transposeTone(item.tone, item.tone_offset ?? 0);
     const subInfo = [item.artist, itemTone].filter(Boolean).join(' • ');
-
-    const webDragProps = Platform.OS === 'web' ? {
-      draggable: true,
-      onDragStart: (e: any) => {
-        if (e?.dataTransfer) {
-          e.dataTransfer.effectAllowed = 'move';
-          e.dataTransfer.setData('text/plain', String(index));
-        }
-        setDraggedIndex(index);
-      },
-      onDragOver: (e: any) => {
-        if (e) {
-          e.preventDefault();
-          if (e.dataTransfer) e.dataTransfer.dropEffect = 'move';
-        }
-      },
-      onDrop: (e: any) => {
-        if (e) {
-          e.preventDefault();
-          const raw = e.dataTransfer ? e.dataTransfer.getData('text/plain') : null;
-          const fromIdx = raw !== null && raw !== '' ? parseInt(raw, 10) : draggedIndex;
-          if (fromIdx !== null && !isNaN(fromIdx) && fromIdx !== index) {
-            onReordered(fromIdx, index);
-          }
-        }
-        setDraggedIndex(null);
-      },
-      onDragEnd: () => {
-        setDraggedIndex(null);
-      }
-    } : {};
+    const isDragging = webDraggedIndex === index;
+    const isDragOver = webDragOverIndex === index && webDraggedIndex !== index;
 
     return (
-      <View 
-        style={[
-          sty.editItemWrap, 
-          isActive && sty.itemActive,
-          draggedIndex === index && { opacity: 0.4 }
-        ]}
-        {...(webDragProps as any)}
+      <View
+        key={item.id}
+        style={[sty.editItemWrap, isDragging && { opacity: 0.35 }]}
+        {...({
+          draggable: true,
+          onDragStart: (e: any) => {
+            e?.dataTransfer?.setData('text/plain', String(index));
+            setWebDraggedIndex(index);
+          },
+          onDragOver: (e: any) => {
+            e?.preventDefault?.();
+            if (webDragOverIndex !== index) setWebDragOverIndex(index);
+          },
+          onDragLeave: () => setWebDragOverIndex(null),
+          onDrop: (e: any) => {
+            e?.preventDefault?.();
+            const from = parseInt(e?.dataTransfer?.getData('text/plain') ?? '', 10);
+            if (!isNaN(from) && from !== index) onReordered(from, index);
+            setWebDraggedIndex(null);
+            setWebDragOverIndex(null);
+          },
+          onDragEnd: () => { setWebDraggedIndex(null); setWebDragOverIndex(null); },
+          style: { cursor: 'grab' },
+        } as any)}
       >
-        <View style={[sty.editItem, isActive && sty.itemDragging]}>
-          {/* Botão de Menos Vermelho */}
-          <TouchableOpacity
-            style={sty.minusButton}
-            onPress={() => handleRemoveChord(item.id, item.name)}
-            activeOpacity={0.7}
-          >
+        <View style={[sty.editItem, isDragOver && sty.itemDragging]}>
+          <TouchableOpacity style={sty.minusButton} onPress={() => handleRemoveChord(item.id, item.name)} activeOpacity={0.7}>
             <Ionicons name="remove-circle" size={24} color="#ff5c75" />
           </TouchableOpacity>
-
           <View style={{ flex: 1, marginHorizontal: 12 }}>
             <Text style={sty.editSongName} numberOfLines={1}>{item.name}</Text>
             <Text style={sty.editSongSub} numberOfLines={1}>{subInfo}</Text>
           </View>
-
-          {/* Ícone de 6 Pontinhos para arrastar */}
-          <Pressable 
-            onPressIn={onDragStart} 
-            onPressOut={onDragEnd} 
-            style={[sty.dragGridHandle, Platform.OS === 'web' && { cursor: 'grab' } as any]}
-          >
+          <View style={[sty.dragGridHandle, { cursor: 'grab' } as any]}>
             <Ionicons name="grid-outline" size={20} color="#8e9297" />
-          </Pressable>
+          </View>
         </View>
       </View>
     );
   }
 
-  const filteredChords = allChords.filter(c => c.name.toLowerCase().includes(chordQuery.toLowerCase()) || c.artist.toLowerCase().includes(chordQuery.toLowerCase()));
+  const filteredChords = allChords.filter(
+    c => c.name.toLowerCase().includes(chordQuery.toLowerCase()) ||
+         c.artist.toLowerCase().includes(chordQuery.toLowerCase())
+  );
 
   const sty = makeStyles(colors);
+
+  // ─── Conteúdo do modo edição ─────────────────────────────────────────────────
+  const editContent = Platform.OS === 'web' ? (
+    <ScrollView style={sty.scrollableList} contentContainerStyle={sty.listContent} showsVerticalScrollIndicator>
+      {renderListHeader()}
+      {chords.length === 0 ? (
+        <View style={sty.emptyWrap}>
+          <Ionicons name="musical-notes-outline" size={54} color={colors.textSub} />
+          <Text style={sty.emptyText}>Nenhuma música nesta playlist.</Text>
+        </View>
+      ) : chords.map((item, index) => renderWebEditItem(item, index))}
+    </ScrollView>
+  ) : (
+    <>
+      {/* Header fora do DraggableEditList para garantir renderização */}
+      <ScrollView
+        style={sty.scrollableList}
+        contentContainerStyle={sty.listContent}
+        showsVerticalScrollIndicator
+        nestedScrollEnabled={false}
+        scrollEnabled={false}
+      >
+        {renderListHeader()}
+      </ScrollView>
+      <DraggableEditList
+        chords={chords}
+        onReordered={onReordered}
+        onRemove={handleRemoveChord}
+        colors={colors}
+        sty={sty}
+      />
+    </>
+  );
 
   return (
     <SafeAreaView style={sty.container}>
       <View style={sty.innerContent}>
-        {/* Header Superior Limpo */}
+        {/* TopBar */}
         <View style={sty.topBar}>
           <Pressable onPress={handleGoBack} style={sty.topActionBtn}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
+            <Ionicons name="chevron-back-outline" size={24} color={colors.text} />
           </Pressable>
-
           <View style={sty.topRightActions}>
             {isEditingList ? (
-              <TouchableOpacity 
-                style={sty.doneBtn} 
-                onPress={() => setIsEditingList(false)}
-                activeOpacity={0.8}
-              >
+              <TouchableOpacity style={sty.doneBtn} onPress={finishEditing} activeOpacity={0.8}>
                 <Text style={sty.doneBtnText}>Concluir</Text>
               </TouchableOpacity>
             ) : (
@@ -309,54 +461,38 @@ export default function PlaylistScreen() {
           </View>
         </View>
 
-        {/* Lista com Scroll 100% Nativo e Fluido em Web e Mobile */}
-        <FlatList
-          data={chords}
-          keyExtractor={item => item.id}
-          style={sty.scrollableList}
-          contentContainerStyle={sty.listContent}
-          ListHeaderComponent={renderListHeader}
-          ListEmptyComponent={
-            <View style={sty.emptyWrap}>
-              <Ionicons name="musical-notes-outline" size={54} color={colors.textSub} />
-              <Text style={sty.emptyText}>Nenhuma música nesta playlist.</Text>
-            </View>
-          }
-          renderItem={isEditingList 
-            ? ({ item, index }) => renderEditItem(item, index) 
-            : renderNormalItem
-          }
-          showsVerticalScrollIndicator={true}
-        />
+        {/* Lista */}
+        {isEditingList ? editContent : (
+          <FlatList
+            data={chords}
+            keyExtractor={item => item.id}
+            style={sty.scrollableList}
+            contentContainerStyle={sty.listContent}
+            ListHeaderComponent={renderListHeader}
+            ListEmptyComponent={
+              <View style={sty.emptyWrap}>
+                <Ionicons name="musical-notes-outline" size={54} color={colors.textSub} />
+                <Text style={sty.emptyText}>Nenhuma música nesta playlist.</Text>
+              </View>
+            }
+            renderItem={renderNormalItem}
+            showsVerticalScrollIndicator
+          />
+        )}
       </View>
 
-      {/* Modal dos 3 Pontinhos */}
+      {/* Modal 3 pontos */}
       <Modal visible={showMenu} transparent animationType="fade">
         <Pressable style={sty.modalBackdrop} onPress={() => setShowMenu(false)}>
           <View style={sty.menuCard}>
-            <TouchableOpacity 
-              style={sty.menuItem} 
-              onPress={() => { 
-                setShowMenu(false); 
-                setIsEditingList(true); 
-              }}
-            >
+            <TouchableOpacity style={sty.menuItem} onPress={startEditing}>
               <Ionicons name="create-outline" size={22} color={colors.text} style={sty.menuIcon} />
               <Text style={sty.menuTxt}>Editar</Text>
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={sty.menuItem} 
-              onPress={() => { 
-                setShowMenu(false); 
-                setRenameInput(name); 
-                setShowRename(true); 
-              }}
-            >
+            <TouchableOpacity style={sty.menuItem} onPress={() => { setShowMenu(false); setRenameInput(name); setShowRename(true); }}>
               <Ionicons name="text-outline" size={22} color={colors.text} style={sty.menuIcon} />
               <Text style={sty.menuTxt}>Renomear</Text>
             </TouchableOpacity>
-
             <TouchableOpacity style={sty.menuItem} onPress={confirmDelete}>
               <Ionicons name="trash-outline" size={22} color={colors.danger} style={sty.menuIcon} />
               <Text style={[sty.menuTxt, { color: colors.danger }]}>Excluir</Text>
@@ -365,12 +501,11 @@ export default function PlaylistScreen() {
         </Pressable>
       </Modal>
 
-      {/* Modal de Renomear */}
+      {/* Modal Renomear */}
       <Modal visible={showRename} transparent animationType="fade">
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={sty.modalOverlay}>
           <View style={sty.renameCard}>
             <Text style={sty.renameTitle}>Renomear</Text>
-            
             <TextInput
               style={sty.renameInput}
               placeholder="Nome da playlist"
@@ -380,23 +515,12 @@ export default function PlaylistScreen() {
               maxLength={50}
               autoFocus
             />
-
             <Text style={sty.renameCharCounter}>{renameInput.length} / 50</Text>
-
             <View style={sty.renameBtns}>
-              <TouchableOpacity 
-                style={sty.renameCancelBtn} 
-                onPress={() => { setShowRename(false); setRenameInput(''); }}
-                activeOpacity={0.8}
-              >
+              <TouchableOpacity style={sty.renameCancelBtn} onPress={() => { setShowRename(false); setRenameInput(''); }} activeOpacity={0.8}>
                 <Text style={sty.renameCancelTxt}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity
-                style={[sty.renameSaveBtn, { opacity: renameInput.trim() ? 1 : 0.4 }]}
-                onPress={handleRename}
-                disabled={!renameInput.trim()}
-                activeOpacity={0.8}
-              >
+              <TouchableOpacity style={[sty.renameSaveBtn, { opacity: renameInput.trim() ? 1 : 0.4 }]} onPress={handleRename} disabled={!renameInput.trim()} activeOpacity={0.8}>
                 <Text style={sty.renameSaveTxt}>Salvar</Text>
               </TouchableOpacity>
             </View>
@@ -404,7 +528,7 @@ export default function PlaylistScreen() {
         </KeyboardAvoidingView>
       </Modal>
 
-      {/* Modal de Adicionar Cifra */}
+      {/* Modal Adicionar Cifra */}
       <Modal visible={showAddChord} transparent animationType="slide">
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={sty.fullModalOverlay}>
           <View style={sty.fullModalBox}>
@@ -416,13 +540,7 @@ export default function PlaylistScreen() {
             </View>
             <View style={sty.searchRow}>
               <Ionicons name="search-outline" size={18} color={colors.placeholder} style={{ marginRight: 8 }} />
-              <TextInput
-                style={sty.searchInput}
-                placeholder="Buscar cifra ou artista..."
-                placeholderTextColor={colors.placeholder}
-                value={chordQuery}
-                onChangeText={setChordQuery}
-              />
+              <TextInput style={sty.searchInput} placeholder="Buscar cifra ou artista..." placeholderTextColor={colors.placeholder} value={chordQuery} onChangeText={setChordQuery} />
             </View>
             <TouchableOpacity style={sty.createNewBtn} onPress={handleCreateAndAdd} activeOpacity={0.8}>
               <Ionicons name="add" size={20} color="#fff" style={{ marginRight: 8 }} />
@@ -447,7 +565,6 @@ export default function PlaylistScreen() {
           </View>
         </KeyboardAvoidingView>
       </Modal>
-
     </SafeAreaView>
   );
 }
@@ -456,7 +573,7 @@ function makeStyles(c: any) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: c.bg,
+      backgroundColor: 'transparent',
       height: Platform.OS === 'web' ? ('100vh' as any) : '100%',
     },
     innerContent: {
@@ -471,397 +588,135 @@ function makeStyles(c: any) {
       justifyContent: 'space-between',
       paddingHorizontal: 16,
       paddingVertical: 12,
-      backgroundColor: c.bg,
-    },
-    topActionBtn: {
-      padding: 6,
-    },
-    topRightActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 16,
-    },
-    doneBtn: {
-      backgroundColor: c.accent,
-      paddingHorizontal: 16,
-      paddingVertical: 6,
-      borderRadius: 16,
-    },
-    doneBtnText: {
-      color: '#ffffff',
-      fontWeight: '700',
-      fontSize: 14,
-    },
-    
-    // Lista com Scroll Nativo
-    scrollableList: {
-      flex: 1,
-      width: '100%',
-    },
-    listContent: {
-      paddingBottom: 160,
-      flexGrow: 1,
-    },
-
-    // Hero Header
-    heroHeader: {
-      alignItems: 'center',
-      paddingTop: 10,
-      paddingBottom: 24,
-      paddingHorizontal: 20,
-    },
-    coverShadowWrapper: {
-      shadowColor: '#000000',
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.35,
-      shadowRadius: 20,
-      elevation: 8,
-      marginBottom: 20,
-    },
-    coverContainer: {
-      width: 170,
-      height: 170,
-      borderRadius: 18,
-      overflow: 'hidden',
-      backgroundColor: c.card,
-      borderWidth: 1,
-      borderColor: c.border,
-    },
-    coverGrid: {
-      flex: 1,
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-    },
-    coverQuadrant: {
-      width: '50%',
-      height: '50%',
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 0.5,
-      borderColor: c.border,
-    },
-    heroTitle: {
-      fontSize: 26,
-      fontWeight: '800',
-      color: c.text,
-      textAlign: 'center',
-      marginBottom: 6,
-    },
-    heroMetaRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    heroMetaCount: {
-      fontSize: 14,
-      color: c.textSub,
-      fontWeight: '500',
-    },
-    editingBanner: {
-      marginTop: 14,
-      backgroundColor: 'rgba(255, 119, 0, 0.15)',
-      paddingHorizontal: 16,
-      paddingVertical: 8,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: 'rgba(255, 119, 0, 0.3)',
-    },
-    editingBannerText: {
-      color: c.accent,
-      fontSize: 12,
-      fontWeight: '600',
-      textAlign: 'center',
-    },
-
-    // Linha de Música (Modo Normal - Imagem 4)
-    songRowWrap: {
-      paddingHorizontal: 16,
-      marginBottom: 6,
-    },
-    songRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      borderRadius: 12,
       backgroundColor: 'transparent',
     },
+    topActionBtn: { padding: 6 },
+    topRightActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+    doneBtn: { backgroundColor: c.accent, paddingHorizontal: 16, paddingVertical: 6, borderRadius: 16 },
+    doneBtnText: { color: '#ffffff', fontWeight: '700', fontSize: 14 },
+    scrollableList: { flex: 1, width: '100%' },
+    listContent: { paddingBottom: 160, flexGrow: 1 },
+
+    heroHeader: { alignItems: 'center', paddingTop: 10, paddingBottom: 24, paddingHorizontal: 20 },
+    coverShadowWrapper: {
+      shadowColor: '#000000', shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.35, shadowRadius: 20, elevation: 8, marginBottom: 20,
+    },
+    coverContainer: {
+      width: 170, height: 170, borderRadius: 18, overflow: 'hidden',
+      backgroundColor: c.card, borderWidth: 1, borderColor: c.border,
+    },
+    coverGrid: { flex: 1, flexDirection: 'row', flexWrap: 'wrap' },
+    coverQuadrant: {
+      width: '50%', height: '50%', alignItems: 'center', justifyContent: 'center',
+      borderWidth: 0.5, borderColor: c.border,
+    },
+    heroTitle: { fontSize: 26, fontWeight: '800', color: c.text, textAlign: 'center', marginBottom: 6 },
+    heroMetaRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    heroMetaCount: { fontSize: 14, color: c.textSub, fontWeight: '500' },
+    editingBanner: {
+      marginTop: 14, backgroundColor: 'rgba(255, 119, 0, 0.15)',
+      paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12,
+      borderWidth: 1, borderColor: 'rgba(255, 119, 0, 0.3)',
+    },
+    editingBannerText: { color: c.accent, fontSize: 12, fontWeight: '600', textAlign: 'center' },
+
+    songRowWrap: { paddingHorizontal: 16, marginBottom: 6 },
+    songRow: {
+      flexDirection: 'row', alignItems: 'center',
+      paddingVertical: 10, paddingHorizontal: 12,
+      borderRadius: 12, backgroundColor: 'transparent',
+    },
     songThumb: {
-      width: 44,
-      height: 44,
-      borderRadius: 10,
-      backgroundColor: c.card,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: c.border,
+      width: 50, height: 50, borderRadius: 12, backgroundColor: c.card,
+      alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: c.border,
     },
-    songIndexText: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: c.textSub,
-      width: 26,
-      textAlign: 'center',
-      marginLeft: 10,
-    },
-    songTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-      color: c.text,
-      marginBottom: 3,
-    },
-    songSubTitle: {
-      fontSize: 13,
-      color: c.textSub,
-    },
+    songIndexText: { fontSize: 14, fontWeight: '600', color: c.textSub, width: 26, textAlign: 'center', marginLeft: 10 },
+    songTitle: { fontSize: 15, fontWeight: '700', color: c.text, marginBottom: 3 },
+    songSubTitle: { fontSize: 13, color: c.textSub },
 
-    // Linha de Música (Modo de Edição - Imagem 3)
-    editItemWrap: {
-      paddingHorizontal: 16,
-      marginBottom: 6,
-    },
+    editItemWrap: { paddingHorizontal: 16, marginBottom: 6 },
     editItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      borderRadius: 12,
-      backgroundColor: c.card,
-      borderWidth: 1,
-      borderColor: c.border,
+      flexDirection: 'row', alignItems: 'center',
+      paddingVertical: 12, paddingHorizontal: 14,
+      borderRadius: 12, backgroundColor: c.card,
+      borderWidth: 1, borderColor: c.border,
     },
-    minusButton: {
-      padding: 2,
-    },
-    editSongName: {
-      fontSize: 15,
-      fontWeight: '700',
-      color: c.text,
-      marginBottom: 3,
-    },
-    editSongSub: {
-      fontSize: 13,
-      color: c.textSub,
-    },
-    dragGridHandle: {
-      padding: 6,
-      justifyContent: 'center',
-      alignItems: 'center',
-    },
+    minusButton: { padding: 2 },
+    editSongName: { fontSize: 15, fontWeight: '700', color: c.text, marginBottom: 3 },
+    editSongSub: { fontSize: 13, color: c.textSub },
+    dragGridHandle: { padding: 6, justifyContent: 'center', alignItems: 'center' },
     itemActive: {
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.5,
-      shadowRadius: 8,
-      elevation: 10,
-      zIndex: 99,
+      shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.5, shadowRadius: 8, elevation: 10, zIndex: 99,
     },
-    itemDragging: {
-      borderColor: c.accent,
-      backgroundColor: c.input,
-    },
+    itemDragging: { borderColor: c.accent, backgroundColor: c.input },
 
-    emptyWrap: {
-      padding: 48,
-      alignItems: 'center',
-      gap: 12,
-    },
-    emptyText: {
-      color: c.textSub,
-      fontSize: 14,
-      textAlign: 'center',
-    },
+    emptyWrap: { padding: 48, alignItems: 'center', gap: 12 },
+    emptyText: { color: c.textSub, fontSize: 14, textAlign: 'center' },
 
-    // Modal dos 3 Pontinhos (Imagem 2)
     modalBackdrop: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.65)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 24,
+      flex: 1, backgroundColor: 'rgba(0,0,0,0.65)',
+      justifyContent: 'center', alignItems: 'center', padding: 24,
     },
     menuCard: {
-      backgroundColor: c.card,
-      borderRadius: 16,
-      paddingVertical: 8,
-      paddingHorizontal: 8,
-      width: 240,
-      borderWidth: 1,
-      borderColor: c.border,
-      elevation: 12,
+      backgroundColor: c.card, borderRadius: 16,
+      paddingVertical: 8, paddingHorizontal: 8,
+      width: 240, borderWidth: 1, borderColor: c.border, elevation: 12,
     },
-    menuItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 14,
-      paddingHorizontal: 16,
-      borderRadius: 10,
-    },
-    menuIcon: {
-      marginRight: 14,
-    },
-    menuTxt: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: c.text,
-    },
+    menuItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 14, paddingHorizontal: 16, borderRadius: 10 },
+    menuIcon: { marginRight: 14 },
+    menuTxt: { fontSize: 15, fontWeight: '600', color: c.text },
 
-    // Modal Renomear (Imagem 2)
-    modalOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.65)',
-      justifyContent: 'center',
-      alignItems: 'center',
-      padding: 20,
-    },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.65)', justifyContent: 'center', alignItems: 'center', padding: 20 },
     renameCard: {
-      backgroundColor: c.card,
-      borderRadius: 24,
-      padding: 24,
-      width: '100%',
-      maxWidth: 380,
-      borderWidth: 1,
-      borderColor: c.border,
-      elevation: 12,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.4,
-      shadowRadius: 20,
+      backgroundColor: c.card, borderRadius: 24, padding: 24,
+      width: '100%', maxWidth: 380, borderWidth: 1, borderColor: c.border,
+      elevation: 12, shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.4, shadowRadius: 20,
     },
-    renameTitle: {
-      fontSize: 22,
-      fontWeight: '800',
-      color: c.text,
-      marginBottom: 20,
-      textAlign: 'center',
-    },
+    renameTitle: { fontSize: 22, fontWeight: '800', color: c.text, marginBottom: 20, textAlign: 'center' },
     renameInput: {
-      backgroundColor: c.input,
-      borderRadius: 14,
-      padding: 16,
-      fontSize: 16,
-      color: c.text,
-      borderWidth: 1,
-      borderColor: c.border,
+      backgroundColor: c.input, borderRadius: 14, padding: 16,
+      fontSize: 16, color: c.text, borderWidth: 1, borderColor: c.border,
     },
-    renameCharCounter: {
-      fontSize: 13,
-      color: c.textSub,
-      textAlign: 'right',
-      marginTop: 8,
-      marginBottom: 20,
-      fontWeight: '500',
-    },
-    renameBtns: {
-      flexDirection: 'row',
-      gap: 12,
-    },
+    renameCharCounter: { fontSize: 13, color: c.textSub, textAlign: 'right', marginTop: 8, marginBottom: 20, fontWeight: '500' },
+    renameBtns: { flexDirection: 'row', gap: 12 },
     renameCancelBtn: {
-      flex: 1,
-      padding: 14,
-      borderRadius: 12,
-      backgroundColor: c.input,
-      borderWidth: 1,
-      borderColor: c.border,
-      alignItems: 'center',
-      justifyContent: 'center',
+      flex: 1, padding: 14, borderRadius: 12,
+      backgroundColor: c.input, borderWidth: 1, borderColor: c.border,
+      alignItems: 'center', justifyContent: 'center',
     },
-    renameCancelTxt: {
-      color: c.text,
-      fontWeight: '700',
-      fontSize: 15,
-    },
-    renameSaveBtn: {
-      flex: 1,
-      padding: 14,
-      borderRadius: 12,
-      backgroundColor: c.accent,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    renameSaveTxt: {
-      color: '#ffffff',
-      fontWeight: '700',
-      fontSize: 15,
-    },
+    renameCancelTxt: { color: c.text, fontWeight: '700', fontSize: 15 },
+    renameSaveBtn: { flex: 1, padding: 14, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
+    renameSaveTxt: { color: '#ffffff', fontWeight: '700', fontSize: 15 },
 
-    // Full Modal Adicionar Cifra
-    fullModalOverlay: {
-      flex: 1,
-      backgroundColor: c.bg,
-      paddingTop: 40,
-    },
-    fullModalBox: {
-      flex: 1,
-      backgroundColor: c.bg,
-      padding: 16,
-    },
-    fullModalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      marginBottom: 16,
-    },
-    fullModalTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: c.text,
-    },
+    fullModalOverlay: { flex: 1, backgroundColor: 'transparent', paddingTop: 40 },
+    fullModalBox: { flex: 1, backgroundColor: 'transparent', padding: 16 },
+    fullModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+    fullModalTitle: { fontSize: 18, fontWeight: '700', color: c.text },
     searchRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-      backgroundColor: c.input,
-      borderRadius: 28,
-      borderWidth: 1,
-      borderColor: c.border,
-      marginBottom: 16,
+      flexDirection: 'row', alignItems: 'center',
+      paddingHorizontal: 16, paddingVertical: 10,
+      backgroundColor: c.input, borderRadius: 28,
+      borderWidth: 1, borderColor: c.border, marginBottom: 16,
     },
-    searchInput: {
-      flex: 1,
-      fontSize: 15,
-      color: c.text,
-    },
+    searchInput: { flex: 1, fontSize: 15, color: c.text },
     createNewBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: 14,
-      backgroundColor: c.accent,
-      borderRadius: 12,
-      marginBottom: 16,
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+      padding: 14, backgroundColor: c.accent, borderRadius: 12, marginBottom: 16,
     },
     chordResult: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: c.card,
-      borderRadius: 12,
-      padding: 12,
-      marginBottom: 8,
-      borderWidth: 1,
-      borderColor: c.border,
-      gap: 12,
+      flexDirection: 'row', alignItems: 'center',
+      backgroundColor: c.card, borderRadius: 12,
+      padding: 12, marginBottom: 8,
+      borderWidth: 1, borderColor: c.border, gap: 12,
     },
     songThumbSmall: {
-      width: 36,
-      height: 36,
-      borderRadius: 8,
-      backgroundColor: c.input,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: c.border,
+      width: 36, height: 36, borderRadius: 8, backgroundColor: c.input,
+      alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: c.border,
     },
-    songResultName: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: c.text,
-    },
-    songResultSub: {
-      fontSize: 12,
-      color: c.textSub,
-      marginTop: 2,
-    },
+    songResultName: { fontSize: 15, fontWeight: '600', color: c.text },
+    songResultSub: { fontSize: 12, color: c.textSub, marginTop: 2 },
   });
 }

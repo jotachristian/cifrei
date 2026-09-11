@@ -18,6 +18,8 @@ export interface Chord {
   capo?: number;
   timbre?: string;
   style?: string;
+  cover_url?: string;
+  cover_local_uri?: string;
 }
 export interface PlaylistChordLink { playlist_id: string; chord_id: string; sort_order: number; moment: string; created_at: number; }
 export interface ChordWithPlaylist extends Chord { playlist_name: string; }
@@ -26,6 +28,36 @@ export interface ChordInPlaylist extends Chord { moment: string; link_sort_order
 export let chords: Chord[] = [];
 export let playlists: Playlist[] = [];
 export let playlist_chords: PlaylistChordLink[] = [];
+
+export interface UserSettings {
+  fontSize: number;
+  showLyrics: boolean;
+}
+
+export let userSettings: UserSettings = {
+  fontSize: 16,
+  showLyrics: true,
+};
+
+export function getSavedFontSize(): number {
+  return userSettings.fontSize;
+}
+
+export function saveFontSize(size: number): void {
+  userSettings.fontSize = size;
+  AsyncStorage.setItem('cifrei_font_size', String(size)).catch(() => {});
+  setDoc(doc(db, 'app_settings', 'user'), { fontSize: size, showLyrics: userSettings.showLyrics }, { merge: true }).catch(() => {});
+}
+
+export function getSavedShowLyrics(): boolean {
+  return userSettings.showLyrics;
+}
+
+export function saveShowLyrics(show: boolean): void {
+  userSettings.showLyrics = show;
+  AsyncStorage.setItem('cifrei_show_lyrics', show ? '1' : '0').catch(() => {});
+  setDoc(doc(db, 'app_settings', 'user'), { fontSize: userSettings.fontSize, showLyrics: show }, { merge: true }).catch(() => {});
+}
 
 let isInitialized = false;
 type Listener = () => void;
@@ -56,10 +88,12 @@ export async function initDatabase(): Promise<void> {
   if (isInitialized) return Promise.resolve();
 
   try {
-    const [cCache, pCache, lCache] = await Promise.all([
+    const [cCache, pCache, lCache, fontCache, lyricsCache] = await Promise.all([
       AsyncStorage.getItem('cache_chords'),
       AsyncStorage.getItem('cache_playlists'),
       AsyncStorage.getItem('cache_playlist_chords'),
+      AsyncStorage.getItem('cifrei_font_size'),
+      AsyncStorage.getItem('cifrei_show_lyrics'),
     ]);
     if (cCache) {
       try {
@@ -79,6 +113,15 @@ export async function initDatabase(): Promise<void> {
         if (Array.isArray(parsed) && parsed.length > 0) playlist_chords = parsed;
       } catch (e) {}
     }
+    if (fontCache !== null) {
+      const parsedFont = Number(fontCache);
+      if (!isNaN(parsedFont) && parsedFont >= 10 && parsedFont <= 32) {
+        userSettings.fontSize = parsedFont;
+      }
+    }
+    if (lyricsCache !== null) {
+      userSettings.showLyrics = lyricsCache === '1';
+    }
   } catch (e) {
     console.error('Erro ao carregar cache local:', e);
   }
@@ -96,6 +139,23 @@ function startFirestoreSync() {
   syncStarted = true;
 
   try {
+    onSnapshot(doc(db, 'app_settings', 'user'), snap => {
+      if (snap.exists()) {
+        const data = snap.data();
+        if (typeof data.fontSize === 'number' && data.fontSize >= 10 && data.fontSize <= 32) {
+          userSettings.fontSize = data.fontSize;
+          AsyncStorage.setItem('cifrei_font_size', String(data.fontSize)).catch(() => {});
+        }
+        if (typeof data.showLyrics === 'boolean') {
+          userSettings.showLyrics = data.showLyrics;
+          AsyncStorage.setItem('cifrei_show_lyrics', data.showLyrics ? '1' : '0').catch(() => {});
+        }
+        notify();
+      }
+    }, err => {
+      console.warn('Firestore offline mode (user_settings):', err);
+    });
+
     onSnapshot(collection(db, 'chords'), snap => {
       if (!snap.empty) {
         chords = snap.docs
@@ -208,14 +268,69 @@ export function getAllChords(): Chord[] {
   return [...chords];
 }
 
+const ACRONYMS = new Set(['CNBB', 'II', 'III', 'IV', 'VI', 'VII', 'VIII', 'IX', 'DJ', 'MC']);
+const CONNECTORS = new Set(['e', 'de', 'do', 'da', 'dos', 'das', 'em', 'com', 'ao', 'aos']);
+
+/**
+ * Formata o nome do artista para Title Case com a primeira letra de cada palavra em maiúsculo,
+ * preservando conectores em minúsculo e siglas/números romanos em maiúsculo.
+ */
+export function formatArtistName(name: string): string {
+  if (!name) return '';
+  const clean = name.trim();
+  if (!clean) return '';
+  return clean
+    .split(/\s+/)
+    .map((word, i) => {
+      if (!word) return '';
+      const upper = word.toUpperCase();
+      if (ACRONYMS.has(upper)) {
+        return upper;
+      }
+      const lower = word.toLowerCase();
+      if (CONNECTORS.has(lower) && i > 0) {
+        return lower;
+      }
+      return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+    })
+    .join(' ')
+    .replace(/^\w/, c => c.toUpperCase());
+}
+
+/**
+ * Normaliza strings para comparação insensível a maiúsculas, minúsculas, acentos e múltiplos espaços.
+ */
+export function normalizeKey(str: string): string {
+  if (!str) return '';
+  return str
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+/**
+ * Busca se já existe uma música com o mesmo nome e mesmo artista cadastrada.
+ */
+export function findExistingChord(name: string, artist: string, excludeId?: string): Chord | null {
+  const normName = normalizeKey(name);
+  const normArtist = normalizeKey(artist);
+  if (!normName) return null;
+  return chords.find(c => {
+    if (excludeId && c.id === excludeId) return false;
+    return normalizeKey(c.name) === normName && normalizeKey(c.artist) === normArtist;
+  }) || null;
+}
+
 export function findChordByYoutubeLink(link: string): Chord | null {
   if (!link) return null;
   return chords.find(c => c.external_link === link) || null;
 }
 
 export function searchChords(query: string): ChordWithPlaylist[] {
-  const q = query.toLowerCase();
-  const matched = chords.filter(c => c.name.toLowerCase().includes(q) || c.artist.toLowerCase().includes(q));
+  const q = normalizeKey(query);
+  const matched = chords.filter(c => normalizeKey(c.name).includes(q) || normalizeKey(c.artist).includes(q));
   return matched.map(c => {
     const pNames = playlist_chords
       .filter(l => l.chord_id === c.id)
@@ -252,12 +367,41 @@ export function createChord(data: {
   capo?: number;
   timbre?: string;
   style?: string;
+  cover_url?: string;
+  cover_local_uri?: string;
 }): string {
+  const formattedArtist = formatArtistName(data.artist || '');
+  const cleanName = (data.name || '').trim();
+
+  // Verificação rigorosa anti-duplicidade:
+  const existing = findExistingChord(cleanName, formattedArtist);
+  if (existing) {
+    // Se a música já existir, atualiza dados faltantes e retorna o ID existente sem criar cópia
+    let shouldUpdate = false;
+    if (!existing.cover_url && data.cover_url) {
+      existing.cover_url = data.cover_url;
+      shouldUpdate = true;
+    }
+    if ((!existing.lyrics || existing.lyrics.length < (data.lyrics?.length || 0)) && data.lyrics) {
+      existing.lyrics = data.lyrics;
+      shouldUpdate = true;
+    }
+    if (shouldUpdate) {
+      saveToCache();
+      notify();
+      updateDoc(doc(db, 'chords', existing.id), cleanFirestoreDoc({
+        ...existing,
+        _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+      })).catch(() => {});
+    }
+    return existing.id;
+  }
+
   const id = genId();
   const c: Chord = {
     id,
-    name: data.name || '',
-    artist: data.artist || '',
+    name: cleanName,
+    artist: formattedArtist,
     tone: data.tone || 'C',
     lyrics: data.lyrics || '',
     external_link: data.externalLink || '',
@@ -269,6 +413,8 @@ export function createChord(data: {
     capo: data.capo,
     timbre: data.timbre,
     style: data.style,
+    cover_url: data.cover_url || '',
+    cover_local_uri: data.cover_local_uri || '',
   };
   chords.push(c);
 
@@ -294,11 +440,16 @@ export function updateChord(id: string, data: {
   capo?: number;
   timbre?: string;
   style?: string;
+  cover_url?: string;
+  cover_local_uri?: string;
 }): void {
+  const formattedArtist = formatArtistName(data.artist || '');
+  const cleanName = (data.name || '').trim();
+
   const c = chords.find(c => c.id === id);
   if (c) {
-    c.name = data.name;
-    c.artist = data.artist;
+    c.name = cleanName;
+    c.artist = formattedArtist;
     c.tone = data.tone;
     c.lyrics = data.lyrics;
     c.external_link = data.externalLink || '';
@@ -308,12 +459,14 @@ export function updateChord(id: string, data: {
     c.capo = data.capo;
     c.timbre = data.timbre;
     c.style = data.style;
+    if (data.cover_url !== undefined) c.cover_url = data.cover_url;
+    if (data.cover_local_uri !== undefined) c.cover_local_uri = data.cover_local_uri;
     saveToCache();
     notify();
   }
   const payload = cleanFirestoreDoc({
-    name: data.name,
-    artist: data.artist,
+    name: cleanName,
+    artist: formattedArtist,
     tone: data.tone,
     lyrics: data.lyrics,
     external_link: data.externalLink || '',
@@ -323,9 +476,26 @@ export function updateChord(id: string, data: {
     capo: data.capo ?? null,
     timbre: data.timbre ?? null,
     style: data.style ?? null,
+    cover_url: data.cover_url ?? c?.cover_url ?? '',
+    cover_local_uri: data.cover_local_uri ?? c?.cover_local_uri ?? '',
     _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
   });
   updateDoc(doc(db, 'chords', id), payload).catch(() => {});
+}
+
+export function updateChordCover(id: string, cover_url: string, cover_local_uri?: string): void {
+  const c = chords.find(c => c.id === id);
+  if (c) {
+    c.cover_url = cover_url;
+    if (cover_local_uri) c.cover_local_uri = cover_local_uri;
+    saveToCache();
+    notify();
+  }
+  updateDoc(doc(db, 'chords', id), {
+    cover_url,
+    cover_local_uri: cover_local_uri || '',
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$'
+  }).catch(() => {});
 }
 
 export function updateChordNote(id: string, note: string): void {

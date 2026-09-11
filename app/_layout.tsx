@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from '@/contexts/ThemeContext';
 import { initDatabase } from '@/lib/database';
 import { StatusBar } from 'expo-status-bar';
 import { View } from 'react-native';
+import { AppBackground } from '@/components/AppBackground';
 import {
   useFonts,
   Poppins_300Light,
@@ -78,15 +79,16 @@ export default function RootLayout() {
 }
 
 function RootContent() {
-  const { colors, isDark } = useTheme();
+  const { isDark } = useTheme();
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.bg }}>
+    <View style={{ flex: 1 }}>
+      <AppBackground />
       <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor="transparent" translucent />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.bg },
+          contentStyle: { backgroundColor: 'transparent' },
           animation: 'none',
           gestureEnabled: false,
         }}
