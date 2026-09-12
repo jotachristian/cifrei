@@ -1,12 +1,13 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
-import { View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity, Modal, Linking } from 'react-native';
+import { View, Text, ScrollView, Pressable, StyleSheet, TouchableOpacity, Modal, Linking, Image } from 'react-native';
 import { useLocalSearchParams, useRouter, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getChord, getChordsForPlaylist, updateChordToneOffset, getLink, Chord, getSavedFontSize, saveFontSize, getSavedShowLyrics, saveShowLyrics } from '@/lib/database';
+import { getChord, getChordsForPlaylist, updateChordToneOffset, getLink, Chord, getSavedFontSize, saveFontSize, getSavedShowLyrics, saveShowLyrics, addDatabaseListener } from '@/lib/database';
 import { transposeTone, semitonesBetween, MAJOR_TONES, MINOR_TONES } from '@/lib/transpose';
+import { getYoutubeThumbnailUrl } from '@/lib/youtube';
 import ChordDisplay from '@/components/ChordDisplay';
 import { ChordCover } from '@/components/ChordCover';
 
@@ -40,10 +41,37 @@ export default function ChordScreen() {
   const [highlightedSecIdx, setHighlightedSecIdx] = useState<number | null>(null);
   const highlightTimerRef = useRef<any>(null);
 
+  // Sincroniza estado quando id ou playlistId mudam (ex: navegação anterior/próximo ou troca de rota)
   useEffect(() => {
     setSectionsMap({});
     setHighlightedSecIdx(null);
-  }, [id]);
+    const c = getChord(id);
+    if (c) {
+      setChord(c);
+      setSemitones(c.tone_offset);
+    }
+    if (playlistId) {
+      setSiblings(getChordsForPlaylist(playlistId));
+      setMoment(getLink(id, playlistId)?.moment ?? '');
+    }
+  }, [id, playlistId]);
+
+  // Listener para sincronização em tempo real do banco (Firestore sync e cache de capas)
+  useEffect(() => {
+    const reload = () => {
+      const c = getChord(id);
+      if (c) {
+        setChord(c);
+      }
+      if (playlistId) {
+        setSiblings(getChordsForPlaylist(playlistId));
+      }
+    };
+    const unsub = addDatabaseListener(reload);
+    return () => {
+      unsub();
+    };
+  }, [id, playlistId]);
 
   const handleSectionLayout = useCallback((secIdx: number, rawTitle: string, y: number) => {
     const cleanTitle = rawTitle.replace(/^\[|\]$/g, '').trim();
@@ -178,6 +206,9 @@ export default function ChordScreen() {
   const displayTone = transposeTone(chord.tone, semitones);
   const isMinor = chord.tone.endsWith('m');
   const toneOptions = isMinor ? MINOR_TONES : MAJOR_TONES;
+  // Se não houver capa salva, deriva a thumbnail do link do YouTube
+  const effectiveCoverUrl =
+    chord.cover_url || (chord.external_link ? getYoutubeThumbnailUrl(chord.external_link) : '') || '';
 
   const openYoutube = () => {
     if (chord.external_link) {
@@ -187,118 +218,50 @@ export default function ChordScreen() {
 
   return (
     <SafeAreaView style={sty.container}>
-      {/* Top Header Fixado — Botão Voltar + Navegação de Seções */}
-      <View style={sty.topHeaderRow}>
-        <Pressable onPress={handleGoBack} style={sty.backBtn}>
-          <Ionicons name="chevron-back-outline" size={22} color={colors.text} />
-        </Pressable>
-
-        {navSections.length > 0 && (
-          <View style={sty.sectionNavRow}>
-            {navSections.slice(0, 4).map((sec) => (
-              <TouchableOpacity
-                key={sec.id}
-                style={[
-                  sty.sectionBtnBase,
-                  sec.isChorus ? sty.sectionBtnChorus : sty.sectionBtnOutlined,
-                ]}
-                onPress={() => scrollToSection(sec.id, sec.y)}
-                activeOpacity={0.7}
-              >
-                <Ionicons
-                  name={sec.isChorus ? "repeat" : "bookmark-outline"}
-                  size={13}
-                  color={sec.isChorus ? "#ffffff" : colors.textSub}
-                />
-                <Text
-                  style={[
-                    sty.sectionBtnTxt,
-                    sec.isChorus ? sty.sectionBtnTxtChorus : sty.sectionBtnTxtOutlined,
-                  ]}
-                >
-                  {sec.shortLabel}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-
       <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={sty.scrollContent}>
 
-        {/* Momento + Título + Artista + Tom */}
-        {moment ? <Text style={sty.moment}>{moment}</Text> : null}
-        <Text style={sty.songTitle}>{chord.name}</Text>
-        <View style={sty.metaRow}>
-          {chord.artist ? <Text style={sty.artist}>{chord.artist}</Text> : null}
-          <TouchableOpacity style={sty.toneBadge} onPress={() => setToneModal(true)} activeOpacity={0.7}>
-            <Text style={[sty.toneText, { color: colors.accent }]}>{displayTone}</Text>
-            <Ionicons name="chevron-down" size={14} color={colors.accent} style={{ marginLeft: 2 }} />
-          </TouchableOpacity>
+        {/* Botão Voltar (fora das divs) */}
+        <Pressable onPress={handleGoBack} style={sty.backBtn} hitSlop={8}>
+          <Ionicons name="chevron-back-outline" size={24} color={colors.text} />
+        </Pressable>
+
+        {/* Div 1 — Informações da Música (Capa à esquerda + Nome/Artista no centro + Tom à direita) */}
+        <View style={sty.glassCard}>
+          <View style={sty.songInfoRow}>
+            <ChordCover
+              chordId={chord.id}
+              coverUrl={effectiveCoverUrl}
+              coverLocalUri={chord.cover_local_uri}
+              size={68}
+              borderRadius={14}
+              fallback={
+                <View style={[sty.coverFallback, { width: 68, height: 68, borderRadius: 14 }]}>
+                  <Ionicons name="musical-notes" size={26} color={colors.textSub} />
+                </View>
+              }
+            />
+
+            <View style={sty.songInfoText}>
+              <Text style={sty.songTitle} numberOfLines={1}>{chord.name}</Text>
+              {chord.artist ? <Text style={sty.artist} numberOfLines={1}>{chord.artist}</Text> : null}
+            </View>
+
+            <TouchableOpacity style={sty.toneBadge} onPress={() => setToneModal(true)} activeOpacity={0.7}>
+              <Text style={[sty.toneText, { backgroundColor: colors.accent }]}>{displayTone}</Text>
+            </TouchableOpacity>
+          </View>
         </View>
 
-        {/* Badge Chamativo de Transposição / Capotraste (Ex: C(-2)) */}
-        {typeof chord.capo === 'number' && chord.capo !== 0 ? (
-          <View style={sty.transposHighlightBadge}>
-            <Ionicons name="bookmark" size={15} color="#ffffff" />
-            <Text style={sty.transposHighlightTxt}>
-              TRANSPOS: {transposeTone(displayTone, chord.capo)}({chord.capo > 0 ? `+${chord.capo}` : chord.capo})
-            </Text>
-          </View>
-        ) : null}
-
-        {/* Timbres, Estilos / Ritmos e Anotações */}
-        {(chord.timbre || chord.style || chord.keyboard_bank || chord.keyboard_slot || chord.note) ? (
-          <View style={sty.infoRow}>
-            {chord.timbre ? (
-              <View style={sty.infoChip}>
-                <Ionicons name="musical-notes" size={14} color={colors.accent} />
-                <Text style={sty.infoChipTxt}>
-                  <Text style={sty.infoChipLabel}>Timbre: </Text>{chord.timbre}
-                </Text>
-              </View>
-            ) : (chord.keyboard_bank || chord.keyboard_slot ? (
-              <View style={sty.infoChip}>
-                <Ionicons name="musical-notes-outline" size={14} color={colors.accent} />
-                <Text style={sty.infoChipTxt}>
-                  <Text style={sty.infoChipLabel}>Reg: </Text>{chord.keyboard_bank ? `B${chord.keyboard_bank}` : ''}{chord.keyboard_slot ? ` C${chord.keyboard_slot}` : ''}
-                </Text>
-              </View>
-            ) : null)}
-
-            {chord.style ? (
-              <View style={sty.infoChip}>
-                <Ionicons name="disc-outline" size={14} color={colors.accent} />
-                <Text style={sty.infoChipTxt}>
-                  <Text style={sty.infoChipLabel}>Ritmo: </Text>{chord.style}
-                </Text>
-              </View>
-            ) : null}
-
-            {chord.note ? (
-              <View style={sty.infoChip}>
-                <Ionicons name="information-circle-outline" size={14} color={colors.textSub} />
-                <Text style={sty.infoChipTxt} numberOfLines={1}>
-                  <Text style={sty.infoChipLabel}>Obs: </Text>{chord.note}
-                </Text>
-              </View>
-            ) : null}
-          </View>
-        ) : null}
-
-        {/* Barra de Opções Compacta (Estilo Pílulas da Imagem) */}
-        <View style={sty.compactActionsWrap}>
-          {/* Opção Fonte */}
+        {/* Div 2 — Opções (Fonte, Letra, Vídeo, Editar) */}
+        <View style={[sty.glassCard, sty.optionsCard]}>
           <TouchableOpacity
             style={sty.pillBtn}
             onPress={() => setFontModal(true)}
             activeOpacity={0.7}
           >
             <Text style={sty.pillBtnTxt}>Fonte</Text>
-            <Ionicons name="chevron-down" size={13} color={colors.textSub} />
           </TouchableOpacity>
 
-          {/* Opção Letra */}
           <TouchableOpacity
             style={[sty.pillBtn, !showLyrics && sty.pillBtnInactive]}
             onPress={toggleLyrics}
@@ -307,17 +270,15 @@ export default function ChordScreen() {
             <Text style={[sty.pillBtnTxt, !showLyrics && { color: colors.textSub }]}>Letra</Text>
           </TouchableOpacity>
 
-          {/* Opção Vídeo */}
           <TouchableOpacity
             style={[sty.pillBtn, !chord.external_link && { opacity: 0.35 }]}
             onPress={openYoutube}
             disabled={!chord.external_link}
             activeOpacity={0.7}
           >
-            <Text style={sty.pillBtnTxt}>Vídeo</Text>
+            <Text style={sty.pillBtnTxt}>Ouvir</Text>
           </TouchableOpacity>
 
-          {/* Opção Editar */}
           <TouchableOpacity
             style={sty.pillBtn}
             onPress={openEdit}
@@ -447,7 +408,7 @@ export default function ChordScreen() {
   );
 }
 
-function makeStyles(c: any) {
+function makeStyles(c: any, isDark: boolean) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: 'transparent' },
     topHeaderRow: {
@@ -458,7 +419,7 @@ function makeStyles(c: any) {
       backgroundColor: 'transparent',
       borderBottomColor: c.border,
     },
-    backBtn: { paddingHorizontal: 10, paddingVertical: 8 },
+    backBtn: { paddingHorizontal: 10, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 8 },
     sectionNavRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -494,11 +455,43 @@ function makeStyles(c: any) {
     sectionBtnTxtOutlined: {
       color: c.textSub,
     },
-    scrollContent: { paddingHorizontal: 20, paddingBottom: 40 },
+    scrollContent: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 8 },
 
-    moment: { fontSize: 11, fontFamily: 'Inter_700Bold', color: c.accent, letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 2 },
-    songTitle: { fontSize: 22, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 6 },
-    metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 12 },
+    // Cards de Vidro (Div 1 e Div 2)
+    glassCard: {
+      alignSelf: 'center',
+      width: '100%',
+      borderRadius: 22,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.07)',
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      marginBottom: 14,
+    },
+    songInfoRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    songInfoText: {
+      flex: 1,
+      minWidth: 0,
+      alignItems: 'center',
+    },
+    coverFallback: {
+      backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+    },
+    optionsCard: {
+      flexDirection: 'row',
+      gap: 5,
+    },
+
+    moment: { fontSize: 11, fontFamily: 'Inter_700Bold', color: c.accent, marginBottom: 2 },
+    songTitle: { fontSize: 16, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 6 },
+    metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 12 },
     artist: { fontSize: 14, color: c.textSub, fontFamily: 'Inter_400Regular' },
     transposHighlightBadge: {
       flexDirection: 'row',
@@ -529,8 +522,9 @@ function makeStyles(c: any) {
     infoChipTxt: { fontSize: 12, fontWeight: '700', color: c.text },
     toneBadge: {
       flexDirection: 'row', alignItems: 'center',
-      paddingHorizontal: 10, paddingVertical: 3,
-      borderRadius: 20, borderWidth: 1, borderColor: c.accent,
+      paddingHorizontal: 12, paddingVertical: 5,
+      backgroundColor: c.accent, borderRadius: 12,
+       borderColor: c.accent,
     },
     toneText: { fontSize: 13, fontFamily: 'Inter_700Bold' },
 
@@ -545,13 +539,11 @@ function makeStyles(c: any) {
     pillBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
-      backgroundColor: c.card,
-      paddingHorizontal: 14,
-      paddingVertical: 8,
+      gap: 4,
+      backgroundColor: isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.07)',
+      paddingHorizontal: 17,
+      paddingVertical: 6,
       borderRadius: 10,
-      borderWidth: 1,
-      borderColor: c.border,
     },
     pillBtnInactive: {
       opacity: 0.5,

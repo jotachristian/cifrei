@@ -100,7 +100,7 @@ function buildSegs(chordLine: string, lyricLine: string): Seg[] {
     if (!seg.text) { result.push(seg); continue; }
 
     const leading = seg.text.match(/^\s+/)?.[0] ?? '';
-    const words   = seg.text.match(/\S+\s*/g) ?? [];
+    const words = seg.text.match(/\S+\s*/g) ?? [];
 
     if (!words.length) { result.push(seg); continue; }
 
@@ -148,7 +148,7 @@ function groupSegs(segs: Seg[]): Seg[][] {
 function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChordPress, onSectionLayout, highlightedSectionIdx }: Props) {
   const lines = lyrics.split('\n');
   const lineHeight = Math.round(fontSize * 1.75);
-  const chordRowH  = Math.round(fontSize * 1.4);
+  const chordRowH = Math.round(fontSize * 1.4);
 
   const renderChordText = (chord: string, extraStyle?: any) => {
     const transposed = transposeChord(chord, semitones);
@@ -306,14 +306,9 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
         const bgColor = isHighlighted
           ? (isDark ? 'rgba(255, 119, 0, 0.28)' : 'rgba(255, 119, 0, 0.20)')
           : sec.isChorus
-          ? (isDark ? '#1a1b20' : colors.bg)
-          : (isDark ? '#151619' : colors.bg);
+            ? (isDark ? '#c1bcbc22' : colors.bg)
+            : (isDark ? '#01010100' : colors.bg);
 
-        const borderColor = isHighlighted
-          ? colors.accent
-          : sec.isChorus
-          ? (isDark ? '#2a2c34' : '#dedee5')
-          : (isDark ? '#212328' : '#e7e7ed');
 
         const titleColor = sec.isChorus
           ? colors.accent
@@ -332,21 +327,31 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
               borderRadius: 14,
               paddingVertical: 12,
               paddingHorizontal: 14,
-              borderWidth: 1,
-              borderColor: borderColor,
             }}
           >
             {/* Nome da Sessão (Ex: [Intro], [Refrão]) em cinza clarinho sem bold */}
             {sec.title ? (
-              <View style={{ marginBottom: 10, paddingBottom: 6, borderBottomColor: borderColor }}>
+              <View
+                style={{
+                  alignSelf: 'flex-start',          
+                  marginBottom: 20,
+                  paddingBottom: 4,
+                  paddingTop: 4,                
+                  paddingLeft: 8,                   
+                  paddingRight: 8,
+                  backgroundColor: "#f73d13ff",
+                  borderRadius: 12,
+                  marginHorizontal: 2,
+                }}
+              >
                 <Text
                   style={{
                     fontSize,
                     fontFamily: 'Inter_400Regular',
-                    color: isDark ? '#fefeffff' : colors.text,
+                    color: colors.text,
                   }}
                 >
-                  {sec.title}
+                  {sec.title.replace(/^\[|\]$/g, '')}
                 </Text>
               </View>
             ) : null}

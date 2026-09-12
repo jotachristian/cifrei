@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Image, StyleProp, ViewStyle, Platform } from 'react-native';
+import * as FileSystem from 'expo-file-system/legacy';
 import { getLocalCoverUri } from '@/lib/coverService';
 
 interface ChordCoverProps {
@@ -13,11 +14,12 @@ interface ChordCoverProps {
 }
 
 function cleanThumbnailUrl(url: string): string {
-  // Troca hqdefault ou sddefault (que possuem barras pretas em 4:3) por hq720 (16:9 sem barras pretas)
+  if (!url) return '';
+  // Converte thumbnails antigas em 4:3 (com barras pretas) para 16:9 widescreen sem barras pretas
   return url
-    .replace(/\/hqdefault\.jpg/gi, '/hq720.jpg')
-    .replace(/\/sddefault\.jpg/gi, '/hq720.jpg')
-    .replace(/\/hqdefault\.webp/gi, '/hq720.jpg');
+    .replace(/\/hqdefault\.jpg/gi, '/mqdefault.jpg')
+    .replace(/\/sddefault\.jpg/gi, '/mqdefault.jpg')
+    .replace(/\/hqdefault\.webp/gi, '/mqdefault.jpg');
 }
 
 export const ChordCover: React.FC<ChordCoverProps> = ({
@@ -37,32 +39,48 @@ export const ChordCover: React.FC<ChordCoverProps> = ({
     setHasError(false);
 
     async function resolveUri() {
-      // No Web, caminhos locais mobile (file:///) não existem no navegador. Usa coverUrl diretamente.
-      if (Platform.OS === 'web') {
-        if (coverUrl && isMounted) {
-          setImgUri(cleanThumbnailUrl(coverUrl));
-        } else if (isMounted) {
-          setImgUri(null);
+      // 1. Se tiver coverUrl remota válida (http/https), usa diretamente tanto na Web quanto no Mobile.
+      // No React Native (iOS e Android), o componente Image faz o cache em disco automaticamente de URLs https.
+      if (coverUrl && typeof coverUrl === 'string' && coverUrl.trim().startsWith('http')) {
+        if (isMounted) {
+          setImgUri(cleanThumbnailUrl(coverUrl.trim()));
         }
         return;
       }
 
-      // No Mobile:
-      if (coverLocalUri && !coverLocalUri.startsWith('http')) {
-        if (isMounted) setImgUri(coverLocalUri);
-        return;
-      }
+      // 2. Se não houver coverUrl remota, tenta a capa local salva no aparelho (Mobile)
+      if (Platform.OS !== 'web') {
+        if (coverLocalUri && !coverLocalUri.startsWith('http')) {
+          try {
+            const info = await FileSystem.getInfoAsync(coverLocalUri);
+            if (info.exists && info.size > 0 && isMounted) {
+              setImgUri(coverLocalUri);
+              return;
+            }
+          } catch {
+            // Arquivo local não existe ou erro de leitura
+          }
+        }
 
-      if (chordId) {
-        const local = await getLocalCoverUri(chordId);
-        if (local && isMounted) {
-          setImgUri(local);
-          return;
+        if (chordId) {
+          const local = await getLocalCoverUri(chordId);
+          if (local && isMounted) {
+            try {
+              const info = await FileSystem.getInfoAsync(local);
+              if (info.exists && info.size > 0) {
+                setImgUri(local);
+                return;
+              }
+            } catch {
+              // Silencioso
+            }
+          }
         }
       }
 
-      if (coverUrl && isMounted) {
-        setImgUri(cleanThumbnailUrl(coverUrl));
+      // 3. Se coverUrl não começar com http mas existir, tenta usá-la
+      if (coverUrl && typeof coverUrl === 'string' && coverUrl.trim().length > 0 && isMounted) {
+        setImgUri(cleanThumbnailUrl(coverUrl.trim()));
         return;
       }
 
@@ -79,10 +97,11 @@ export const ChordCover: React.FC<ChordCoverProps> = ({
   }, [chordId, coverUrl, coverLocalUri]);
 
   const handleError = () => {
-    // Fallback gracioso caso hq720 não exista (vídeos muito antigos) ou localUri falhe
+    // Sequência de fallback robusta caso a imagem falhe (ex: hq720 não existe para vídeos sem HD)
     if (imgUri && imgUri.includes('/hq720.jpg')) {
-      // mqdefault também é 16:9 sem barras pretas e sempre existe
       setImgUri(imgUri.replace('/hq720.jpg', '/mqdefault.jpg'));
+    } else if (imgUri && imgUri.includes('/mqdefault.jpg')) {
+      setImgUri(imgUri.replace('/mqdefault.jpg', '/hqdefault.jpg'));
     } else if (imgUri && coverUrl && imgUri !== coverUrl) {
       setImgUri(cleanThumbnailUrl(coverUrl));
     } else {
@@ -92,7 +111,7 @@ export const ChordCover: React.FC<ChordCoverProps> = ({
 
   if (imgUri && !hasError) {
     return (
-      <View style={[{ width: size, height: size, borderRadius, overflow: 'hidden', backgroundColor: '#1e293b' }, style]}>
+      <View style={[{ width: size, height: size, borderRadius, overflow: 'hidden', backgroundColor: 'transparent' }, style]}>
         <Image
           source={{ uri: imgUri }}
           style={{ width: size, height: size }}

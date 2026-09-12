@@ -5,6 +5,7 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { BlurView } from 'expo-blur';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord, linkChordToPlaylist, updateChordCover, formatArtistName, findExistingChord } from '@/lib/database';
@@ -559,14 +560,6 @@ export default function ChordEditScreen() {
               : (subStep === 1 ? 'Letras & Sessões' : 'Cifras nas Sessões')}
           </Text>
         </View>
-
-        {isEditing && id ? (
-          <TouchableOpacity onPress={handleDeleteChord} style={sty.deleteHeaderBtn} activeOpacity={0.7}>
-            <Ionicons name="trash-outline" size={20} color="#ef4444" />
-          </TouchableOpacity>
-        ) : (
-          <View style={{ width: 36 }} />
-        )}
       </View>
 
       <KeyboardAvoidingView
@@ -591,7 +584,6 @@ export default function ChordEditScreen() {
               {subStep === 1 && (
                 <View style={sty.card}>
                   <View style={sty.sectionHeaderRow}>
-                    <Ionicons name="musical-note" size={20} color={colors.accent} />
                     <Text style={sty.sectionTitle}>Identificação da Música</Text>
                   </View>
 
@@ -643,8 +635,8 @@ export default function ChordEditScreen() {
 
                   <View style={sty.fieldGroup}>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={sty.label}>LINK DA MÚSICA</Text>
                       <Ionicons name="logo-youtube" size={15} color="#ef4444" />
-                      <Text style={sty.label}>VÍDEO NO YOUTUBE / YT MUSIC (OPCIONAL)</Text>
                     </View>
                     <TextInput
                       style={sty.input}
@@ -658,7 +650,7 @@ export default function ChordEditScreen() {
                   </View>
 
                   <View style={sty.fieldGroup}>
-                    <Text style={sty.label}>CAPA DO ÁLBUM (OPCIONAL)</Text>
+                    <Text style={sty.label}>CAPA DO ÁLBUM</Text>
                     <View style={sty.coverPickerRow}>
                       <View style={{ width: 56, height: 56, borderRadius: 12, backgroundColor: colors.input, alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: colors.border }}>
                         <ChordCover
@@ -677,9 +669,9 @@ export default function ChordEditScreen() {
                             disabled={isSearchingCover}
                             activeOpacity={0.7}
                           >
-                            <Ionicons name={isSearchingCover ? "sync-outline" : "disc-outline"} size={16} color="#ffffff" />
+                            <Ionicons name={isSearchingCover ? "sync-outline" : "disc-outline"} size={12} color="#ffffff" />
                             <Text style={sty.searchCoverBtnTxt}>
-                              {isSearchingCover ? 'Buscando...' : (coverUrl ? 'Buscar Outra Capa' : 'Buscar Capa do YouTube')}
+                              {isSearchingCover ? 'Buscando...' : (coverUrl ? 'Buscar Nova Capa' : 'Buscar Capa YT')}
                             </Text>
                           </TouchableOpacity>
                           {Boolean(coverUrl) && (
@@ -688,11 +680,11 @@ export default function ChordEditScreen() {
                               onPress={() => { setCoverUrl(''); setCoverLocalUri(''); }}
                               activeOpacity={0.7}
                             >
-                              <Ionicons name="trash-outline" size={16} color="#ff5c75" />
+                              <Ionicons name="remove-circle-outline" size={20} color="#e60b08" />
                             </TouchableOpacity>
                           )}
                         </View>
-                        <Text style={sty.coverHintText}>Busca a capa no YouTube / YouTube Music e salva offline</Text>
+                        <Text style={sty.coverHintText}>Busca a capa no YT Music.</Text>
                       </View>
                     </View>
                   </View>
@@ -703,8 +695,8 @@ export default function ChordEditScreen() {
                     disabled={!name.trim()}
                     activeOpacity={0.8}
                   >
-                    <Text style={sty.primaryActionTxt}>Continuar para o Tom</Text>
-                    <Ionicons name="arrow-forward" size={18} color="#ffffff" />
+                    <Text style={sty.primaryActionTxt}>Continuar</Text>
+                    <Ionicons name="chevron-forward-outline" size={18} color="#ffffff" />
                   </TouchableOpacity>
                 </View>
               )}
@@ -713,7 +705,6 @@ export default function ChordEditScreen() {
               {subStep === 2 && (
                 <View style={sty.card}>
                   <View style={sty.sectionHeaderRow}>
-                    <Ionicons name="options-outline" size={20} color={colors.accent} />
                     <Text style={sty.sectionTitle}>Tom e Configurações</Text>
                   </View>
 
@@ -726,8 +717,8 @@ export default function ChordEditScreen() {
                       activeOpacity={0.7}
                     >
                       <View style={sty.toneSelectorInfo}>
-                        <Ionicons name="musical-notes" size={18} color={colors.accent} />
                         <Text style={sty.toneSelectorLabel}>Tom Selecionado</Text>
+                        <Ionicons name="musical-notes" size={18} color={colors.accent} />
                       </View>
 
                       <View style={sty.toneBadgeOfficial}>
@@ -741,8 +732,8 @@ export default function ChordEditScreen() {
                   <View style={sty.fieldGroup}>
                     <View style={sty.switchRow}>
                       <View style={{ flex: 1, paddingRight: 8 }}>
-                        <Text style={sty.switchLabel}>Adicionar Capotraste / Transposição?</Text>
-                        <Text style={sty.switchSub}>Ajuste de afinação de -12 a +12 semitons</Text>
+                        <Text style={sty.switchLabel}>Adicionar Transpos</Text>
+                        <Text style={sty.switchSub}>Ajuste de afinação em semitons</Text>
                       </View>
 
                       <View style={sty.yesNoToggle}>
@@ -797,7 +788,7 @@ export default function ChordEditScreen() {
                   <View style={sty.fieldGroup}>
                     <View style={sty.switchRow}>
                       <View style={{ flex: 1, paddingRight: 8 }}>
-                        <Text style={sty.switchLabel}>Timbres e Estilos?</Text>
+                        <Text style={sty.switchLabel}>Timbres e Estilos</Text>
                         <Text style={sty.switchSub}>Registros de teclado e ritmos</Text>
                       </View>
 
@@ -886,7 +877,7 @@ export default function ChordEditScreen() {
                       onPress={handleDeleteChord}
                       activeOpacity={0.8}
                     >
-                      <Ionicons name="trash-outline" size={18} color="#ef4444" />
+                      <Ionicons name="trash-outline" size={25} color={colors.text} />
                       <Text style={sty.deleteDangerTxt}>Excluir Esta Música</Text>
                     </TouchableOpacity>
                   ) : null}
@@ -906,7 +897,6 @@ export default function ChordEditScreen() {
               {subStep === 1 && (
                 <View style={sty.card}>
                   <View style={sty.sectionHeaderRow}>
-                    <Ionicons name="document-text-outline" size={20} color={colors.accent} />
                     <Text style={sty.sectionTitle}>Letras e Sessões</Text>
                   </View>
 
@@ -961,7 +951,7 @@ export default function ChordEditScreen() {
               {subStep === 2 && currentSection && (
                 <View style={sty.card}>
                   <View style={sty.sectionHeaderRow}>
-                    <Ionicons name="musical-notes" size={20} color={colors.accent} />
+                    <Ionicons name="musical-notes" size={26} color={colors.accent} />
                     <View style={{ flex: 1 }}>
                       <Text style={sty.sectionTitle}>Sessão {currentSectionIndex + 1} de {sections.length}</Text>
                       <Text style={sty.subStepHelper}>Tom: <Text style={{ color: colors.accent, fontWeight: '700' }}>{tone}</Text></Text>
@@ -982,9 +972,9 @@ export default function ChordEditScreen() {
                       }}
                       activeOpacity={0.7}
                     >
-                      <Ionicons name={keyboardMode === 'chords' ? 'keypad' : 'create-outline'} size={15} color={colors.accent} />
+                      <Ionicons name={keyboardMode === 'chords' ? 'keypad' : 'create-outline'} size={20} color={colors.accent} />
                       <Text style={sty.keyboardToggleTxt}>
-                        {keyboardMode === 'chords' ? 'Teclado Acordes' : 'Digitar Cifra'}
+                        {keyboardMode === 'chords' ? 'ACORDES' : 'DIGITAR'}
                       </Text>
                     </TouchableOpacity>
                   </View>
@@ -1019,7 +1009,7 @@ export default function ChordEditScreen() {
                     <View style={sty.singleSectionHeader}>
                       <Text style={sty.singleSectionTitleText}>{currentSection.title}</Text>
                       <Text style={sty.singleSectionIndicator}>
-                        {keyboardMode === 'chords' ? 'Modo Acordes (Teclado bloqueado)' : 'Modo Digitação'}
+                        {keyboardMode === 'chords' ? 'Modo Acordes' : 'Modo Digitação'}
                       </Text>
                     </View>
 
@@ -1037,33 +1027,14 @@ export default function ChordEditScreen() {
                     />
                   </View>
 
-                  {/* Navegação Entre Sessões */}
-                  <View style={sty.sectionNavButtonsRow}>
-                    <TouchableOpacity
-                      style={[sty.navSectionBtn, { opacity: currentSectionIndex > 0 ? 1 : 0.4 }]}
-                      onPress={() => setCurrentSectionIndex(prev => Math.max(0, prev - 1))}
-                      disabled={currentSectionIndex <= 0}
-                    >
-                      <Ionicons name="chevron-back" size={16} color={colors.text} />
-                      <Text style={sty.navSectionBtnTxt}>Sessão Anterior</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={[sty.navSectionBtn, { opacity: currentSectionIndex < sections.length - 1 ? 1 : 0.4 }]}
-                      onPress={() => setCurrentSectionIndex(prev => Math.min(sections.length - 1, prev + 1))}
-                      disabled={currentSectionIndex >= sections.length - 1}
-                    >
-                      <Text style={sty.navSectionBtnTxt}>Próxima Sessão</Text>
-                      <Ionicons name="chevron-forward" size={16} color={colors.text} />
-                    </TouchableOpacity>
-                  </View>
+                 
 
                   {/* Teclado de Acordes do Campo Harmônico */}
                   {keyboardMode === 'chords' && (
                     <View style={sty.chordKeyboardContainer}>
                       <View style={sty.chordKeyboardHeader}>
-                        <Text style={sty.chordKeyboardTitle}>Acordes no Tom de {tone}:</Text>
-                        <Text style={sty.chordKeyboardSub}>Toque para inserir no cursor ou segure para variações</Text>
+                        <Text style={sty.chordKeyboardTitle}>Campo Harmônico de {tone}:</Text>
+                        <Text style={sty.chordKeyboardSub}>Aperte e segure para ver variações</Text>
                       </View>
 
                       <View style={sty.chordsGrid}>
@@ -1079,9 +1050,7 @@ export default function ChordEditScreen() {
                             <Text style={sty.chordKeyTxt}>{ch}</Text>
                           </TouchableOpacity>
                         ))}
-                      </View>
-
-                      {/* Barra de Ações Rápidas: Espaço, Tab, Enter e Apagar */}
+                         {/* Barra de Ações Rápidas: Espaço, Tab, Enter e Apagar */}
                       <View style={sty.keyboardActionsRow}>
                         <TouchableOpacity
                           style={sty.spaceBarBtn}
@@ -1117,6 +1086,9 @@ export default function ChordEditScreen() {
                           <Text style={sty.keyActionTxt}>Apagar</Text>
                         </TouchableOpacity>
                       </View>
+                      </View>
+
+                     
 
                       {activeChordForVariations && (
                         <View style={sty.variationsWrap}>
@@ -1177,9 +1149,10 @@ export default function ChordEditScreen() {
 
       {/* Modal de Escolha de Tom */}
       <Modal visible={toneModal} transparent animationType="fade" onRequestClose={() => setToneModal(false)}>
+        <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
         <Pressable style={sty.modalBackdrop} onPress={() => setToneModal(false)}>
           <Pressable style={sty.modalCard} onPress={e => e.stopPropagation()}>
-            <Text style={sty.modalTitle}>Escolher Tom da Música</Text>
+            <Text style={sty.modalTitle}>SELECIONE O TOM</Text>
 
             <View style={sty.modalTabsRow}>
               <TouchableOpacity
@@ -1219,7 +1192,7 @@ export default function ChordEditScreen() {
             </View>
 
             <TouchableOpacity style={sty.modalCloseBtn} onPress={() => setToneModal(false)}>
-              <Text style={sty.modalCloseBtnTxt}>Fechar</Text>
+              <Text style={sty.modalCloseBtnTxt}>Selecionar</Text>
             </TouchableOpacity>
           </Pressable>
         </Pressable>
@@ -1238,11 +1211,10 @@ function makeStyles(c: any) {
     header: {
       flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
+      gap: 10,
       paddingHorizontal: 16,
       paddingVertical: 12,
-      borderBottomWidth: 1,
-      borderColor: c.border,
       backgroundColor: 'transparent',
     },
     backBtn: {
@@ -1256,25 +1228,25 @@ function makeStyles(c: any) {
     },
     stepNumberBadge: {
       backgroundColor: c.accent,
-      paddingHorizontal: 7,
-      paddingVertical: 2,
-      borderRadius: 10,
+      paddingHorizontal: 15,
+      paddingVertical: 0,
+      borderRadius: 20,
     },
     stepNumberBadgeTxt: {
       color: '#ffffff',
-      fontSize: 12,
-      fontWeight: '800',
+      fontSize: 16,
+      fontWeight: '600',
     },
     stepTitleText: {
-      fontSize: 16,
+      fontSize: 20,
       fontWeight: '700',
       color: c.text,
-      fontFamily: 'Inter_700Bold',
+      fontFamily: 'Inter_600Bold',
       flexShrink: 1,
     },
     deleteHeaderBtn: {
       padding: 6,
-      borderRadius: 8,
+      borderRadius: 20,
       backgroundColor: 'rgba(239, 68, 68, 0.12)',
     },
     deleteDangerBtn: {
@@ -1282,16 +1254,14 @@ function makeStyles(c: any) {
       alignItems: 'center',
       justifyContent: 'center',
       gap: 6,
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      backgroundColor: 'rgba(238, 9, 9, 0.8)',
       paddingVertical: 12,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: 'rgba(239, 68, 68, 0.25)',
+      borderRadius: 20,
       marginTop: 8,
       width: '100%',
     },
     deleteDangerTxt: {
-      color: '#ef4444',
+      color: c.text,
       fontWeight: '700',
       fontSize: 14,
     },
@@ -1303,7 +1273,7 @@ function makeStyles(c: any) {
       gap: 14,
     },
     card: {
-      borderRadius: 16,
+      borderRadius: 20,
       padding: 14,
       gap: 16,
       width: '100%',
@@ -1315,10 +1285,12 @@ function makeStyles(c: any) {
       paddingBottom: 10,
     },
     sectionTitle: {
-      fontSize: 15,
-      fontWeight: '700',
+      fontSize: 18,
+      fontWeight: '600',
       color: c.text,
       fontFamily: 'Inter_700Bold',
+      borderBottomWidth: 1,
+      borderBottomColor: c.accent,
     },
     subStepHelper: {
       fontSize: 12,
@@ -1330,11 +1302,12 @@ function makeStyles(c: any) {
       width: '100%',
     },
     label: {
-      fontSize: 11,
-      fontWeight: '700',
+      fontSize: 12,
+      fontWeight: '600',
       color: c.textSub,
       letterSpacing: 0.8,
       fontFamily: 'Inter_600SemiBold',
+      paddingBottom: 3,
     },
     subLabel: {
       fontSize: 11,
@@ -1344,7 +1317,7 @@ function makeStyles(c: any) {
     },
     input: {
       backgroundColor: c.input,
-      borderRadius: 10,
+      borderRadius: 20,
       paddingHorizontal: 12,
       paddingVertical: 10,
       fontSize: 14,
@@ -1358,7 +1331,7 @@ function makeStyles(c: any) {
       textAlignVertical: 'top',
     },
     lyricsEditor: {
-      minHeight: 260,
+      minHeight: 400,
       fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
       fontSize: 14,
       lineHeight: 22,
@@ -1380,8 +1353,8 @@ function makeStyles(c: any) {
       justifyContent: 'space-between',
       backgroundColor: c.input,
       paddingHorizontal: 14,
-      paddingVertical: 10,
-      borderRadius: 12,
+      paddingVertical: 5,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: c.border,
       width: '100%',
@@ -1404,7 +1377,7 @@ function makeStyles(c: any) {
       backgroundColor: c.card,
       paddingHorizontal: 14,
       paddingVertical: 6,
-      borderRadius: 16,
+      borderRadius: 30,
       borderWidth: 1.5,
       borderColor: c.accent,
     },
@@ -1434,7 +1407,7 @@ function makeStyles(c: any) {
     yesNoToggle: {
       flexDirection: 'row',
       backgroundColor: c.input,
-      borderRadius: 8,
+      borderRadius: 20,
       padding: 2,
       borderWidth: 1,
       borderColor: c.border,
@@ -1442,14 +1415,14 @@ function makeStyles(c: any) {
     yesNoBtn: {
       paddingHorizontal: 10,
       paddingVertical: 5,
-      borderRadius: 6,
+      borderRadius: 20,
     },
     yesNoBtnActive: {
       backgroundColor: c.accent,
     },
     yesNoTxt: {
-      fontSize: 11,
-      fontWeight: '600',
+      fontSize: 12,
+      fontWeight: '500',
       color: c.textSub,
     },
     yesNoTxtActive: {
@@ -1461,7 +1434,7 @@ function makeStyles(c: any) {
     capoStepperWrap: {
       marginTop: 6,
       backgroundColor: c.input,
-      borderRadius: 10,
+      borderRadius: 20,
       padding: 10,
       alignItems: 'center',
       gap: 6,
@@ -1523,16 +1496,16 @@ function makeStyles(c: any) {
     },
     quickTagBtn: {
       backgroundColor: c.input,
-      paddingHorizontal: 8,
+      paddingHorizontal: 10,
       paddingVertical: 5,
-      borderRadius: 6,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: c.border,
     },
     quickTagTxt: {
-      fontSize: 11,
-      fontWeight: '600',
-      color: c.accent,
+      fontSize: 12,
+      fontWeight: '500',
+      color: c.text,
     },
 
     // Teclado Toggle
@@ -1541,11 +1514,9 @@ function makeStyles(c: any) {
       alignItems: 'center',
       gap: 4,
       backgroundColor: c.input,
-      paddingHorizontal: 8,
-      paddingVertical: 5,
-      borderRadius: 8,
-      borderWidth: 1,
-      borderColor: c.border,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderRadius: 20,
     },
     keyboardToggleTxt: {
       fontSize: 11,
@@ -1682,7 +1653,6 @@ function makeStyles(c: any) {
 
     // Ações Rápidas do Teclado (Espaço, Tab, Enter, Apagar)
     keyboardActionsRow: {
-      flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
       marginTop: 4,
@@ -1692,6 +1662,7 @@ function makeStyles(c: any) {
       flex: 2,
       backgroundColor: c.card,
       paddingVertical: 10,
+      paddingHorizontal: 30,
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
@@ -1711,6 +1682,7 @@ function makeStyles(c: any) {
       gap: 4,
       backgroundColor: c.card,
       paddingVertical: 10,
+      paddingHorizontal: 30,
       borderRadius: 8,
       borderWidth: 1,
       borderColor: c.border,
@@ -1841,10 +1813,9 @@ function makeStyles(c: any) {
     // Modal de Escolha de Tom
     modalBackdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.65)',
       justifyContent: 'center',
       alignItems: 'center',
-      padding: 20,
+      backgroundColor: 'rgba(0,0,0,0.5)',
     },
     modalCard: {
       backgroundColor: c.card,
@@ -1858,15 +1829,15 @@ function makeStyles(c: any) {
       gap: 12,
     },
     modalTitle: {
-      fontSize: 16,
-      fontFamily: 'Inter_700Bold',
+      fontSize: 20,
+      fontFamily: 'Inter_600Bold',
       color: c.text,
       textAlign: 'center',
     },
     modalTabsRow: {
       flexDirection: 'row',
-      backgroundColor: c.input,
-      borderRadius: 8,
+      backgroundColor: c.accent,
+      borderRadius: 20,
       padding: 3,
       gap: 4,
     },
@@ -1874,7 +1845,7 @@ function makeStyles(c: any) {
       flex: 1,
       paddingVertical: 6,
       alignItems: 'center',
-      borderRadius: 6,
+      borderRadius: 20,
     },
     modalTabActive: {
       backgroundColor: c.card,
@@ -1897,32 +1868,29 @@ function makeStyles(c: any) {
     toneCellModal: {
       width: '22%',
       paddingVertical: 10,
-      borderRadius: 8,
+      borderRadius: 20,
       backgroundColor: c.input,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 1,
-      borderColor: c.border,
     },
     toneCellModalActive: {
       backgroundColor: c.accent,
       borderColor: c.accent,
     },
     toneCellModalTxt: {
-      fontSize: 14,
-      fontWeight: '700',
+      fontSize: 16,
+      fontWeight: '600',
       color: c.text,
     },
     toneCellModalTxtActive: {
       color: '#ffffff',
     },
     modalCloseBtn: {
-      backgroundColor: c.input,
       paddingVertical: 10,
       borderRadius: 10,
       alignItems: 'center',
       borderWidth: 1,
-      borderColor: c.border,
+      borderColor: c.text,
       marginTop: 4,
     },
     modalCloseBtnTxt: {
@@ -1951,15 +1919,14 @@ function makeStyles(c: any) {
     },
     searchCoverBtnTxt: {
       color: '#ffffff',
-      fontWeight: '700',
+      fontWeight: '500',
       fontSize: 13,
     },
     removeCoverBtn: {
       padding: 8,
       borderRadius: 8,
-      backgroundColor: c.card,
       borderWidth: 1,
-      borderColor: c.border,
+      borderColor: c.input,
       alignItems: 'center',
       justifyContent: 'center',
     },

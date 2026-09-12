@@ -1,16 +1,16 @@
 // Cifrei - Tema Dark e Light
 export const darkColors = {
   bg: '#1c1c1cff',   // fundo escuro principal elegante
-  card: '#1a1a1e',   // cards escuros modernos
+  card: '#3b3a3a',   // cards escuros modernos
   text: '#ffffff',   // texto principal branco
-  textSub: '#8e9297',   // texto secundario cinza
+  textSub: '#e7eaed',   // texto secundario cinza
   accent: '#f73d13ff',   // laranja vibrante destaque
   chord: '#f73d13ff',   // acordes destacados
   border: '#26282d',   // bordas sutis escuras
-  input: '#18191c',   // inputs escuros
+  input: '#ffffff1a',   // inputs escuros
   header: '#121214',   // header escuro
   headerText: '#ffffff',   // texto do header
-  placeholder: '#5c6068',   // placeholder
+  placeholder: '#e0e1e3e8',   // placeholder
   danger: '#ff5c75',   // vermelho/rosa suave para delete
 };
 
