@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import {
   View, Text, TextInput, FlatList, Modal,
-  TouchableOpacity, StyleSheet, Pressable, Image, KeyboardAvoidingView, Platform, Dimensions
+  TouchableOpacity, StyleSheet, Pressable, Image, KeyboardAvoidingView, Platform, useWindowDimensions
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,18 +9,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { createPlaylist, Playlist, addDatabaseListener, getPlaylists } from '@/lib/database';
 import { PlaylistCover } from '@/components/PlaylistCover';
-
-const GRID_PADDING = 40;
-const GRID_GAP = 20;
-const COVER_SIZE = Math.floor((Dimensions.get('window').width - GRID_PADDING * 2 - GRID_GAP) / 2);
+import { AppBackground } from '@/components/AppBackground';
 
 export default function PlaylistsScreen() {
   const { colors, isDark, toggleTheme } = useTheme();
   const router = useRouter();
+  const { width } = useWindowDimensions();
 
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [showAdd, setShowAdd] = useState(false);
   const [newPlaylistName, setNewPlaylistName] = useState('');
+
+  const effectiveWidth = Math.min(width, 600);
+  const coverSize = Math.max(120, Math.floor((effectiveWidth - 60) / 2));
 
   useFocusEffect(
     useCallback(() => {
@@ -42,10 +43,11 @@ export default function PlaylistsScreen() {
     }
   }
 
-  const sty = makeStyles(colors);
+  const sty = makeStyles(colors, coverSize);
 
   return (
     <SafeAreaView style={sty.container} edges={['top']}>
+      <AppBackground />
       <View style={sty.header}>
         <View style={sty.brandRow}>
           <Image source={require('@/assets/logo-name.png')} style={sty.brandImage} resizeMode="contain" />
@@ -66,7 +68,7 @@ export default function PlaylistsScreen() {
         keyExtractor={item => item.id}
         numColumns={2}
         columnWrapperStyle={sty.gridRow}
-        contentContainerStyle={{ padding: 30}}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 20, maxWidth: 600, width: '100%', alignSelf: 'center' }}
         ListEmptyComponent={
           <View style={sty.emptyWrap}>
             <Image source={require('@/assets/playlist-none.png')} style={sty.emptyStateImage} resizeMode="contain" />
@@ -81,7 +83,7 @@ export default function PlaylistsScreen() {
           >
             <PlaylistCover
               playlistId={item.id}
-              size={COVER_SIZE}
+              size={coverSize}
               borderRadius={14}
               fallback={
                 <View style={sty.coverFallback}>
@@ -139,28 +141,31 @@ export default function PlaylistsScreen() {
   );
 }
 
-function makeStyles(c: any) {
+function makeStyles(c: any, coverSize: number) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: 'transparent' },
+    container: { flex: 1, backgroundColor: c.bg },
     header: {
       flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-      backgroundColor: 'transparent', paddingHorizontal: 16, paddingVertical: 14,
+      paddingHorizontal: 16, paddingVertical: 14,
+      maxWidth: 600, width: '100%', alignSelf: 'center',
     },
     headerActions: { flexDirection: 'row', alignItems: 'center', gap: 14 },
     brandRow: { flexDirection: 'row', alignItems: 'center' },
     brandImage: { width: 160, height: 50 },
     iconBtn: { padding: 4 },
     gridRow: {
-      justifyContent: 'space-between',
-      paddingHorizontal: 4,
+      justifyContent: 'space-around',
+      gap: 12,
+      marginBottom: 12,
     },
     gridCard: {
-      width: COVER_SIZE,
+      width: coverSize,
       marginBottom: 16,
+      alignItems: 'center',
     },
     coverFallback: {
-      width: COVER_SIZE,
-      height: COVER_SIZE,
+      width: coverSize,
+      height: coverSize,
       borderRadius: 14,
       backgroundColor: c.card,
       alignItems: 'center',

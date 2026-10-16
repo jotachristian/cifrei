@@ -18,9 +18,10 @@ interface Seg { chord?: string; text: string; }
 
 // ── detection ──────────────────────────────────────────────────────────────
 
-// Permite combinacoes BR comuns: Am7, C7M, D7(9), G7(b9), Bm7b5, Cmaj7/G, F#m11, etc.
-const SUFFIX = '(?:m|M|maj|Maj|dim|°|º|aug|\\+|sus[24]?|add\\d+|[b#]\\d+|\\d+|\\([b#\\d,\\s]+\\))';
-const CHORD_TOKEN = new RegExp(`^[A-G][b#]?${SUFFIX}*(?:\\/[A-G][b#]?${SUFFIX}*)?$`);
+// Permite combinacoes BR comuns: Am7, C7M, D7M(9), G#7(4/9), Bm7b5, Cmaj7/G, F#m11, etc.
+// Sufixo permite parenteses com extensoes complexas, incluindo frações como (4/9).
+const SUFFIX = '(?:m|M|maj|Maj|dim|°|º|aug|\\+|sus[24]?|add\\d+|[b#]?\\d+|\\([b#\\d,/\\s]+\\))*';
+const CHORD_TOKEN = new RegExp(`^[A-G][b#]?${SUFFIX}(?:\\/[A-G][b#]?${SUFFIX})?$`);
 
 function tokensAreAllChords(s: string): boolean {
   const t = s.trim();
@@ -41,8 +42,22 @@ function unwrapChordBrackets(line: string): string | null {
   return lead + ' ' + inner + ' ' + trail;
 }
 
+/**
+ * Escape hatch: linha envolvida em (..) como "(E F#m7 B7 E)".
+ * Remove os parenteses externos e testa se o conteudo sao so acordes.
+ * Retorna a linha interna sem parenteses, ou null.
+ */
+function unwrapParenChords(line: string): string | null {
+  const m = line.match(/^(\s*)\((.+)\)(\s*)$/);
+  if (!m) return null;
+  const [, lead, inner, trail] = m;
+  if (!tokensAreAllChords(inner)) return null;
+  return lead + inner + trail;
+}
+
 function isChordLine(line: string): boolean {
   if (unwrapChordBrackets(line) !== null) return true;
+  if (unwrapParenChords(line) !== null) return true;
   return tokensAreAllChords(line);
 }
 
@@ -66,18 +81,28 @@ function chordPositions(line: string): Array<{ chord: string; pos: number }> {
 function mergeChordLyric(chordLine: string, lyricLine: string): Seg[] {
   const cp = chordPositions(chordLine);
   if (!cp.length) return [{ text: lyricLine }];
+
+  // Garante que a letra cubra ao menos a posição do último acorde +4 chars,
+  // evitando que acordes no final da linha fiquem com largura 0 e apareçam
+  // colados ao acorde anterior (ex: A em "D   G   A" sobre letra curta).
+  const lastChordEnd = (cp[cp.length - 1]?.pos ?? 0) + 4;
+  const padded =
+    lyricLine.length < lastChordEnd
+      ? lyricLine + '\u00A0'.repeat(lastChordEnd - lyricLine.length)
+      : lyricLine;
+
   const segs: Seg[] = [];
   let last = 0;
   cp.forEach(({ chord, pos }, i) => {
-    if (pos > last) segs.push({ text: lyricLine.slice(last, pos) });
-    const nextPos = cp[i + 1]?.pos ?? lyricLine.length;
+    if (pos > last) segs.push({ text: padded.slice(last, pos) });
+    const nextPos = cp[i + 1]?.pos ?? padded.length;
     segs.push({
       chord,
-      text: lyricLine.slice(Math.min(pos, lyricLine.length), Math.min(nextPos, lyricLine.length)),
+      text: padded.slice(Math.min(pos, padded.length), Math.min(nextPos, padded.length)),
     });
     last = nextPos;
   });
-  if (last < lyricLine.length) segs.push({ text: lyricLine.slice(last) });
+  if (last < padded.length) segs.push({ text: padded.slice(last) });
   return segs;
 }
 
@@ -188,7 +213,7 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
    *       chord Text  (fixed-height row)
    *       lyric Text
    */
-  const renderPair = (chordLine: string, lyricLine: string, key: number) => {
+  const renderPair = (chordLine: string, lyricLine: string, key: number, lyricFont: string = 'Inter_400Regular') => {
     const groups = groupSegs(buildSegs(chordLine, lyricLine));
     return (
       <View key={key} style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'flex-start' }}>
@@ -202,8 +227,8 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
                 <View style={{ height: chordRowH, justifyContent: 'flex-end' }}>
                   {seg.chord ? renderChordText(seg.chord, { paddingRight: fontSize * 0.5 }) : null}
                 </View>
-                {/* lyric text */}
-                <Text style={{ fontSize, color: colors.text, lineHeight, fontFamily: 'Inter_400Regular' }}>
+                {/* lyric text — negrito no refrão */}
+                <Text style={{ fontSize, color: colors.text, lineHeight, fontFamily: lyricFont }}>
                   {seg.text}
                 </Text>
               </View>
@@ -251,7 +276,8 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
     sections.push(currentSection);
   }
 
-  const renderSectionContent = (secLines: string[], secKey: number) => {
+  const renderSectionContent = (secLines: string[], secKey: number, isChorus: boolean) => {
+    const lyricFont = isChorus ? 'Inter_700Bold' : 'Inter_400Regular';
     const secNodes: React.ReactNode[] = [];
     let j = 0;
 
@@ -265,13 +291,14 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
       }
 
       if (isChordLine(line)) {
-        const chordLine = unwrapChordBrackets(line) ?? line;
+        // Unwrap [..] ou (..) se for linha de acordes entre parenteses/colchetes
+        const chordLine = unwrapChordBrackets(line) ?? unwrapParenChords(line) ?? line;
         const next = secLines[j + 1];
         const hasLyric = next !== undefined && next.trim() !== '' && !isChordLine(next) && !isSectionLine(next);
 
         if (hasLyric) {
           if (showLyrics) {
-            secNodes.push(renderPair(chordLine, next, j));
+            secNodes.push(renderPair(chordLine, next, j, lyricFont));
           } else {
             secNodes.push(renderCompactLine(chordLine, j));
           }
@@ -286,7 +313,7 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
       // Linha de letra pura
       if (showLyrics) {
         secNodes.push(
-          <Text key={`lyric-${j}`} style={{ fontSize, color: colors.text, lineHeight, fontFamily: 'Inter_400Regular' }}>
+          <Text key={`lyric-${j}`} style={{ fontSize, color: colors.text, lineHeight, fontFamily: lyricFont }}>
             {line}
           </Text>
         );
@@ -337,17 +364,14 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
                   marginBottom: 20,
                   paddingBottom: 4,
                   paddingTop: 4,                
-                  paddingLeft: 8,                   
-                  paddingRight: 8,
-                  backgroundColor: "#f73d13ff",
-                  borderRadius: 12,
-                  marginHorizontal: 2,
+                  borderBottomWidth: 1,
+                  borderBottomColor: "#f73d13ff",
                 }}
               >
                 <Text
                   style={{
                     fontSize,
-                    fontFamily: 'Inter_400Regular',
+                    fontFamily: 'Inter_700Bold',
                     color: colors.text,
                   }}
                 >
@@ -358,7 +382,7 @@ function ChordDisplay({ lyrics, semitones, showLyrics, fontSize, colors, onChord
 
             {/* Conteúdo da Sessão (Acordes e Letras) */}
             <View>
-              {renderSectionContent(sec.lines, secIdx)}
+              {renderSectionContent(sec.lines, secIdx, sec.isChorus)}
             </View>
           </View>
         );

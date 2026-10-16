@@ -11,6 +11,7 @@ import { useTheme } from '@/contexts/ThemeContext';
 import { getChord, updateChord, createChord, deleteChord, getAllChords, Chord, linkChordToPlaylist, updateChordCover, formatArtistName, findExistingChord } from '@/lib/database';
 import { MAJOR_TONES, MINOR_TONES, transposeTone } from '@/lib/transpose';
 import { ChordCover } from '@/components/ChordCover';
+import { AppBackground } from '@/components/AppBackground';
 import { searchAlbumCover, getYoutubeCoverUrl, cacheCoverImage } from '@/lib/coverService';
 import { extractYoutubeId, toYoutubeMusicUrl, getYoutubeThumbnailUrl } from '@/lib/youtube';
 
@@ -544,6 +545,7 @@ export default function ChordEditScreen() {
 
   return (
     <SafeAreaView style={sty.container}>
+      <AppBackground />
       {/* Header Superior */}
       <View style={sty.header}>
         <Pressable onPress={handleBack} style={sty.backBtn}>
@@ -656,6 +658,7 @@ export default function ChordEditScreen() {
                         <ChordCover
                           coverUrl={coverUrl}
                           coverLocalUri={coverLocalUri}
+                          externalLink={externalLink}
                           size={56}
                           borderRadius={12}
                           fallback={<Ionicons name="disc-outline" size={26} color={colors.accent} />}
@@ -1206,7 +1209,7 @@ function makeStyles(c: any) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'transparent',
+      backgroundColor: c.bg,
     },
     header: {
       flexDirection: 'row',
@@ -1215,7 +1218,6 @@ function makeStyles(c: any) {
       gap: 10,
       paddingHorizontal: 16,
       paddingVertical: 12,
-      backgroundColor: 'transparent',
     },
     backBtn: {
       padding: 6,

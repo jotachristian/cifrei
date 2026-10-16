@@ -18,11 +18,11 @@ export function toYoutubeMusicUrl(url: string): string {
   return `https://music.youtube.com/watch?v=${id}`;
 }
 
-// Obtém a imagem da capa/thumbnail em alta qualidade (16:9 widescreen sem barras pretas) diretamente dos servidores CDN do YouTube
+// Obtém a imagem da capa/thumbnail em qualidade confiável (16:9 widescreen sem barras pretas) diretamente dos servidores CDN do YouTube
 export function getYoutubeThumbnailUrl(urlOrId: string): string | null {
   const id = extractYoutubeId(urlOrId);
   if (!id) return null;
-  return `https://i.ytimg.com/vi/${id}/hq720.jpg`;
+  return `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
 }
 
 // Busca IDs de vídeos no YouTube a partir do nome da música/artista
@@ -62,7 +62,7 @@ export async function searchYoutubeCover(
   const selectedId = ids[resultIndex % ids.length];
   return {
     id: selectedId,
-    coverUrl: `https://i.ytimg.com/vi/${selectedId}/hq720.jpg`,
+    coverUrl: `https://i.ytimg.com/vi/${selectedId}/mqdefault.jpg`,
     musicUrl: `https://music.youtube.com/watch?v=${selectedId}`,
   };
 }

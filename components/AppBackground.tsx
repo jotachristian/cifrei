@@ -1,25 +1,24 @@
 import React from 'react';
-import { View, StyleSheet, Dimensions } from 'react-native';
+import { View, StyleSheet, useWindowDimensions, Platform } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
 
-const { width, height } = Dimensions.get('window');
-
 export function AppBackground() {
-  const { colors, isDark } = useTheme();
+  const { isDark } = useTheme();
+  const { width, height } = useWindowDimensions();
 
   return (
-    <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
-      {/* 1. Fundo Base Autêntico iOS (Branco no Light / Preto profundo no Dark) */}
+    <View style={[StyleSheet.absoluteFillObject, styles.rootContainer]} pointerEvents="none">
+      {/* 1. Fundo Base Sólido Opaque (Evita vazamento de camadas entre telas) */}
       <View
         style={[
           StyleSheet.absoluteFillObject,
-          { backgroundColor: isDark ? '#0a0a0d' : '#f6f7fb' },
+          { backgroundColor: isDark ? '#0f0f12' : '#f5f6fa' },
         ]}
       />
 
-      {/* 2. Orbs / Esferas de luz vermelha difusa para compor o fundo */}
+      {/* 2. Orbs / Esferas de luz vermelha difusa */}
       {/* Orb Topo Direito - Tom Vermelho / Vinho */}
       <View
         style={[
@@ -27,18 +26,18 @@ export function AppBackground() {
           {
             top: -height * 0.08,
             right: -width * 0.25,
-            width: width * 1.1,
-            height: width * 1.1,
-            borderRadius: (width * 1.1) / 2,
-            opacity: isDark ? 0.45 : 0.38,
+            width: Math.max(width * 1.05, 320),
+            height: Math.max(width * 1.05, 320),
+            borderRadius: Math.max(width * 1.05, 320) / 2,
+            opacity: isDark ? 0.50 : 0.40,
           },
         ]}
       >
         <LinearGradient
           colors={
             isDark
-              ? ['#b91c1c', '#7f1d1d', 'transparent'] // Vinho / Carmesim profundo no Dark
-              : ['#ff2d55', '#ff6b81', 'transparent'] // Vermelho vivo e rosa no Light -> pastel leitoso
+              ? ['#b91c1c', '#7f1d1d', 'transparent']
+              : ['#ff2d55', '#ff6b81', 'transparent']
           }
           style={StyleSheet.absoluteFillObject}
           start={{ x: 0.3, y: 0.2 }}
@@ -53,18 +52,18 @@ export function AppBackground() {
           {
             bottom: -height * 0.05,
             left: -width * 0.3,
-            width: width * 1.0,
-            height: width * 1.0,
-            borderRadius: (width * 1.0) / 2,
-            opacity: isDark ? 0.40 : 0.32,
+            width: Math.max(width * 0.95, 300),
+            height: Math.max(width * 0.95, 300),
+            borderRadius: Math.max(width * 0.95, 300) / 2,
+            opacity: isDark ? 0.42 : 0.34,
           },
         ]}
       >
         <LinearGradient
           colors={
             isDark
-              ? ['#831843', '#4c0519', 'transparent'] // Profundidade vinho/púrpura no Dark
-              : ['#ff477e', '#ffa8ba', 'transparent'] // Rosa pastel leitoso no Light
+              ? ['#831843', '#4c0519', 'transparent']
+              : ['#ff477e', '#ffa8ba', 'transparent']
           }
           style={StyleSheet.absoluteFillObject}
           start={{ x: 0.2, y: 0.2 }}
@@ -79,10 +78,10 @@ export function AppBackground() {
           {
             top: height * 0.3,
             left: -width * 0.2,
-            width: width * 0.8,
-            height: width * 0.8,
-            borderRadius: (width * 0.8) / 2,
-            opacity: isDark ? 0.30 : 0.25,
+            width: Math.max(width * 0.75, 260),
+            height: Math.max(width * 0.75, 260),
+            borderRadius: Math.max(width * 0.75, 260) / 2,
+            opacity: isDark ? 0.32 : 0.26,
           },
         ]}
       >
@@ -112,8 +111,8 @@ export function AppBackground() {
           StyleSheet.absoluteFillObject,
           {
             backgroundColor: isDark
-              ? 'rgba(10, 10, 13, 0.35)'
-              : 'rgba(255, 255, 255, 0.28)',
+              ? 'rgba(15, 15, 18, 0.30)'
+              : 'rgba(255, 255, 255, 0.25)',
           },
         ]}
       />
@@ -121,11 +120,23 @@ export function AppBackground() {
   );
 }
 
-const PlatformBlurIntensity = 75;
+const PlatformBlurIntensity = 80;
 
 const styles = StyleSheet.create({
+  rootContainer: {
+    overflow: 'hidden',
+    zIndex: 0,
+  },
   orb: {
     position: 'absolute',
     overflow: 'hidden',
+    ...(Platform.OS === 'web'
+      ? ({
+          filter: 'blur(60px)',
+          WebkitFilter: 'blur(60px)',
+          transform: 'translate3d(0, 0, 0)',
+        } as any)
+      : {}),
   },
 });
+

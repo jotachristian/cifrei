@@ -33,7 +33,7 @@ export const PlaylistCover: React.FC<PlaylistCoverProps> = ({
   }, [passedChords, playlistId]);
 
   const songsWithCovers = useMemo(() => {
-    return chords.filter(c => Boolean(c.cover_url || c.cover_local_uri));
+    return chords.filter(c => Boolean(c.cover_url || c.cover_local_uri || c.external_link));
   }, [chords]);
 
   // Se não houver nenhuma música com capa salva
@@ -63,7 +63,7 @@ export const PlaylistCover: React.FC<PlaylistCoverProps> = ({
       <View style={[{ width: size, height: size, borderRadius, overflow: 'hidden' }, style]}>
         <View style={styles.grid}>
           {displayList.map((c, idx) => {
-            const hasCover = Boolean(c.cover_url || c.cover_local_uri);
+            const hasCover = Boolean(c.cover_url || c.cover_local_uri || c.external_link);
             if (hasCover) {
               return (
                 <View key={c.id || idx} style={styles.quadrant}>
@@ -71,6 +71,7 @@ export const PlaylistCover: React.FC<PlaylistCoverProps> = ({
                     chordId={c.id}
                     coverUrl={c.cover_url}
                     coverLocalUri={c.cover_local_uri}
+                    externalLink={c.external_link}
                     size={halfSize}
                     borderRadius={0}
                     fallback={
@@ -109,6 +110,7 @@ export const PlaylistCover: React.FC<PlaylistCoverProps> = ({
         chordId={mainCover.id}
         coverUrl={mainCover.cover_url}
         coverLocalUri={mainCover.cover_local_uri}
+        externalLink={mainCover.external_link}
         size={size}
         borderRadius={borderRadius}
         fallback={fallback}

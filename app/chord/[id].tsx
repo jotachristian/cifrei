@@ -10,6 +10,7 @@ import { transposeTone, semitonesBetween, MAJOR_TONES, MINOR_TONES } from '@/lib
 import { getYoutubeThumbnailUrl } from '@/lib/youtube';
 import ChordDisplay from '@/components/ChordDisplay';
 import { ChordCover } from '@/components/ChordCover';
+import { AppBackground } from '@/components/AppBackground';
 
 const MIN_FONT = 10, MAX_FONT = 32;
 
@@ -218,7 +219,8 @@ export default function ChordScreen() {
 
   return (
     <SafeAreaView style={sty.container}>
-      <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={sty.scrollContent}>
+      <AppBackground />
+      <ScrollView ref={scrollRef} style={{ flex: 1 }} contentContainerStyle={sty.scrollContent} alwaysBounceVertical={false}>
 
         {/* Botão Voltar (fora das divs) */}
         <Pressable onPress={handleGoBack} style={sty.backBtn} hitSlop={8}>
@@ -228,18 +230,20 @@ export default function ChordScreen() {
         {/* Div 1 — Informações da Música (Capa à esquerda + Nome/Artista no centro + Tom à direita) */}
         <View style={sty.glassCard}>
           <View style={sty.songInfoRow}>
-            <ChordCover
-              chordId={chord.id}
-              coverUrl={effectiveCoverUrl}
-              coverLocalUri={chord.cover_local_uri}
-              size={68}
-              borderRadius={14}
-              fallback={
-                <View style={[sty.coverFallback, { width: 68, height: 68, borderRadius: 14 }]}>
-                  <Ionicons name="musical-notes" size={26} color={colors.textSub} />
-                </View>
-              }
-            />
+            <View style={sty.songThumb}>
+              {chord.cover_url || chord.cover_local_uri || chord.external_link ? (
+                <ChordCover
+                  chordId={chord.id}
+                  coverUrl={chord.cover_url}
+                  coverLocalUri={chord.cover_local_uri}
+                  externalLink={chord.external_link}
+                  size={65}
+                  fallback={<Ionicons name="musical-notes" size={22} color="#8e9297" />}
+                />
+              ) : (
+                <Ionicons name="musical-notes" size={22} color="#8e9297" />
+              )}
+            </View>
 
             <View style={sty.songInfoText}>
               <Text style={sty.songTitle} numberOfLines={1}>{chord.name}</Text>
@@ -410,13 +414,12 @@ export default function ChordScreen() {
 
 function makeStyles(c: any, isDark: boolean) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: 'transparent' },
+    container: { flex: 1, backgroundColor: c.bg },
     topHeaderRow: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 8,
       paddingVertical: 6,
-      backgroundColor: 'transparent',
       borderBottomColor: c.border,
     },
     backBtn: { paddingHorizontal: 10, paddingVertical: 8, alignSelf: 'flex-start', marginBottom: 8 },
@@ -475,7 +478,16 @@ function makeStyles(c: any, isDark: boolean) {
     songInfoText: {
       flex: 1,
       minWidth: 0,
+      alignItems: 'flex-start',
+    },
+    songThumb: {
+      width: 65,
+      height: 65,
+      borderRadius: 12,
+      backgroundColor: c.card,
       alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
     },
     coverFallback: {
       backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
@@ -488,11 +500,9 @@ function makeStyles(c: any, isDark: boolean) {
       flexDirection: 'row',
       gap: 5,
     },
-
-    moment: { fontSize: 11, fontFamily: 'Inter_700Bold', color: c.accent, marginBottom: 2 },
-    songTitle: { fontSize: 16, fontFamily: 'Inter_700Bold', color: c.text, marginBottom: 6 },
+    songTitle: { fontSize: 16, fontFamily: 'Inter_700Bold', color: c.text },
     metaRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 12 },
-    artist: { fontSize: 14, color: c.textSub, fontFamily: 'Inter_400Regular' },
+    artist: { fontSize: 12, color: c.textSub, fontFamily: 'Inter_400Regular' },
     transposHighlightBadge: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -524,7 +534,7 @@ function makeStyles(c: any, isDark: boolean) {
       flexDirection: 'row', alignItems: 'center',
       paddingHorizontal: 12, paddingVertical: 5,
       backgroundColor: c.accent, borderRadius: 12,
-       borderColor: c.accent,
+      borderColor: c.accent,
     },
     toneText: { fontSize: 13, fontFamily: 'Inter_700Bold' },
 

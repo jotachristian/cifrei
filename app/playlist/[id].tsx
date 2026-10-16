@@ -16,6 +16,7 @@ import {
 import { transposeTone } from '@/lib/transpose';
 import { ChordCover } from '@/components/ChordCover';
 import { PlaylistCover } from '@/components/PlaylistCover';
+import { AppBackground } from '@/components/AppBackground';
 
 // ─── Drag & Drop nativo (sem dependências externas) ───────────────────────────
 // Cada item mede sua própria posição; ao soltar, calculamos o índice de destino
@@ -175,7 +176,7 @@ function DraggableEditList({
 
 export default function PlaylistScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
   const router = useRouter();
   const [name, setName] = useState('Playlist');
   const [chords, setChords] = useState<ChordInPlaylist[]>([]);
@@ -319,11 +320,12 @@ export default function PlaylistScreen() {
           activeOpacity={0.7}
         >
           <View style={sty.songThumb}>
-            {item.cover_url || item.cover_local_uri ? (
+            {item.cover_url || item.cover_local_uri || item.external_link ? (
               <ChordCover
                 chordId={item.id}
                 coverUrl={item.cover_url}
                 coverLocalUri={item.cover_local_uri}
+                externalLink={item.external_link}
                 size={50}
                 borderRadius={12}
                 fallback={<Ionicons name="musical-notes" size={22} color="#8e9297" />}
@@ -400,7 +402,7 @@ export default function PlaylistScreen() {
          c.artist.toLowerCase().includes(chordQuery.toLowerCase())
   );
 
-  const sty = makeStyles(colors);
+  const sty = makeStyles(colors, isDark);
 
   // ─── Conteúdo do modo edição ─────────────────────────────────────────────────
   const editContent = Platform.OS === 'web' ? (
@@ -437,6 +439,7 @@ export default function PlaylistScreen() {
 
   return (
     <SafeAreaView style={sty.container}>
+      <AppBackground />
       <View style={sty.innerContent}>
         {/* TopBar */}
         <View style={sty.topBar}>
@@ -569,17 +572,16 @@ export default function PlaylistScreen() {
   );
 }
 
-function makeStyles(c: any) {
+function makeStyles(c: any, isDark: boolean) {
   return StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: 'transparent',
-      height: Platform.OS === 'web' ? ('100vh' as any) : '100%',
+      backgroundColor: c.bg,
     },
     innerContent: {
       flex: 1,
       width: '100%',
-      maxWidth: 900,
+      maxWidth: 700,
       alignSelf: 'center',
     },
     topBar: {
@@ -691,8 +693,23 @@ function makeStyles(c: any) {
     renameSaveBtn: { flex: 1, padding: 14, borderRadius: 12, backgroundColor: c.accent, alignItems: 'center', justifyContent: 'center' },
     renameSaveTxt: { color: '#ffffff', fontWeight: '700', fontSize: 15 },
 
-    fullModalOverlay: { flex: 1, backgroundColor: 'transparent', paddingTop: 40 },
-    fullModalBox: { flex: 1, backgroundColor: 'transparent', padding: 16 },
+    fullModalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.65)',
+      justifyContent: 'flex-end',
+    },
+    fullModalBox: {
+      height: '85%',
+      backgroundColor: c.bg,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: 20,
+      borderWidth: 1,
+      borderColor: c.border,
+      maxWidth: 700,
+      width: '100%',
+      alignSelf: 'center',
+    },
     fullModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
     fullModalTitle: { fontSize: 18, fontWeight: '700', color: c.text },
     searchRow: {

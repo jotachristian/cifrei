@@ -9,6 +9,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getAllChords, searchChords, Chord, ChordWithPlaylist, addDatabaseListener, createChord } from '@/lib/database';
 import { ChordCover } from '@/components/ChordCover';
+import { AppBackground } from '@/components/AppBackground';
 
 export default function ChordsScreen() {
   const { colors } = useTheme();
@@ -44,6 +45,7 @@ export default function ChordsScreen() {
 
   return (
     <SafeAreaView style={sty.container} edges={['top']}>
+      <AppBackground />
       <View style={sty.header}>
         <Text style={sty.headerTitle}>Acervo Geral</Text>
       </View>
@@ -69,7 +71,7 @@ export default function ChordsScreen() {
         key="search"
         data={displayList}
         keyExtractor={item => item.id}
-        contentContainerStyle={{ padding: 10 }}
+        contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 10, maxWidth: 600, width: '100%', alignSelf: 'center' }}
         ListEmptyComponent={
           <View style={sty.emptyWrap}>
             <Image source={require('@/assets/song-none.png')} style={sty.emptyStateImage} resizeMode="contain" />
@@ -85,11 +87,12 @@ export default function ChordsScreen() {
               onPress={() => router.push({ pathname: '/chord/[id]', params: { id: item.id } })}
               activeOpacity={0.7}
             >
-              {item.cover_url || item.cover_local_uri ? (
+              {item.cover_url || item.cover_local_uri || item.external_link ? (
                 <ChordCover
                   chordId={item.id}
                   coverUrl={item.cover_url}
                   coverLocalUri={item.cover_local_uri}
+                  externalLink={item.external_link}
                   size={50}
                   borderRadius={12}
                   style={{ marginRight: 12 }}
@@ -129,16 +132,18 @@ export default function ChordsScreen() {
 
 function makeStyles(c: any) {
   return StyleSheet.create({
-    container: { flex: 1, backgroundColor: 'transparent' },
+    container: { flex: 1, backgroundColor: c.bg },
     header: {
       flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-      backgroundColor: 'transparent', paddingHorizontal: 16, paddingVertical: 14,
+      paddingHorizontal: 16, paddingVertical: 14,
+      maxWidth: 600, width: '100%', alignSelf: 'center',
     },
     headerTitle: { fontSize: 20, fontWeight: '700', color: c.text },
     searchRow: {
       flexDirection: 'row', alignItems: 'center', margin: 15, marginTop: 0,
       paddingHorizontal: 18, paddingVertical: 11,
       backgroundColor: c.input, borderRadius: 28, borderWidth: 1, borderColor: c.border,
+      maxWidth: 600, width: '92%', alignSelf: 'center',
     },
     searchInput: { flex: 1, fontSize: 15, color: c.text },
     songCard: {

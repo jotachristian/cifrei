@@ -79,16 +79,16 @@ export default function RootLayout() {
 }
 
 function RootContent() {
-  const { isDark } = useTheme();
+  const { colors, isDark } = useTheme();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.bg, overflow: 'hidden' }}>
       <AppBackground />
       <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor="transparent" translucent />
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: 'transparent' },
+          contentStyle: { backgroundColor: colors.bg },
           animation: 'none',
           gestureEnabled: false,
         }}
