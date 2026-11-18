@@ -17,6 +17,7 @@ import { transposeTone } from '@/lib/transpose';
 import { ChordCover } from '@/components/ChordCover';
 import { PlaylistCover } from '@/components/PlaylistCover';
 import { AppBackground } from '@/components/AppBackground';
+import { EVENT_CATEGORIES, getCategoryConfig } from '@/lib/events';
 
 // ─── Drag & Drop nativo (sem dependências externas) ───────────────────────────
 // Cada item mede sua própria posição; ao soltar, calculamos o índice de destino
@@ -179,10 +180,14 @@ export default function PlaylistScreen() {
   const { colors, isDark } = useTheme();
   const router = useRouter();
   const [name, setName] = useState('Playlist');
+  const [description, setDescription] = useState('');
+  const [category, setCategory] = useState<string | undefined>(undefined);
   const [chords, setChords] = useState<ChordInPlaylist[]>([]);
   const [showMenu, setShowMenu] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [renameInput, setRenameInput] = useState('');
+  const [renameDescInput, setRenameDescInput] = useState('');
+  const [renameCategoryInput, setRenameCategoryInput] = useState<string | undefined>(undefined);
   const [isEditingList, setIsEditingList] = useState(false);
   const [showAddChord, setShowAddChord] = useState(false);
   const [allChords, setAllChords] = useState<Chord[]>([]);
@@ -197,6 +202,8 @@ export default function PlaylistScreen() {
         if (isEditingRef.current) return;
         const p = getPlaylist(id);
         setName(p?.name ?? 'Playlist');
+        setDescription(p?.description ?? '');
+        setCategory(p?.category);
         setChords(getPlaylistChords(id));
         setAllChords(getAllChords().sort((a, b) => a.name.localeCompare(b.name)));
       };
@@ -217,6 +224,8 @@ export default function PlaylistScreen() {
     setIsEditingList(false);
     const p = getPlaylist(id);
     setName(p?.name ?? 'Playlist');
+    setDescription(p?.description ?? '');
+    setCategory(p?.category);
     setChords(getPlaylistChords(id));
   }
 
@@ -241,8 +250,10 @@ export default function PlaylistScreen() {
 
   function handleRename() {
     if (renameInput.trim()) {
-      updatePlaylist(id, renameInput.trim(), '');
+      updatePlaylist(id, renameInput.trim(), renameDescInput.trim(), renameCategoryInput);
       setName(renameInput.trim());
+      setDescription(renameDescInput.trim());
+      setCategory(renameCategoryInput);
     }
     setShowRename(false);
   }
@@ -288,24 +299,38 @@ export default function PlaylistScreen() {
   }
 
   // ─── Header Hero ────────────────────────────────────────────────────────────
-  const renderListHeader = () => (
-    <View style={sty.heroHeader}>
-      <View style={sty.coverShadowWrapper}>
-        <PlaylistCover
-          playlistId={id}
-          chords={chords}
-          size={170}
-          borderRadius={18}
-        />
+  const renderListHeader = () => {
+    const cat = getCategoryConfig(category);
+    return (
+      <View style={sty.heroHeader}>
+        <View style={sty.coverShadowWrapper}>
+          <PlaylistCover
+            playlistId={id}
+            chords={chords}
+            size={170}
+            borderRadius={18}
+          />
+        </View>
+        <Text style={sty.heroTitle} numberOfLines={2}>{name}</Text>
+        <View style={sty.heroMetaRow}>
+          {cat ? (
+            <View style={[sty.categoryBadgeSmall, { backgroundColor: `${cat.color}25` }]}>
+              <Ionicons name={cat.icon as any} size={11} color={cat.color} />
+              <Text style={[sty.categoryBadgeSmallTxt, { color: cat.color }]}>
+                {cat.label}
+              </Text>
+            </View>
+          ) : null}
+          <Text style={sty.heroMetaCount}>
+            {chords.length} {chords.length === 1 ? 'música' : 'músicas'}
+          </Text>
+        </View>
+        {description ? (
+          <Text style={sty.heroDesc} numberOfLines={2}>{description}</Text>
+        ) : null}
       </View>
-      <Text style={sty.heroTitle} numberOfLines={2}>{name}</Text>
-      <View style={sty.heroMetaRow}>
-        <Text style={sty.heroMetaCount}>
-          {chords.length} {chords.length === 1 ? 'música' : 'músicas'}
-        </Text>
-      </View>
-    </View>
-  );
+    );
+  };
 
   // ─── Item modo normal ────────────────────────────────────────────────────────
   function renderNormalItem({ item, index }: { item: ChordInPlaylist; index: number }) {
@@ -321,7 +346,7 @@ export default function PlaylistScreen() {
         >
           <View style={sty.songThumb}>
             {item.cover_url || item.cover_local_uri || item.external_link ? (
-              <ChordCover
+             <ChordCover
                 chordId={item.id}
                 coverUrl={item.cover_url}
                 coverLocalUri={item.cover_local_uri}
@@ -492,9 +517,18 @@ export default function PlaylistScreen() {
               <Ionicons name="create-outline" size={22} color={colors.text} style={sty.menuIcon} />
               <Text style={sty.menuTxt}>Editar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={sty.menuItem} onPress={() => { setShowMenu(false); setRenameInput(name); setShowRename(true); }}>
-              <Ionicons name="text-outline" size={22} color={colors.text} style={sty.menuIcon} />
-              <Text style={sty.menuTxt}>Renomear</Text>
+            <TouchableOpacity
+              style={sty.menuItem}
+              onPress={() => {
+                setShowMenu(false);
+                setRenameInput(name);
+                setRenameDescInput(description);
+                setRenameCategoryInput(category);
+                setShowRename(true);
+              }}
+            >
+              <Ionicons name="settings-outline" size={22} color={colors.text} style={sty.menuIcon} />
+              <Text style={sty.menuTxt}>Configurar</Text>
             </TouchableOpacity>
             <TouchableOpacity style={sty.menuItem} onPress={confirmDelete}>
               <Ionicons name="trash-outline" size={22} color={colors.danger} style={sty.menuIcon} />
@@ -504,26 +538,94 @@ export default function PlaylistScreen() {
         </Pressable>
       </Modal>
 
-      {/* Modal Renomear */}
+      {/* Modal Editar Informações */}
       <Modal visible={showRename} transparent animationType="fade">
         <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={sty.modalOverlay}>
           <View style={sty.renameCard}>
-            <Text style={sty.renameTitle}>Renomear</Text>
-            <TextInput
-              style={sty.renameInput}
-              placeholder="Nome da playlist"
-              placeholderTextColor={colors.placeholder}
-              value={renameInput}
-              onChangeText={setRenameInput}
-              maxLength={50}
-              autoFocus
-            />
-            <Text style={sty.renameCharCounter}>{renameInput.length} / 50</Text>
+            <Text style={sty.renameTitle}>Editar Repertório</Text>
+
+            <View style={{ gap: 4 }}>
+              <Text style={sty.fieldLabel}>NOME DO REPERTÓRIO *</Text>
+              <TextInput
+                style={sty.renameInput}
+                placeholder="Nome da playlist"
+                placeholderTextColor={colors.placeholder}
+                value={renameInput}
+                onChangeText={setRenameInput}
+                maxLength={50}
+                autoFocus
+              />
+              <Text style={sty.renameCharCounter}>{renameInput.length} / 50</Text>
+            </View>
+
+            <View style={{ gap: 4, marginBottom: 12 }}>
+              <Text style={sty.fieldLabel}>DESCRIÇÃO (OPCIONAL)</Text>
+              <TextInput
+                style={[sty.renameInput, { minHeight: 56, textAlignVertical: 'top' }]}
+                placeholder="Ex: Repertório de Domingo, Comunhão..."
+                placeholderTextColor={colors.placeholder}
+                value={renameDescInput}
+                onChangeText={setRenameDescInput}
+                maxLength={120}
+                multiline
+                numberOfLines={2}
+              />
+            </View>
+
+            <View style={{ gap: 6, marginBottom: 16 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                <Text style={sty.fieldLabel}>TIPO DE EVENTO</Text>
+                <Text style={{ fontSize: 11, color: colors.textSub, fontStyle: 'italic' }}>(opcional)</Text>
+              </View>
+
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+                {EVENT_CATEGORIES.map(cat => {
+                  const isSelected = renameCategoryInput === cat.id;
+                  return (
+                    <TouchableOpacity
+                      key={cat.id}
+                      style={[
+                        sty.eventOptionChip,
+                        isSelected && { backgroundColor: `${cat.color}25`, borderColor: cat.color }
+                      ]}
+                      onPress={() => {
+                        setRenameCategoryInput(prev => prev === cat.id ? undefined : cat.id);
+                      }}
+                      activeOpacity={0.7}
+                    >
+                      <Ionicons
+                        name={cat.icon as any}
+                        size={12}
+                        color={isSelected ? cat.color : colors.textSub}
+                      />
+                      <Text
+                        style={[
+                          sty.eventOptionText,
+                          isSelected && { color: cat.color, fontWeight: '700' }
+                        ]}
+                      >
+                        {cat.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
             <View style={sty.renameBtns}>
-              <TouchableOpacity style={sty.renameCancelBtn} onPress={() => { setShowRename(false); setRenameInput(''); }} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={sty.renameCancelBtn}
+                onPress={() => { setShowRename(false); setRenameInput(''); setRenameDescInput(''); setRenameCategoryInput(undefined); }}
+                activeOpacity={0.8}
+              >
                 <Text style={sty.renameCancelTxt}>Cancelar</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[sty.renameSaveBtn, { opacity: renameInput.trim() ? 1 : 0.4 }]} onPress={handleRename} disabled={!renameInput.trim()} activeOpacity={0.8}>
+              <TouchableOpacity
+                style={[sty.renameSaveBtn, { opacity: renameInput.trim() ? 1 : 0.4 }]}
+                onPress={handleRename}
+                disabled={!renameInput.trim()}
+                activeOpacity={0.8}
+              >
                 <Text style={sty.renameSaveTxt}>Salvar</Text>
               </TouchableOpacity>
             </View>
@@ -735,5 +837,18 @@ function makeStyles(c: any, isDark: boolean) {
     },
     songResultName: { fontSize: 15, fontWeight: '600', color: c.text },
     songResultSub: { fontSize: 12, color: c.textSub, marginTop: 2 },
+    fieldLabel: { fontSize: 11, fontWeight: '700', color: c.textSub, letterSpacing: 0.5 },
+    eventOptionChip: {
+      flexDirection: 'row', alignItems: 'center', gap: 5,
+      paddingHorizontal: 10, paddingVertical: 6, borderRadius: 10,
+      backgroundColor: c.input, borderWidth: 1, borderColor: c.border,
+    },
+    eventOptionText: { fontSize: 12, color: c.text, fontWeight: '500' },
+    categoryBadgeSmall: {
+      flexDirection: 'row', alignItems: 'center', gap: 4,
+      paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6, marginRight: 8,
+    },
+    categoryBadgeSmallTxt: { fontSize: 11, fontWeight: '700' },
+    heroDesc: { fontSize: 13, color: c.textSub, textAlign: 'center', marginTop: 4, maxWidth: 320 },
   });
 }

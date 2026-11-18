@@ -88,7 +88,10 @@ function RootContent() {
       <Stack
         screenOptions={{
           headerShown: false,
-          contentStyle: { backgroundColor: colors.bg },
+          // Fundo transparente para herdar o AppBackground do container pai.
+          // Cada tela precisa ter seu próprio fundo (SafeAreaView com backgroundColor: c.bg)
+          // para cobrir completamente a tela anterior e evitar sobreposição.
+          contentStyle: { backgroundColor: 'transparent' },
           animation: 'none',
           gestureEnabled: false,
         }}

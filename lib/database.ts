@@ -2,7 +2,7 @@ import { collection, onSnapshot, doc, setDoc, deleteDoc, updateDoc } from 'fireb
 import { db } from './firebase';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-export interface Playlist { id: string; name: string; description: string; sort_order: number; created_at: number; }
+export interface Playlist { id: string; name: string; description: string; sort_order: number; created_at: number; category?: string; }
 export interface Chord {
   id: string;
   name: string;
@@ -213,10 +213,18 @@ export function getPlaylist(id: string): Playlist | null {
   return playlists.find(p => p.id === id) || null;
 }
 
-export function createPlaylist(name: string, description: string): string {
+export function createPlaylist(name: string, description: string = '', category?: string): string {
   const id = genId();
   const sort_order = playlists.length > 0 ? Math.max(...playlists.map(p => p.sort_order)) + 1 : 0;
-  const p: Playlist & { _secret: string } = { id, name, description, sort_order, created_at: Date.now(), _secret: 'sappinessvocationswingingtreachery8targetnative2026$' };
+  const p: Playlist & { _secret: string } = {
+    id,
+    name,
+    description: description || '',
+    sort_order,
+    created_at: Date.now(),
+    category: category || undefined,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$',
+  };
   playlists.push(p);
   setDoc(doc(db, 'playlists', id), p).catch(() => {});
   saveToCache();
@@ -224,15 +232,68 @@ export function createPlaylist(name: string, description: string): string {
   return id;
 }
 
-export function updatePlaylist(id: string, name: string, description: string): void {
+export function updatePlaylist(id: string, name: string, description: string = '', category?: string): void {
   const p = playlists.find(p => p.id === id);
   if (p) {
     p.name = name;
     p.description = description;
+    if (category !== undefined) {
+      p.category = category || undefined;
+    }
     saveToCache();
     notify();
   }
-  updateDoc(doc(db, 'playlists', id), { name, description, _secret: 'sappinessvocationswingingtreachery8targetnative2026$' }).catch(() => {});
+  const payload: Record<string, any> = {
+    name,
+    description,
+    _secret: 'sappinessvocationswingingtreachery8targetnative2026$',
+  };
+  if (category !== undefined) {
+    payload.category = category || '';
+  }
+  updateDoc(doc(db, 'playlists', id), payload).catch(() => {});
+}
+
+export function getPlaylistChordsCount(playlistId: string): number {
+  return playlist_chords.filter(l => l.playlist_id === playlistId).length;
+}
+
+/**
+ * Cria ou recupera uma playlist automática para o artista,
+ * vinculando todas as músicas desse artista registradas no acervo.
+ */
+export function createOrGetArtistPlaylist(artistName: string): string {
+  const cleanArtist = formatArtistName(artistName).trim();
+  if (!cleanArtist) return '';
+
+  // 1. Procura se já existe uma playlist deste artista
+  let pl = playlists.find(p => p.name.toLowerCase() === cleanArtist.toLowerCase());
+  let playlistId = pl ? pl.id : '';
+
+  // 2. Se não existir, cria com a categoria 'artistas'
+  if (!playlistId) {
+    playlistId = createPlaylist(cleanArtist, `Todas as músicas de ${cleanArtist}`, 'artistas');
+  }
+
+  // 3. Pega todas as músicas desse artista cadastradas no acervo
+  const artistChords = chords.filter(
+    c => formatArtistName(c.artist || '').toLowerCase() === cleanArtist.toLowerCase()
+  );
+
+  // 4. Vincula as músicas do artista que ainda não estejam na playlist
+  const existingLinks = playlist_chords.filter(l => l.playlist_id === playlistId);
+  const existingChordIds = new Set(existingLinks.map(l => l.chord_id));
+
+  let currentSortOrder = existingLinks.length > 0 ? Math.max(...existingLinks.map(l => l.sort_order)) + 1 : 0;
+
+  for (const chord of artistChords) {
+    if (!existingChordIds.has(chord.id)) {
+      linkChordToPlaylist(chord.id, playlistId, { sortOrder: currentSortOrder });
+      currentSortOrder++;
+    }
+  }
+
+  return playlistId;
 }
 
 export function deletePlaylist(id: string): void {

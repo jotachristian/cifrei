@@ -14,6 +14,7 @@ import { ChordCover } from '@/components/ChordCover';
 import { AppBackground } from '@/components/AppBackground';
 import { searchAlbumCover, getYoutubeCoverUrl, cacheCoverImage } from '@/lib/coverService';
 import { extractYoutubeId, toYoutubeMusicUrl, getYoutubeThumbnailUrl } from '@/lib/youtube';
+import { importFromCifraClub, parseCifraClubUrl } from '@/lib/cifraClubService';
 
 // Tabela de Campo Harmônico para o Teclado de Acordes
 const HARMONIC_FIELDS: Record<string, string[]> = {
@@ -184,6 +185,12 @@ export default function ChordEditScreen() {
   const [cursorPos, setCursorPos] = useState({ start: 0, end: 0 });
   const sectionInputRef = useRef<TextInput>(null);
 
+  // Modal de importação do Cifra Club
+  const [cifraClubModalVisible, setCifraClubModalVisible] = useState(false);
+  const [cifraClubUrl, setCifraClubUrl] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+
   const existingArtists = useMemo(() => {
     const all = getAllChords();
     const map = new Map<string, string>();
@@ -341,6 +348,41 @@ export default function ChordEditScreen() {
   function handleSelectTone(t: string) {
     setTone(t);
     setToneModal(false);
+  }
+
+  async function handleImportCifraClub() {
+    if (!cifraClubUrl.trim()) {
+      setImportError('Cole um link do Cifra Club para continuar.');
+      return;
+    }
+    if (!parseCifraClubUrl(cifraClubUrl.trim())) {
+      setImportError('Link inválido. Use uma URL como:\nhttps://www.cifraclub.com.br/artista/musica/');
+      return;
+    }
+
+    setIsImporting(true);
+    setImportError('');
+    try {
+      const result = await importFromCifraClub(cifraClubUrl.trim());
+
+      // Preenche campos automaticamente se ainda estiverem vazios
+      if (!name.trim() && result.name) setName(result.name);
+      if (!artist.trim() && result.artist) setArtist(result.artist);
+      if (result.tone) {
+        setTone(result.tone);
+        setToneTab(result.tone.endsWith('m') ? 'minor' : 'major');
+      }
+
+      // Sempre substitui/preenche a cifra
+      setLyrics(result.lyrics);
+
+      setCifraClubModalVisible(false);
+      setCifraClubUrl('');
+    } catch (err: any) {
+      setImportError(err?.message || 'Erro desconhecido ao importar a cifra.');
+    } finally {
+      setIsImporting(false);
+    }
   }
 
   function handleNextSubStep() {
@@ -903,7 +945,17 @@ export default function ChordEditScreen() {
                     <Text style={sty.sectionTitle}>Letras e Sessões</Text>
                   </View>
 
-                  {/* Tags Rápidas */}
+                  {/* Importar do Cifra Club */}
+                  <TouchableOpacity
+                    style={sty.cifraClubImportBtn}
+                    onPress={() => { setCifraClubUrl(''); setImportError(''); setCifraClubModalVisible(true); }}
+                    activeOpacity={0.8}
+                  >
+                    <Ionicons name="cloud-download-outline" size={18} color="#ffffff" />
+                    <Text style={sty.cifraClubImportBtnTxt}>Importar do Cifra Club</Text>
+                  </TouchableOpacity>
+
+                  {/* Tags Rápidas
                   <View style={sty.quickTagsRow}>
                     {['[Intro]', '[Parte 1]', '[Parte 2]', '[Pré-Refrão]', '[Refrão]', '[Ponte]', '[Solo]', '[Final]'].map((tag) => (
                       <TouchableOpacity
@@ -916,7 +968,7 @@ export default function ChordEditScreen() {
                         <Text style={sty.quickTagTxt}>{tag}</Text>
                       </TouchableOpacity>
                     ))}
-                  </View>
+                  </View> */}
 
                   <TextInput
                     style={[sty.input, sty.lyricsEditor]}
@@ -1150,8 +1202,99 @@ export default function ChordEditScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
+      {/* ===== Modal de Importação do Cifra Club ===== */}
+      <Modal
+        visible={cifraClubModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={() => { if (!isImporting) setCifraClubModalVisible(false); }}
+      >
+        <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
+        <Pressable
+          style={sty.modalBackdrop}
+          onPress={() => { if (!isImporting) setCifraClubModalVisible(false); }}
+        >
+          <Pressable style={sty.cifraClubModalCard} onPress={e => e.stopPropagation()}>
+            {/* Header */}
+            <View style={sty.cifraClubModalHeader}>
+              <Ionicons name="cloud-download-outline" size={22} color={colors.accent} />
+              <Text style={sty.cifraClubModalTitle}>Importar do Cifra Club</Text>
+            </View>
+
+            <Text style={sty.cifraClubModalDesc}>
+              Cole o link de qualquer cifra do Cifra Club. A letra, acordes, tom e artista serão importados automaticamente.
+            </Text>
+
+            {/* Input URL */}
+            <View style={sty.cifraClubUrlInputWrap}>
+              <Ionicons name="link-outline" size={16} color={colors.placeholder} style={{ marginRight: 6 }} />
+              <TextInput
+                style={sty.cifraClubUrlInput}
+                placeholder="https://www.cifraclub.com.br/artista/musica/"
+                placeholderTextColor={colors.placeholder}
+                value={cifraClubUrl}
+                onChangeText={(t) => { setCifraClubUrl(t); setImportError(''); }}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="url"
+                editable={!isImporting}
+              />
+              {cifraClubUrl.length > 0 && !isImporting && (
+                <Pressable onPress={() => { setCifraClubUrl(''); setImportError(''); }}>
+                  <Ionicons name="close-circle" size={16} color={colors.placeholder} />
+                </Pressable>
+              )}
+            </View>
+
+            {/* Erro */}
+            {importError.length > 0 && (
+              <View style={sty.cifraClubErrorWrap}>
+                <Ionicons name="alert-circle-outline" size={15} color="#ef4444" />
+                <Text style={sty.cifraClubErrorTxt}>{importError}</Text>
+              </View>
+            )}
+
+            {/* Dica */}
+            <Text style={sty.cifraClubHint}>
+              💡 O tom, artista e nome da música serão preenchidos automaticamente caso ainda não tenham sido inseridos.
+            </Text>
+
+            {/* Botões */}
+            <View style={sty.cifraClubModalActions}>
+              <TouchableOpacity
+                style={sty.cifraClubCancelBtn}
+                onPress={() => setCifraClubModalVisible(false)}
+                disabled={isImporting}
+                activeOpacity={0.7}
+              >
+                <Text style={sty.cifraClubCancelTxt}>Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[sty.cifraClubConfirmBtn, isImporting && { opacity: 0.65 }]}
+                onPress={handleImportCifraClub}
+                disabled={isImporting}
+                activeOpacity={0.8}
+              >
+                {isImporting ? (
+                  <>
+                    <Ionicons name="sync-outline" size={16} color="#ffffff" />
+                    <Text style={sty.cifraClubConfirmTxt}>Importando...</Text>
+                  </>
+                ) : (
+                  <>
+                    <Ionicons name="cloud-download-outline" size={16} color="#ffffff" />
+                    <Text style={sty.cifraClubConfirmTxt}>Importar Cifra</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       {/* Modal de Escolha de Tom */}
-      <Modal visible={toneModal} transparent animationType="fade" onRequestClose={() => setToneModal(false)}>
+      <Modal visible={toneModal} transparent animationType="fade" onRequestClose={() => setToneModal(false)}>        
         <BlurView intensity={60} tint="dark" style={StyleSheet.absoluteFill} />
         <Pressable style={sty.modalBackdrop} onPress={() => setToneModal(false)}>
           <Pressable style={sty.modalCard} onPress={e => e.stopPropagation()}>
@@ -1935,6 +2078,117 @@ function makeStyles(c: any) {
     coverHintText: {
       fontSize: 11,
       color: c.textSub,
+    },
+
+    // ── Importação Cifra Club ──────────────────────────────────────────────
+    cifraClubImportBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 8,
+      backgroundColor: '#e8520a',
+      paddingVertical: 11,
+      paddingHorizontal: 16,
+      borderRadius: 14,
+    },
+    cifraClubImportBtnTxt: {
+      color: '#ffffff',
+      fontWeight: '700',
+      fontSize: 14,
+    },
+    cifraClubModalCard: {
+      backgroundColor: c.card,
+      borderRadius: 24,
+      padding: 22,
+      marginHorizontal: 20,
+      gap: 14,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.3,
+      shadowRadius: 8,
+      elevation: 8,
+    },
+    cifraClubModalHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    cifraClubModalTitle: {
+      fontSize: 17,
+      fontWeight: '700',
+      color: c.text,
+    },
+    cifraClubModalDesc: {
+      fontSize: 13,
+      color: c.textSub,
+      lineHeight: 19,
+    },
+    cifraClubUrlInputWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: c.input,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    cifraClubUrlInput: {
+      flex: 1,
+      fontSize: 13,
+      color: c.text,
+    },
+    cifraClubErrorWrap: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 6,
+      backgroundColor: 'rgba(239,68,68,0.1)',
+      borderRadius: 10,
+      padding: 10,
+    },
+    cifraClubErrorTxt: {
+      flex: 1,
+      fontSize: 12,
+      color: '#ef4444',
+      lineHeight: 17,
+    },
+    cifraClubHint: {
+      fontSize: 12,
+      color: c.textSub,
+      lineHeight: 17,
+    },
+    cifraClubModalActions: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 2,
+    },
+    cifraClubCancelBtn: {
+      flex: 1,
+      alignItems: 'center',
+      paddingVertical: 11,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    cifraClubCancelTxt: {
+      fontSize: 14,
+      color: c.text,
+      fontWeight: '500',
+    },
+    cifraClubConfirmBtn: {
+      flex: 2,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: '#e8520a',
+      paddingVertical: 11,
+      borderRadius: 12,
+    },
+    cifraClubConfirmTxt: {
+      fontSize: 14,
+      color: '#ffffff',
+      fontWeight: '700',
     },
   });
 }

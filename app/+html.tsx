@@ -25,11 +25,19 @@ html, body, #root {
   height: 100%;
   margin: 0;
   padding: 0;
-  overflow-x: hidden;
+  /* Bloqueia scroll horizontal na raiz — resolve o overflow dos orbs do AppBackground */
+  overflow: hidden;
   overscroll-behavior: none;
   -webkit-text-size-adjust: 100%;
 }
 * {
   box-sizing: border-box;
+  /* Garante que nenhum elemento filho quebre o layout horizontal */
+  max-width: 100vw;
+}
+/* Permite scroll vertical apenas no container principal do Expo Router */
+#root > div {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 `;

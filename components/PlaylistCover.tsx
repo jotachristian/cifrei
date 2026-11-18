@@ -54,54 +54,6 @@ export const PlaylistCover: React.FC<PlaylistCoverProps> = ({
     );
   }
 
-  // Se houver 4 ou mais músicas na playlist ou 4 ou mais capas, exibe o mosaico 2x2
-  if (chords.length >= 4) {
-    const displayList = chords.slice(0, 4);
-    const halfSize = Math.floor(size / 2);
-
-    return (
-      <View style={[{ width: size, height: size, borderRadius, overflow: 'hidden' }, style]}>
-        <View style={styles.grid}>
-          {displayList.map((c, idx) => {
-            const hasCover = Boolean(c.cover_url || c.cover_local_uri || c.external_link);
-            if (hasCover) {
-              return (
-                <View key={c.id || idx} style={styles.quadrant}>
-                  <ChordCover
-                    chordId={c.id}
-                    coverUrl={c.cover_url}
-                    coverLocalUri={c.cover_local_uri}
-                    externalLink={c.external_link}
-                    size={halfSize}
-                    borderRadius={0}
-                    fallback={
-                      <View style={[styles.quadrantFallback, { backgroundColor: DEFAULT_QUADRANT_ICONS[idx % 4].bg }]}>
-                        <Ionicons
-                          name={DEFAULT_QUADRANT_ICONS[idx % 4].icon as any}
-                          size={Math.round(size * 0.2)}
-                          color="#8e9297"
-                        />
-                      </View>
-                    }
-                  />
-                </View>
-              );
-            }
-            return (
-              <View key={c.id || idx} style={[styles.quadrant, { backgroundColor: DEFAULT_QUADRANT_ICONS[idx % 4].bg }]}>
-                <Ionicons
-                  name={DEFAULT_QUADRANT_ICONS[idx % 4].icon as any}
-                  size={Math.round(size * 0.2)}
-                  color="#8e9297"
-                />
-              </View>
-            );
-          })}
-        </View>
-      </View>
-    );
-  }
-
   // Se houver entre 1 e 3 músicas/capas, exibe a primeira capa em destaque 100%
   const mainCover = songsWithCovers[0];
   return (
